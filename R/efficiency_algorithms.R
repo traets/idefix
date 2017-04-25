@@ -109,6 +109,7 @@ seqfed.db <-function(des, candset, n_alts, par_samples, weights, prior_covar){
 
 }
 
+
 #' KL information
 #'
 #' Calculates the Kullback-Leibler divergence for a choice set, given parameter values.
@@ -186,7 +187,7 @@ KL_select <- function(lvls, n_sets, n_alts, par_samples, weights){
   return(list(best_set, kl_start))
 }
 
-#devtools::document()
+#roxygenize()
 
 
 
