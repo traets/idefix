@@ -187,7 +187,7 @@ KL_select <- function(lvls, n_sets, n_alts, par_samples, weights){
   return(list(best_set, kl_start))
 }
 
-#roxygenize()
+
 
 
 
