@@ -116,7 +116,7 @@ seqfed.db <-function(des, candset, n_alts, par_samples, weights, prior_covar){
 #' @param set Numeric matrix in which each row is a profile.
 #' @param par_samples A matrix in which each row is a sample.
 #' @param weights A vector containing the weights of the samples.
-#' @return The Kullback-Leibler divergence
+#' @return The Kullback-Leibler divergence.
 KL <- function (set, par_samples, weights){
 
   #probability
@@ -152,7 +152,7 @@ KL <- function (set, par_samples, weights){
 #' @param n_alts Numeric value indicating the number of alternatives per choice set.
 #' @param par_samples A matrix in which each row is a sample.
 #' @param weights A vector containing the weights of the samples.
-#' @return The most efficient choice set
+#' @return Choice set that maximizes the expected KL divergence.
 #' @export
 KL_select <- function(lvls, n_sets, n_alts, par_samples, weights){
 
@@ -188,9 +188,7 @@ KL_select <- function(lvls, n_sets, n_alts, par_samples, weights){
 }
 
 
-
-
-
+#roxygen2::roxygenise()
 
 
 
