@@ -142,6 +142,6 @@ imp_sampling <- function (prior_mean, prior_covar, des,  n_alts, Y, m, b=2, ...)
 }
 
 
-#roxygen2::roxygenise()
+
 
 

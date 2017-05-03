@@ -117,6 +117,7 @@ seqfed.db <-function(des, candset, n_alts, par_samples, weights, prior_covar){
 #' @param par_samples A matrix in which each row is a sample.
 #' @param weights A vector containing the weights of the samples.
 #' @return The Kullback-Leibler divergence.
+#' @export
 KL <- function (set, par_samples, weights){
 
   #probability
@@ -188,7 +189,7 @@ KL_select <- function(lvls, n_sets, n_alts, par_samples, weights){
 }
 
 
-#roxygen2::roxygenise()
+
 
 
 

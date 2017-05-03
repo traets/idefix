@@ -1,10 +1,13 @@
-Package: mnldes
-Title: What the Package Does (one line, title case)
-Version: 0.0.0.9000
-Authors@R: person("First", "Last", email = "first.last@example.com", role = c("aut", "cre"))
-Description: What the package does (one paragraph).
-Depends: R (>= 3.2.2)
+Package: IASB
+Type: Package
+Title: Efficient designs for discrete choice experiments.
+Version: 0.1.0
+Authors@R: person("Frits", "Traets", email = "first.traets@kuleuven.com", role = c("aut", "cre"))
+Description: Generates efficient sequential designs for discrete choice experiments using Bayesian updating.
 License: What license is it under?
-Encoding: UTF-8
-LazyData: true
+LazyData: TRUE
+Imports:
+    dplyr,
+    maxLik
 RoxygenNote: 6.0.1
+URL: https://github.com/traets/IASB/Rpack

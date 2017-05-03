@@ -216,5 +216,4 @@ mindiff<-function(candset,fcomb,lvls, mindiff){
 
 }
 
-#roxygen2::roxygenise()
 
