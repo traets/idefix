@@ -1,3 +1,5 @@
+
+
 #' Attribute level choice set
 #'
 #' Transforms a coded choice set into a choice set containing the attribute levels.
@@ -36,6 +38,7 @@ present<-function (set, lvl_names, coding, intercept= FALSE) {
 
   }
 
+
 #' Transform responses
 #'
 #' Transforms character input responses to binary response vector.
@@ -64,6 +67,7 @@ map_resp<-function(resp, resp_options, n_alts, neutral=T){
   v<-unlist(l)
   return(v)
 }
+
 
 #' Load from dropbox
 #'
@@ -97,6 +101,7 @@ savedrop <- function(des, Y, dir, filename) {
 
   drop_upload(filePath, dest = dir)
 }
+
 
 #' Binary to discrete response matrix
 #'

@@ -1,3 +1,5 @@
+
+
 #' data transformation.
 #'
 #' Transforms the data into the neccesary format in order to use the bayesm package, ChoiceModelR package or the RSGHB package.

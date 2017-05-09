@@ -109,7 +109,7 @@ g_dens<-function (par, g_mean, g_covar){
 imp_sampling <- function (prior_mean, prior_covar, des,  n_alts, Y, m, b=2, ...){
 
   #cte
-  prior1<-(2*pi)^(-length(mode)/2)*(det(prior_covar))^(-0.5)
+  prior1<-(2*pi)^(-length(prior_mean)/2)*(det(prior_covar))^(-0.5)
 
   #estimate importance mean
   maxest<-maxLik::maxNR(logPost, start= prior_mean, prior_mean = prior_mean, prior_covar= prior_covar,

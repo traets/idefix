@@ -1,4 +1,5 @@
 
+
 #' D-error
 #'
 #' Function to calculate d error given a design, and parameter values.
@@ -32,6 +33,41 @@ info_design<-function (par, des, n_alts){
   p<-exp(p)/rep(rowsum(exp(p), group), each=n_alts)
 
   info_design<- crossprod(des*p, des) - crossprod(rowsum( des*p, group))
+}
+
+
+#' KL information
+#'
+#' Calculates the Kullback-Leibler divergence for a choice set, given parameter values.
+#' @param set Numeric matrix in which each row is a profile.
+#' @param par_samples A matrix in which each row is a sample.
+#' @param weights A vector containing the weights of the samples.
+#' @return The Kullback-Leibler divergence.
+#' @export
+KL <- function (set, par_samples, weights){
+  
+  #probability
+  num<-set%*%t(par_samples)
+  mmat<-as.matrix(t(apply(num[, 1:ncol(num)], 2, max)))
+  nummax<-exp(sweep(num, MARGIN=2, mmat, FUN="-"))
+  denom<-colSums(nummax)
+  
+  probs<-sweep(nummax, MARGIN=2, denom, FUN="/")
+  logprobs<-log(probs)
+  
+  wprob<- sweep(probs, MARGIN=2, weights, FUN="*")
+  totwprob<- rowSums(wprob)
+  
+  logwprob<- sweep(logprobs, MARGIN=2, weights, FUN="*")
+  totlogwprob<- rowSums(logwprob)
+  
+  #kullback Leibler information
+  klinfo<- 0
+  for( a in 1:n_alts){
+    klinfo<- klinfo + (totwprob[a] * (log(totwprob[a]) - totlogwprob[a]))
+  }
+  
+  return (as.numeric(klinfo))
 }
 
 

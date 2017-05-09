@@ -1,4 +1,5 @@
 
+
 #' Profiles generation
 #'
 #' Function to generate all possible combinations of attribute levels (i.e. all possible profiles).
@@ -26,6 +27,7 @@ profiles<- function (lvls, coding, intercept = FALSE) {
   return(list(D, as.matrix(CD)))
 }
 
+
 #' Random design generation
 #'
 #' Function to generate a random design matrix.
@@ -47,6 +49,7 @@ rdes<-function (lvls, n_sets, n_alts, coding, intercept=FALSE){
   #return design
   return(des)
 }
+
 
 #' Lattice multivariate standard normal distribution.
 #'
@@ -100,6 +103,7 @@ lattice <- function (K, b, m){
   return(latt)
 }
 
+
 #' Lattice multivariate t-distribution.
 #'
 #' Generates a grid of points coming from a multivariate t-distribution.
@@ -137,6 +141,7 @@ lattice_mvt<- function (mean, cvar, df, m, b=2){
   return (X)
 }
 
+
 #' Lattice multivariate normal distribution.
 #'
 #' Generates a grid of points coming from a multivariate normal distribution.
@@ -161,6 +166,7 @@ lattice_mvn<-function (mean, cvar, m, b=2) {
   }
   return(X)
 }
+
 
 #' All choice sets
 #'
