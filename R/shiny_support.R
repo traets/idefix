@@ -1,39 +1,68 @@
 
 
-#' Attribute level choice set
+#' Transform coded choice set to Attribute level choice set
 #'
 #' Transforms a coded choice set into a choice set containing the attribute levels.
 #' @param set A numeric matrix which represents a choice set. Each row is a profile.
 #' @param lvl.names A list containing the values of each level of each attribute.
-#' @param coding Type of coding used in the given set. See ?contrasts for more info.
+#' @param coding Type of coding used in the given set. See \code{\link[stats]{model.matrix}} 
 #' @param intercept Logical argument indicating whether an intercept is included. The default is False.
 #' @return A character matrix which represents the choice set.
+#' @examples 
+#' #choice set that is dummy coded
+#' choice.set <- matrix(data = c(0, 1, 1, 0, 0, 0, 1, 0, 0, 0, 0, 1), 
+#' nrow=2, byrow = T) 
+#' att.levels <- vector(mode="list", 3) #level names
+#' att.levels[[1]] <- c("$50", "$75", "$100") #levels attribute 1
+#' att.levels[[2]] <- c("2min", "15min", "30min") #levels attribute 2
+#' att.levels[[3]] <- c("bad", "average", "good") #levels attribut 3
+#' coding.type = "contr.treatment" #coding type is dummy coded 
+#' #Transform
+#' Present(set = choice.set, lvl.names = att.levels, coding = coding.type) 
 #' @export
 Present <- function(set, lvl.names, coding, intercept= FALSE) {
-  n.alts <- nrow(set)
-  n.att <- length(lvl.names)
-  lvls <- numeric(n.att)
+  #error handling
+  codings.types<-c("contr.treatment", "contr.helmert", "contr.poly", "contr.sum", "none")
+  if (!(coding %in% codings.types)) {
+    stop("Coding argument is incorrect.")
+  } 
+  n.alts <- nrow(set) #number of alternatives
+  n.att <- length(lvl.names) #number of attributes
+  #create vector where each element denotes the number of levels for each attribute
+  lvls <- numeric(n.att) 
   for (i in 1:n.att) { 
     lvls[i] <- length(lvl.names[[i]])
   }
-  d <- profiles(lvls = lvls, coding = coding, intercept = intercept)[[1]]
-  dc <- profiles(lvls = lvls, coding = coding, intercept = intercept)[[2]]
+  #generate all possible profiles coded and uncoded
+  dc <- Profiles(lvls = lvls, coding = coding, intercept = intercept)
+  d <- Profiles(lvls = lvls, coding = "none", intercept = intercept)
+  #create new matrix for choice set with attribute level names 
   m <- matrix(data = NA, nrow = n.alts, ncol = n.att)
+  #error handling
   if (ncol(set) != ncol(dc)) {
     stop("Number of columns of the set does not match expected number based on the other arguments.")
   }
+  #for each alternative look for matching profile  
   for (i in 1:n.alts) {
-    ln <- d[as.numeric(which(apply(dc, 1, function(x) all(x == set[i, ])))), ]
-    lnn <- as.numeric(ln)
-    if (any(is.na(lnn))) { 
+    # if coded choice set, look for match in coded version first, then take uncoded equivalent.
+    if (coding != "none") {
+      lev.num <- d[as.numeric(which(apply(dc, 1, function(x) all(x == set[i, ])))), ]
+      lev.num <- as.numeric(lev.num)
+    } else {
+      lev.num <- as.numeric(choice.set[i, ])
+    }
+    #error handling
+    if (any(is.na(lev.num))) { 
       stop('The set does not match with the type of coding provided')
     }
+    #for each attribute fill in the attribute level name
     for (c in 1:n.att) {
-      m[i,c] <- lvl.names[[c]][lnn[c]]
+      m[i,c] <- lvl.names[[c]][lev.num[c]]
     }
   }
   return(m)
 }
+
 
 
 #' Transform responses

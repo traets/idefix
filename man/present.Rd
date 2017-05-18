@@ -2,7 +2,7 @@
 % Please edit documentation in R/shiny_support.R
 \name{Present}
 \alias{Present}
-\title{Attribute level choice set}
+\title{Transform coded choice set to Attribute level choice set}
 \usage{
 Present(set, lvl.names, coding, intercept = FALSE)
 }
@@ -11,7 +11,7 @@ Present(set, lvl.names, coding, intercept = FALSE)
 
 \item{lvl.names}{A list containing the values of each level of each attribute.}
 
-\item{coding}{Type of coding used in the given set. See ?contrasts for more info.}
+\item{coding}{Type of coding used in the given set. See \code{\link[stats]{model.matrix}}}
 
 \item{intercept}{Logical argument indicating whether an intercept is included. The default is False.}
 }
@@ -20,4 +20,16 @@ A character matrix which represents the choice set.
 }
 \description{
 Transforms a coded choice set into a choice set containing the attribute levels.
+}
+\examples{
+#choice set that is dummy coded
+choice.set <- matrix(data = c(0, 1, 1, 0, 0, 0, 1, 0, 0, 0, 0, 1), 
+nrow=2, byrow = T) 
+att.levels <- vector(mode="list", 3) #level names
+att.levels[[1]] <- c("$50", "$75", "$100") #levels attribute 1
+att.levels[[2]] <- c("2min", "15min", "30min") #levels attribute 2
+att.levels[[3]] <- c("bad", "average", "good") #levels attribut 3
+coding.type = "contr.treatment" #coding type is dummy coded 
+#Transform
+Present(set = choice.set, lvl.names = att.levels, coding = coding.type) 
 }
