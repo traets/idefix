@@ -22,7 +22,7 @@ Present <- function(set, lvl.names, coding, intercept= FALSE) {
   if (ncol(set) != ncol(dc)) {
     stop("Number of columns of the set does not match expected number based on the other arguments.")
   }
-  for (i in 1:n_alts) {
+  for (i in 1:n.alts) {
     ln <- d[as.numeric(which(apply(dc, 1, function(x) all(x == set[i, ])))), ]
     lnn <- as.numeric(ln)
     if (any(is.na(lnn))) { 
@@ -32,7 +32,7 @@ Present <- function(set, lvl.names, coding, intercept= FALSE) {
       m[i,c] <- lvl.names[[c]][lnn[c]]
     }
   }
-  return(MC)
+  return(m)
 }
 
 
