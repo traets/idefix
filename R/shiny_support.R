@@ -4,39 +4,36 @@
 #'
 #' Transforms a coded choice set into a choice set containing the attribute levels.
 #' @param set A numeric matrix which represents a choice set. Each row is a profile.
-#' @param lvl_names A list containing the values of each level of each attribute.
+#' @param lvl.names A list containing the values of each level of each attribute.
 #' @param coding Type of coding used in the given set. See ?contrasts for more info.
 #' @param intercept Logical argument indicating whether an intercept is included. The default is False.
 #' @return A character matrix which represents the choice set.
 #' @export
-present<-function (set, lvl_names, coding, intercept= FALSE) {
-
-  n_alts<-nrow(set)
-  n_att <- length(lvl_names)
-  lvls<-numeric(n_att)
-  for (i in 1:n_att){ lvls[i]<-length(lvl_names[[i]]) }
-
-  D<-profiles(lvls = lvls, coding = coding, intercept = intercept)[[1]]
-  DC<-profiles(lvls = lvls, coding = coding, intercept = intercept)[[2]]
-
-  MC<-matrix(data = NA, nrow = n_alts, ncol = n_att)
-
-  if (ncol(set)!= ncol(DC)) {stop('number of colums of set does not match expected number.
-                                  Make sure number of attributes and levels are correct (lvl_names) as well as the intercept argument.')}
-
-  for (i in 1:n_alts){
-    ln <- D[as.numeric(which(apply(DC, 1, function(x) all(x == set[i, ])))), ]
-    lnn<-as.numeric(ln)
-
-    if(any(is.na(lnn))) stop('the set does not match with the type of coding provided')
-
-    for (c in 1:n_att){MC[i,c]<-   lvl_names[[c]] [lnn[c]] }
-
+Present <- function(set, lvl.names, coding, intercept= FALSE) {
+  n.alts <- nrow(set)
+  n.att <- length(lvl.names)
+  lvls <- numeric(n.att)
+  for (i in 1:n.att) { 
+    lvls[i] <- length(lvl.names[[i]])
   }
-
+  d <- profiles(lvls = lvls, coding = coding, intercept = intercept)[[1]]
+  dc <- profiles(lvls = lvls, coding = coding, intercept = intercept)[[2]]
+  m <- matrix(data = NA, nrow = n.alts, ncol = n.att)
+  if (ncol(set) != ncol(dc)) {
+    stop("Number of columns of the set does not match expected number based on the other arguments.")
+  }
+  for (i in 1:n_alts) {
+    ln <- d[as.numeric(which(apply(dc, 1, function(x) all(x == set[i, ])))), ]
+    lnn <- as.numeric(ln)
+    if (any(is.na(lnn))) { 
+      stop('The set does not match with the type of coding provided')
+    }
+    for (c in 1:n.att) {
+      m[i,c] <- lvl.names[[c]][lnn[c]]
+    }
+  }
   return(MC)
-
-  }
+}
 
 
 #' Transform responses
