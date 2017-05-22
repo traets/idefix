@@ -4,23 +4,23 @@
 \alias{seqfed.db}
 \title{DB sequential set}
 \usage{
-seqfed.db(des, candset, n_alts, par_samples, weights, prior_covar)
+seqfed.db(des, cand.set, n.alts, par.samples, weights, prior.covar)
 }
 \arguments{
 \item{des}{A design matrix in which each row is a profile.}
 
-\item{candset}{A numeric matrix in which each row is a possible profile.}
+\item{cand.set}{A numeric matrix in which each row is a possible profile.}
 
-\item{n_alts}{Numeric value indicating the number of alternatives per choice set.}
+\item{n.alts}{Numeric value indicating the number of alternatives per choice set.}
 
-\item{par_samples}{A matrix in which each row is a sample from the multivariate parameter distribution.}
+\item{par.samples}{A matrix in which each row is a sample from the multivariate parameter distribution.}
 
 \item{weights}{A vector containing the weights of the samples.}
 
-\item{prior_covar}{Covariance matrix of the prior distribution.}
+\item{prior.covar}{Covariance matrix of the prior distribution.}
 }
 \value{
-The most DB efficient choice set.
+The most db efficient choice set.
 }
 \description{
 Adds the most DB efficient choice set to a design, given (updated) parameter values.
