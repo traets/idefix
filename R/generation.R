@@ -1,6 +1,6 @@
 
 
-#' Profiles generation
+#' Profiles generation.
 #'
 #' Function to generate all possible combinations of attribute levels (i.e. all possible profiles).
 #' @param lvls  A vector which contains for each attribute, the number of levels.
@@ -13,7 +13,6 @@
 #' coding.type <- "contr.sum" #effects coding will be applied.
 #' #generate all coded profiles.
 #' Profiles(lvls = attribute.levels, coding = coding.type)
-#' 
 #' # without coding
 #' Profiles(lvls = c(4,4,3), coding = "none") 
 #' @export
@@ -48,10 +47,10 @@ Profiles <- function(lvls, coding, intercept = FALSE) {
       cgrid <- cgrid[, -1]
     }
     #return coded version
-    return(cgrid)
+    return(as.matrix(cgrid))
   #else return uncoded version
   } else {
-    return(dgrid)
+  return(data.matrix(dgrid, rownames.force = TRUE))
   }
  
 }
@@ -64,6 +63,7 @@ Profiles <- function(lvls, coding, intercept = FALSE) {
 #' @param n.sets Numeric value indicating the number of choide sets.
 #' @param n.alts Numeric value indicating the number of alternatives per choice set.
 #' @return A design matrix
+#' @export
 Rdes <- function(lvls, n.sets, n.alts, coding, intercept=FALSE) {
   #generate all possible profiles
   profs <- Profiles(lvls = lvls, coding = coding, intercept = intercept)
@@ -82,7 +82,7 @@ Rdes <- function(lvls, n.sets, n.alts, coding, intercept=FALSE) {
 #' @param b Numeric value indicating the base.
 #' @param m Numeric value. Number of samples=b^m.
 #' @return Matrix of lattice points drawn from a multivariate standard normal distribution. Each row is a sample.
-lattice <- function(K, b, m) {
+Lat <- function(K, b, m) {
   base <- function(num){
     a1 <- c1 <- rep(0, m)
     a1[m] <- c1[m] <- num %% b
@@ -108,7 +108,7 @@ lattice <- function(K, b, m) {
     kk <- kk + 1
   }
   for (i in 1:N) {
-    ei <- crossprod(seq, base(i - 1)) * av + u
+    ei <- c(crossprod(seq, base(i - 1))) * av + u
     e[i, ] <- ei - floor(ei)
   }
   latt <- matrix(0, N, K)
@@ -164,12 +164,12 @@ lattice_mvt <- function (mean, cvar, df, m, b=2) {
 #' @export
 lattice_mvn <- function (mean, cvar, m, b=2) {
   dim <- length(mean)
-  lattice <- lattice(K = dim, b, m)
+  l <- Lat(K = dim, b, m)
   mean <- t(mean)
-  X <- matrix(NA, nrow(lattice), dim)
+  X <- matrix(NA, nrow(l), dim)
   A <- chol(cvar)
-  for (i in 1:nrow(lattice)) {
-    Z <- lattice[i, ]
+  for (i in 1:nrow(l)) {
+    Z <- l[i, ]
     r <- mean + (Z %*% t(A))
     X[i, ] <- t(r)
   }
@@ -180,18 +180,17 @@ lattice_mvn <- function (mean, cvar, m, b=2) {
 #' All choice sets
 #'
 #' Generates all possible combinations of choice sets.
-#' @param candset A numeric matrix in which each row is a possible profile.
-#' @param n_alts Numeric value indicating the number of alternatives per choice set.
+#' @param cand.set A numeric matrix in which each row is a possible profile.
+#' @param n.alts Numeric value indicating the number of alternatives per choice set.
 #' @return Matrix with all possible combinations of profiles (choice sets).
 #' @export
-full_sets<- function(candset, n_alts){
-
-  fun<-function(x){return(1:x)}
-
-  s1<-as.list(rep(nrow(candset), n_alts))
-  s2<-lapply(X = s1, fun)
-  fc<-as.data.frame(expand.grid(s2))
-
+FullFact <- function(cand.set, n.alts) {
+  fun <- function(x) {
+    return(1:x)
+  }
+  s1 <- as.list(rep(nrow(cand.set), n.alts))
+  s2 <- lapply(X = s1, fun)
+  fc <- as.data.frame(expand.grid(s2))
   return(fc)
 }
 
