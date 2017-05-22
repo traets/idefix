@@ -1,68 +1,90 @@
 
 
-#' DB modified federov algorithm
+#' Modified federov algorithm.
 #'
-#' Modified federov algorithm. Swipes every profile of an initial design with candidate profiles.
-#' By doing this it tries to minimize the DB error. The DB error is te mean D-error over samples
-#' from the prior parameter distribution.
-#' @param candset A numeric matrix in which each row is a possible profile.
-#' @param n_sets Numeric value indicating the number of choice sets.
-#' @param n_alts Numeric value indicating the number of alternatives per choice set.
-#' @param par_samples A matrix in which each row is a sample from the multivariate prior parameter distribution.
-#' @param max_iter A numeric value indicating the maximum number allowed iterations.
-#' @return An efficient design, and the associated DB-error.
+#' The algorithm swipes every profile of an initial random design with candidate profiles.
+#' By doing this it tries to minimize the D error or DB error assuming a Multinomial logit model.  
+#' 
+#' The modified federov algorithm starts with creating an initial design by randomly selecting \code{n.alts* n.sets} profiles from the candidate set.
+#' Afterwards the D error or DB error of this random initial design will be calculated. Then every profile from the initial design
+#' will be replaced with every profile from the candidate set, keeping the one that minimizes the error.
+#' 
+#' By specifying a numeric vector in \code{par.samples}, 
+#' the D error will be calculated and the design will be optimised locally. 
+#' By specifying a matrix in which each row is a sample from a multivariate distribution in \code{par.samples}, 
+#' the mean over D-errors will be taken as the efficiency criterion (DB-error), and the design will be optimised globally. 
+#' 
+#'
+#' @param cand.set A numeric matrix in which each row is a possible profile.
+#' @param n.sets Numeric value indicating the number of choice sets.
+#' @param n.alts Numeric value indicating the number of alternatives per choice set.
+#' @param par.samples A matrix in which each row is a sample from the multivariate prior parameter distribution.
+#' @param max.iter A numeric value indicating the maximum number allowed iterations.
+#' @return An efficient design, and the associated db-error.
 #' @export
-modfed.db<-function (candset, n_sets, n_alts, par_samples, max_iter = Inf){
-
-  #random start des
-  R<-round(runif((n_sets*n_alts), 1, nrow(candset)))
-  des<-data.matrix(candset[R,])
-
-  if (ncol(des) != ncol(par_samples)) {
-    stop("Number of paramters does not match the design matrix")
+Modfed <- function(cand.set, n.sets, n.alts, par.samples, max.iter = Inf) {
+  # error handling
+  if (ncol(cand.set) != ncol(par.samples)) {
+    stop("Number of paramters does not match the candidate set")
   }
-  if ((nrow(des)/n_alts)%%1 != 0) {
-    stop("number of alternatives per choice set does not match the design")
+  if (n.sets < ncol(par.samples)) {
+    stop("Model is unidentified. Increase the number of choice sets or decrease parameters to estimate.")
   }
-
-  DB_start <- 99999
+  # random start design
+  r <- round(runif((n.sets*n.alts), 1, nrow(cand.set)))
+  des <- data.matrix(cand.set[r, ])
+  # starting values 
+  d.start <- apply(par.samples, 1, Derr, des = des,  n.alts = n.alts)
+  db.start <- mean(d.start, na.rm = TRUE)
   converge <- FALSE
+  change <- FALSE
   it <- 1
-
-  while (!converge & it <= max_iter) {
+  n.samples <- nrow(par.samples)
+  # start algorithm
+  while (!converge & it <= max.iter) {
     it <- it + 1
+    #show progress iteration
     pb <- txtProgressBar(min = 0, max = nrow(des), style = 3)
-    iter_des <- des
-
+    #save design before iteration
+    iter.des <- des
+    # for every row in the design
     for (r in 1:nrow(des)) {
-      for (c in 1:nrow(candset)) {
-        des[r, ] <- candset[c, ]
-        D_errors <- apply(par_samples, 1, d_err, des = des,  n_alts = n_alts)
-
-        if (any(is.na(D_errors))) {
-          warning("NaN produced in DB error. Possibly too little choice sets.")
+      # switch with everey row in candidate set 
+      for (c in 1:nrow(cand.set)) {
+        des[r, ] <- cand.set[c, ]
+        # calculate d errors
+        d.errors <- apply(par.samples, 1, Derr, des = des,  n.alts = n.alts)
+        #db error 
+        db <- mean(d.errors, na.rm = TRUE)
+        #change if lower db error
+        if (db < db.start) {
+          best.row <- as.numeric(des[r, ])
+          db.start <- db
+          change <- TRUE
         }
-        if (any(is.infinite(D_errors))) {
-          warning("Infinite D-error values. Possibly too little choice sets.")
-        }
-        DB <- mean(D_errors, na.rm = TRUE)
-        if (DB < DB_start) {
-          best_row <- as.numeric(des[r, ])
-          DB_start <- DB
-          change <- T
-        }
+        #show progress iteration
         setTxtProgressBar(pb, r)
       }
-
-      if (change) {des[r, ] <- best_row
-      }else {des[r, ] <- iter_des[r, ]}
-
-      change <- F
+      #replace with best profile if change
+      if (change) {
+        des[r, ] <- best.row
+      } else {
+        des[r, ] <- iter.des[r, ]
+      }
+      #initialize variables again 
+      change <- FALSE
+      na.percentage <- 0
     }
-    close(pb)
-    converge <- isTRUE(all.equal(des, iter_des))
+    close(pb)  # print progress 
+    converge <- isTRUE(all.equal(des, iter.des)) # convergence if no profile is swapped this iteration 
   }
-  return(list(des, DB))
+  #calculate percentage NA values
+  d.errors <- apply(par.samples, 1, Derr, des = des,  n.alts = n.alts)
+  if (any(is.na(d.errors))) {
+    na.percentage <- sum(is.na(d.errors))/n.samples
+  } 
+  #return design, db error, na.values
+  return(list(des, db, na.percentage))
 }
 
 
@@ -70,39 +92,39 @@ modfed.db<-function (candset, n_sets, n_alts, par_samples, max_iter = Inf){
 #'
 #' Adds the most DB efficient choice set to a design, given (updated) parameter values.
 #' @param des A design matrix in which each row is a profile.
-#' @param candset A numeric matrix in which each row is a possible profile.
-#' @param n_alts Numeric value indicating the number of alternatives per choice set.
-#' @param par_samples A matrix in which each row is a sample from the multivariate parameter distribution.
+#' @param cand.set A numeric matrix in which each row is a possible profile.
+#' @param n.alts Numeric value indicating the number of alternatives per choice set.
+#' @param par.samples A matrix in which each row is a sample from the multivariate parameter distribution.
 #' @param weights A vector containing the weights of the samples.
-#' @param prior_covar Covariance matrix of the prior distribution.
-#' @return The most DB efficient choice set.
+#' @param prior.covar Covariance matrix of the prior distribution.
+#' @return The most db efficient choice set.
 #' @export
-seqfed.db <-function(des, candset, n_alts, par_samples, weights, prior_covar){
+seqfed.db <-function(des, cand.set, n.alts, par.samples, weights, prior.covar){
 
   #start values
-  DB_best<-1000
-  full_comb<- full_sets(candset, n_alts)
+  db_best<-1000
+  full_comb<- full_sets(cand.set, n.alts)
 
   #for each potential set:
-  for (p in 1:nrow(candset)){
+  for (p in 1:nrow(cand.set)){
 
-    set<-as.matrix(candset[as.numeric(full_comb[p, ]), ])
+    set<-as.matrix(cand.set[as.numeric(full_comb[p, ]), ])
 
     #for each par draw calculate d-error:
-    DB_error<-0
+    db_error<-0
 
-    for (s in 1: nrow(par_samples)){
+    for (s in 1: nrow(par.samples)){
 
-      info_s<-info_design(par = par_samples[s, ], des = set, n_alts = n_alts)
-      info_d<-info_design(par= par_samples[s, ], des = des, n_alts = n_alts)
-      inv_cov_prior<-solve(prior_covar)
+      info_s<-info_design(par = par.samples[s, ], des = set, n.alts = n.alts)
+      info_d<-info_design(par= par.samples[s, ], des = des, n.alts = n.alts)
+      inv_cov_prior<-solve(prior.covar)
 
-      DB_error<- DB_error+(det(info_d + info_s + inv_cov_prior)*(-1/ncol(par_samples))*weights[s])
+      db_error<- db_error+(det(info_d + info_s + inv_cov_prior)*(-1/ncol(par.samples))*weights[s])
 
     }
 
-    #select new set if smaller DB error
-    if (DB_error< DB_best){final_set<-set; DB_best<- DB_error}
+    #select new set if smaller db error
+    if (db_error< db_best){final_set<-set; db_best<- db_error}
   }
 
   return(final_set)
@@ -113,17 +135,17 @@ seqfed.db <-function(des, candset, n_alts, par_samples, weights, prior_covar){
 #'
 #' Provides the set that maximizes the Kullback-Leibler divergence, given parameter values.
 #' @param lvls A vector which contains for each attribute, the number of levels.
-#' @param n_sets Numeric value indicating the number of choice sets.
-#' @param n_alts Numeric value indicating the number of alternatives per choice set.
-#' @param par_samples A matrix in which each row is a sample.
+#' @param n.sets Numeric value indicating the number of choice sets.
+#' @param n.alts Numeric value indicating the number of alternatives per choice set.
+#' @param par.samples A matrix in which each row is a sample.
 #' @param weights A vector containing the weights of the samples.
 #' @return Choice set that maximizes the expected KL divergence.
 #' @export
-KL_select <- function(lvls, n_sets, n_alts, par_samples, weights){
+KL_select <- function(lvls, n.sets, n.alts, par.samples, weights){
 
   #All choice sets, without same profile twice
   fp<-profiles(lvls)
-  fcomb<-full_sets(cand = fp, n_alts = n_alts)
+  fcomb<-full_sets(cand = fp, n.alts = n.alts)
   rows<-apply(fcomb[, 1:ncol(fcomb)], 1, function(i) length(unique(i)) > ncol(fcomb)-1)
   fcomb<-fcomb[rows, ]
 
@@ -137,7 +159,7 @@ KL_select <- function(lvls, n_sets, n_alts, par_samples, weights){
     set<-as.matrix(fp[as.numeric(fcomb[s, ]), ])
 
     #calculate for all sets the KLinfo.
-    klinfo<-KL(set, par_samples, weights)
+    klinfo<-KL(set, par.samples, weights)
 
     #if better --> keep
     if (klinfo > kl_start){
