@@ -2,7 +2,7 @@
 % Please edit documentation in R/generation.R
 \name{Profiles}
 \alias{Profiles}
-\title{Profiles generation}
+\title{Profiles generation.}
 \usage{
 Profiles(lvls, coding, intercept = FALSE)
 }
