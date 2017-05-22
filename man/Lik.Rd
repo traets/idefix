@@ -4,16 +4,16 @@
 \alias{Lik}
 \title{Likelihood function}
 \usage{
-Lik(par, des, n_alts, Y)
+Lik(par, des, n.alts, y)
 }
 \arguments{
 \item{par}{Numeric vector with parametervalues.}
 
 \item{des}{A design matrix in which each row is a profile.}
 
-\item{n_alts}{The number of alternatives in each choice set}
+\item{n.alts}{The number of alternatives in each choice set}
 
-\item{Y}{A binary response vector.}
+\item{y}{A binary response vector.}
 }
 \value{
 the likelihood
