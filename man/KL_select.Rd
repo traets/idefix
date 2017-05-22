@@ -4,16 +4,16 @@
 \alias{KL_select}
 \title{KL set selecting}
 \usage{
-KL_select(lvls, n_sets, n_alts, par_samples, weights)
+KL_select(lvls, n.sets, n.alts, par.samples, weights)
 }
 \arguments{
 \item{lvls}{A vector which contains for each attribute, the number of levels.}
 
-\item{n_sets}{Numeric value indicating the number of choice sets.}
+\item{n.sets}{Numeric value indicating the number of choice sets.}
 
-\item{n_alts}{Numeric value indicating the number of alternatives per choice set.}
+\item{n.alts}{Numeric value indicating the number of alternatives per choice set.}
 
-\item{par_samples}{A matrix in which each row is a sample.}
+\item{par.samples}{A matrix in which each row is a sample.}
 
 \item{weights}{A vector containing the weights of the samples.}
 }

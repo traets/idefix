@@ -4,12 +4,12 @@
 \alias{KL}
 \title{KL information}
 \usage{
-KL(set, par_samples, weights)
+KL(set, par.samples, weights)
 }
 \arguments{
 \item{set}{Numeric matrix in which each row is a profile.}
 
-\item{par_samples}{A matrix in which each row is a sample.}
+\item{par.samples}{A matrix in which each row is a sample.}
 
 \item{weights}{A vector containing the weights of the samples.}
 }
