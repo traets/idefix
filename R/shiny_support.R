@@ -20,7 +20,7 @@
 #' #Transform
 #' Present(set = choice.set, lvl.names = att.levels, coding = coding.type) 
 #' @export
-Present <- function(set, lvl.names, coding, intercept= FALSE) {
+Present <- function(set, lvl.names, coding) {
   #error handling
   codings.types<-c("contr.treatment", "contr.helmert", "contr.poly", "contr.sum", "none")
   if (!(coding %in% codings.types)) {
@@ -34,8 +34,8 @@ Present <- function(set, lvl.names, coding, intercept= FALSE) {
     lvls[i] <- length(lvl.names[[i]])
   }
   #generate all possible profiles coded and uncoded
-  dc <- Profiles(lvls = lvls, coding = coding, intercept = intercept)
-  d <- Profiles(lvls = lvls, coding = "none", intercept = intercept)
+  dc <- Profiles(lvls = lvls, coding = coding)
+  d <- Profiles(lvls = lvls, coding = "none")
   #create new matrix for choice set with attribute level names 
   m <- matrix(data = NA, nrow = n.alts, ncol = n.att)
   #error handling
@@ -62,7 +62,6 @@ Present <- function(set, lvl.names, coding, intercept= FALSE) {
   }
   return(m)
 }
-
 
 
 #' Transform responses
