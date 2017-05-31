@@ -1,60 +1,83 @@
 
 
 #' Profiles generation.
-#'
-#' Function to generate all possible combinations of attribute levels (i.e. all possible profiles).
-#' @param lvls  A vector which contains for each attribute, the number of levels.
-#' @param coding Type op coding that need to be used. See \code{\link[stats]{model.matrix}}
-#' @param intercept Logical argument indicating whether an intercept should be included. The default is False.
+#' 
+#' Function to generate all possible combinations of attribute levels (i.e. all
+#' possible profiles).
+#' @param lvls  A vector which contains for each attribute, the number of
+#'   levels.
+#' @param coding Type op coding that needs to be used for each attribute.
+#' @param c.lvls A list containing vectors with attributelevels for continuous
+#'   attributes. The default is \code{NULL}
 #' @return A matrix which contains all possible profiles.
 #' @examples 
-#' # numeric vector specifing the number of levels for each attribute.
-#' attribute.levels <- c(3,4,2) #3 attributes with respectively 3, 4 and 2 levels. 
-#' coding.type <- "contr.sum" #effects coding will be applied.
-#' #generate all coded profiles.
-#' Profiles(lvls = attribute.levels, coding = coding.type)
-#' # without coding
-#' Profiles(lvls = c(4,4,3), coding = "none") 
+#' # Without continuous attributes
+#' at.lvls <- c(3,4,2) # 3 Attributes with respectively 3, 4 and 2 levels. 
+#' c.type <- rep("E", length(at.lvls)) # All Effect coded.
+#' Profiles(lvls = at.lvls, coding = c.type) # Generate profiles.
+#' 
+#' # With continuous attributes 
+#' at.lvls <- c(3,4,2) # 3 attributes with respectively 3, 4 and 2 levels. 
+#' # First attribute is dummy coded, second and third are continuous. 
+#' c.type <- c("D", "C", "C") 
+#' # Levels for continuous attributes, in the same order. 
+#' con.lvls <- list(c(4,6,8,10), c(7,9))
+#' Profiles(lvls = at.lvls, coding = c.type, c.lvls = con.lvls)
 #' @export
-Profiles <- function(lvls, coding, intercept = FALSE) {
-  #error handling
-  codings.types<-c("contr.treatment", "contr.helmert", "contr.poly", "contr.sum", "none")
-  if (!(coding %in% codings.types)) {
-    stop("Coding argument is incorrect.")
+Profiles <- function(lvls, coding, c.lvls = NULL) {
+  if (!is.null(c.lvls)) { 
+    c.lvls <- as.list(c.lvls)
+  }
+  # continuous attributes 
+  contins <-  which(coding == "C")
+  n.contins <-  length(contins)
+  # error correct coding types
+  codings.types <- c("E", "D", "C")
+  if (!all(coding %in% codings.types) || (length(coding) != length(lvls))) {
+    stop("coding argument is incorrect.")
   } 
-  #error handling
+  # error lvls vector
   if (length(lvls) < 2 || (!(is.numeric(lvls)))){
-    stop("lvls argument is incorrect")
+    stop("lvls argument is incorrect.")
   }
-  #create all combinations of attribute levels
+  # error continuous specified and NULL
+  if (length(contins) > 0 && is.null(c.lvls)) {
+    stop("there are no levels provided for the continuous attributes")
+  }
+  # error continuous levels specification 
+  if (!is.null(c.lvls)) {
+    if (length(c.lvls) != n.contins) {
+      stop("length of c.lvls does not match number of specified continuous attributes in coding")
+    }
+    # error c.lvls same number of levels 
+    if (!all.equal(lvls[contins], lengths(c.lvls))) {
+      stop("the number of continuous attribute levels provided in c.lvls does not match the expected based on lvls")
+    }
+  }
+  # change into correct coding. 
+  coding <- recode(coding, D = "contr.treatment", E = "contr.sum")
+  # create all combinations of attribute levels
   levels.list <- lapply(X = as.list(lvls), function(x) (1:x))
+  # replace continuous
+  levels.list[contins] <- c.lvls
+  # create grid 
   dgrid <- as.data.frame(expand.grid(levels.list))
+  # apply coding to non continuous 
   cn <- names(dgrid)
-  #create factors
-  dgrid[, cn] <- lapply(dgrid[, cn],  factor)
-  # Change to coded version if necesarry
-  if (coding != "none") {
-    #create contrast vector
-    con <- list()
-    for (i in 1:length(lvls)) {
-      name <- paste("Var", i, sep = "")
-      con[name] <- coding
-    }
-    #create coded version
-    cgrid <- as.data.frame(model.matrix(~., dgrid, contrasts = con))
-    #delete intercept if necesarry
-    if (intercept == F) { 
-      cgrid <- cgrid[, -1]
-    }
-    #return coded version
-    return(as.matrix(cgrid))
-  #else return uncoded version
-  } else {
-  return(data.matrix(dgrid, rownames.force = TRUE))
+  if (!is.null(c.lvls)) {
+    cn <- cn[-contins]
   }
- 
+  # create factors
+  dgrid[, cn] <- apply(dgrid[, cn, drop = FALSE], 2, factor)
+  # coding 
+  con <- as.list(setNames(coding, names(dgrid)))
+  con[which(con == "C")] <- NULL
+  cgrid <- as.data.frame(model.matrix(~., dgrid, contrasts = con))
+  # delete intercept
+  cgrid <- cgrid[, -1]
+  # return profiles
+  return(as.matrix(cgrid))
 }
-
 
 #' Random design generation
 #'
@@ -64,9 +87,9 @@ Profiles <- function(lvls, coding, intercept = FALSE) {
 #' @param n.alts Numeric value indicating the number of alternatives per choice set.
 #' @return A design matrix
 #' @export
-Rdes <- function(lvls, n.sets, n.alts, coding, intercept=FALSE) {
+Rdes <- function(lvls, n.sets, n.alts, coding) {
   #generate all possible profiles
-  profs <- Profiles(lvls = lvls, coding = coding, intercept = intercept)
+  profs <- Profiles(lvls = lvls, coding = coding)
   #draw random profiles 
   r <- round(runif((n.alts*n.sets), 1, nrow(profs)))
   des <- as.matrix(profs[r, ])
@@ -74,6 +97,35 @@ Rdes <- function(lvls, n.sets, n.alts, coding, intercept=FALSE) {
   return(des)
 }
 
+
+#' Create alternative specific coding.
+Altspec <- function(alt.cte, n.sets) {
+  # create matrix
+  mat <- diag(length(alt.cte))
+  n.zero <- which(alt.cte == 0)
+  mat[n.zero, n.zero] <- 0
+  # delete zero columns
+  del.col <- c(which(apply(mat, 2,   function(x) all(x == 0))))
+  mat <- mat[, -del.col]
+  #rbind for full design 
+  mat <- as.matrix(mat)
+  cte.mat <- do.call(rbind, replicate(n.sets, mat, simplify = FALSE)) 
+  #return
+  return(cte.mat)
+}
+
+
+#' Create row and column names for designs 
+Rcnames <- function(n.sets, n.alts, n.cte, alt.cte) {
+  # rownames
+  r.s <- rep(1:n.sets, each = n.alts)
+  r.a <- rep(1:n.alts, n.sets)
+  r.names <- paste(paste("set", r.s, sep = ""), paste("alt", r.a, sep = ""), sep = ".")
+  # colnames alternative specific constants 
+  cte.names <- paste(paste("alt", which(alt.cte == 1), sep = ""), ".cte", sep = "") 
+  # return
+  return(list(r.names, cte.names))
+}
 
 #' Lattice multivariate standard normal distribution.
 #'
