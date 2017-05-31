@@ -25,14 +25,25 @@ Derr <- function(par, des, n.alts) {
 InfoDes <- function(par, des, n.alts) {
   group <- rep(seq(1, nrow(des) / n.alts, 1), each = n.alts)
   # probability
-  p <- des %*% diag(par)
-  p <- .rowSums(p, m = nrow(des), n = length(par))
-  p <- exp(p) / rep(rowsum(exp(p), group), each = n.alts)
+  u <- des %*% diag(par)
+  u <- .rowSums(u, m = nrow(des), n = length(par))
+  p <- exp(u) / rep(rowsum(exp(u), group), each = n.alts)
   # information matrix
   info.des <- crossprod(des * p, des) - crossprod(rowsum( des * p, group))
   return(info.des)
 }
 
+
+#' Utility balance 
+Utbal <- function(par, des, n.alts) { 
+  group <- rep(seq(1, nrow(des) / n.alts, 1), each = n.alts)
+  u <- des %*% diag(par)
+  u <- .rowSums(u, m = nrow(des), n = length(par))
+  p <- exp(u) / rep(rowsum(exp(u), group), each = n.alts)
+  ub <- by(p, group, function(x) {max(x) - min(x)}, simplify = TRUE)
+  # return
+  return(ub)
+}
 
 #' KL information
 #'
