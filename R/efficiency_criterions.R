@@ -7,20 +7,60 @@
 #' @param des A design matrix in which each row is a profile.
 #' @param n.alts Numeric value indicating the number of alternatives per choice set.
 #' @return D-error.
-#' @export
 Derr <- function(par, des, n.alts) {
   info.des <- InfoDes(par, des, n.alts)
   detinfo <- det(info.des)
   ifelse((detinfo <= 0), return(NA), return(detinfo^(-1 / length(par))))
 }
 
+#' Sequential D-error
+#' 
+#' Function to calculate D-errors if set would be part of design. 
+#' @inheritParams Modfed
+#' @param set A choice set in which each row is a profile.
+#' @param des A design matrix in which each row is a profile.
+#' @param i.cov Inverse of covariance matrix.  
+#' @param n.par Number of parameters.
+DerrS <- function(par.samples, set, des, n.alts, i.cov, n.par) {
+  des.f <- rbind(des, set) 
+  info.d <- InfoDes(par = par.samples, des = des.f, n.alts = n.alts) 
+  d.error <- det(info.d + i.cov)^(-1 / n.par)
+  return(d.error)
+}
+
+#' Sequential DB-error
+#' 
+#' Function to calculate DB-errors for potential choice sets in combination with
+#' an initial design.
+#' @inheritParams Modfed
+#' @inheritParams DerrS
+#' @param full.comb A matrix with on each row a possible combination of
+#'   profiles.
+#' @param cte.des A matrix which represent the alternative specific constants. 
+#'   If there are none it value is \code{NULL}.
+#' @return The DB errors of the designs in which each design is a combination
+#'   with of the initial design with a potential choice set.
+DBerrS <- function(full.comb, cand.set, par.samples, des, n.alts, cte.des, i.cov, n.par, weights) {
+  # Take set.
+  set <- as.matrix(cand.set[as.numeric(full.comb), ])
+  # Add alternative specific constants if necessary
+  if (!is.null(cte.des)) {
+    set <- as.matrix(cbind(cte.des, set))
+  }
+  # For each draw calculate D-error.
+  d.errors <- apply(par.samples, 1, DerrS, set, des, n.alts, i.cov, n.par)
+  w.d.errors <- d.errors * weights
+  # DB-error. 
+  db.error <- mean(w.d.errors, na.rm = TRUE)
+  return(db.error)
+}
+
 
 #' Fisher Information of design
 #'
-#' Returns the Fisher Information of a design, given parameter values
+#' Returns the Fisher Information of a design, given parameter values.
+#' @inheritParams Modfed
 #' @param par A vector containing the parameter values
-#' @param des A design matrix in which each row is a profile.
-#' @param n.alts Numeric value indicating the number of alternatives per choice set.
 #' @return Fisher Information matrix.
 InfoDes <- function(par, des, n.alts) {
   group <- rep(seq(1, nrow(des) / n.alts, 1), each = n.alts)
