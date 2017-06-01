@@ -25,12 +25,13 @@
 #' Profiles(lvls = at.lvls, coding = c.type, c.lvls = con.lvls)
 #' @export
 Profiles <- function(lvls, coding, c.lvls = NULL) {
-  if (!is.null(c.lvls)) { 
-    c.lvls <- as.list(c.lvls)
-  }
   # continuous attributes 
   contins <-  which(coding == "C")
   n.contins <-  length(contins)
+  # error continuous levels 
+  if (!is.null(c.lvls) && !is.list(c.lvls)) { 
+    stop('c.lvls should be a list.')
+  }
   # error correct coding types
   codings.types <- c("E", "D", "C")
   if (!all(coding %in% codings.types) || (length(coding) != length(lvls))) {
@@ -87,9 +88,9 @@ Profiles <- function(lvls, coding, c.lvls = NULL) {
 #' @param n.alts Numeric value indicating the number of alternatives per choice set.
 #' @return A design matrix
 #' @export
-Rdes <- function(lvls, n.sets, n.alts, coding) {
+Rdes <- function(lvls, n.sets, n.alts, coding, c.lvls = NULL) {
   #generate all possible profiles
-  profs <- Profiles(lvls = lvls, coding = coding)
+  profs <- Profiles(lvls = lvls, coding = coding, c.lvls = c.lvls)
   #draw random profiles 
   r <- round(runif((n.alts*n.sets), 1, nrow(profs)))
   des <- as.matrix(profs[r, ])
@@ -226,24 +227,6 @@ lattice_mvn <- function (mean, cvar, m, b=2) {
     X[i, ] <- t(r)
   }
   return(X)
-}
-
-
-#' All choice sets
-#'
-#' Generates all possible combinations of choice sets.
-#' @param cand.set A numeric matrix in which each row is a possible profile.
-#' @param n.alts Numeric value indicating the number of alternatives per choice set.
-#' @return Matrix with all possible combinations of profiles (choice sets).
-#' @export
-FullFact <- function(cand.set, n.alts) {
-  fun <- function(x) {
-    return(1:x)
-  }
-  s1 <- as.list(rep(nrow(cand.set), n.alts))
-  s2 <- lapply(X = s1, fun)
-  fc <- as.data.frame(expand.grid(s2))
-  return(fc)
 }
 
 
