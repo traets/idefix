@@ -4,7 +4,7 @@
 \alias{Present}
 \title{Transform coded choice set to Attribute level choice set}
 \usage{
-Present(set, lvl.names, coding, intercept = FALSE)
+Present(set, lvl.names, coding)
 }
 \arguments{
 \item{set}{A numeric matrix which represents a choice set. Each row is a profile.}
