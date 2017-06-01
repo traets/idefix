@@ -4,18 +4,20 @@
 \alias{Rdes}
 \title{Random design generation}
 \usage{
-Rdes(lvls, n.sets, n.alts, coding, intercept = FALSE)
+Rdes(lvls, n.sets, n.alts, coding, c.lvls = NULL)
 }
 \arguments{
-\item{lvls}{A vector which contains for each attribute, the number of levels.}
+\item{lvls}{A vector which contains for each attribute, the number of
+levels.}
 
 \item{n.sets}{Numeric value indicating the number of choide sets.}
 
 \item{n.alts}{Numeric value indicating the number of alternatives per choice set.}
 
-\item{coding}{Type op coding that need to be used. See \code{\link[stats]{model.matrix}}}
+\item{coding}{Type op coding that needs to be used for each attribute.}
 
-\item{intercept}{Logical argument indicating whether an intercept should be included. The default is False.}
+\item{c.lvls}{A list containing vectors with attributelevels for continuous
+attributes. The default is \code{NULL}}
 }
 \value{
 A design matrix
