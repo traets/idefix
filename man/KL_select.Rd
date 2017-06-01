@@ -11,7 +11,8 @@ KL_select(lvls, n.sets, n.alts, par.samples, weights)
 
 \item{n.sets}{Numeric value indicating the number of choice sets.}
 
-\item{n.alts}{Numeric value indicating the number of alternatives per choice set.}
+\item{n.alts}{Numeric value indicating the number of alternatives per choice
+set.}
 
 \item{par.samples}{A matrix in which each row is a sample.}
 
@@ -21,5 +22,6 @@ KL_select(lvls, n.sets, n.alts, par.samples, weights)
 Choice set that maximizes the expected KL divergence.
 }
 \description{
-Provides the set that maximizes the Kullback-Leibler divergence, given parameter values.
+Provides the set that maximizes the Kullback-Leibler divergence, given
+parameter values.
 }
