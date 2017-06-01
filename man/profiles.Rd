@@ -4,28 +4,35 @@
 \alias{Profiles}
 \title{Profiles generation.}
 \usage{
-Profiles(lvls, coding, intercept = FALSE)
+Profiles(lvls, coding, c.lvls = NULL)
 }
 \arguments{
-\item{lvls}{A vector which contains for each attribute, the number of levels.}
+\item{lvls}{A vector which contains for each attribute, the number of
+levels.}
 
-\item{coding}{Type op coding that need to be used. See \code{\link[stats]{model.matrix}}}
+\item{coding}{Type op coding that needs to be used for each attribute.}
 
-\item{intercept}{Logical argument indicating whether an intercept should be included. The default is False.}
+\item{c.lvls}{A list containing vectors with attributelevels for continuous
+attributes. The default is \code{NULL}}
 }
 \value{
 A matrix which contains all possible profiles.
 }
 \description{
-Function to generate all possible combinations of attribute levels (i.e. all possible profiles).
+Function to generate all possible combinations of attribute levels (i.e. all
+possible profiles).
 }
 \examples{
-# numeric vector specifing the number of levels for each attribute.
-attribute.levels <- c(3,4,2) #3 attributes with respectively 3, 4 and 2 levels. 
-coding.type <- "contr.sum" #effects coding will be applied.
-#generate all coded profiles.
-Profiles(lvls = attribute.levels, coding = coding.type)
+# Without continuous attributes
+at.lvls <- c(3,4,2) # 3 Attributes with respectively 3, 4 and 2 levels. 
+c.type <- rep("E", length(at.lvls)) # All Effect coded.
+Profiles(lvls = at.lvls, coding = c.type) # Generate profiles.
 
-# without coding
-Profiles(lvls = c(4,4,3), coding = "none") 
+# With continuous attributes 
+at.lvls <- c(3,4,2) # 3 attributes with respectively 3, 4 and 2 levels. 
+# First attribute is dummy coded, second and third are continuous. 
+c.type <- c("D", "C", "C") 
+# Levels for continuous attributes, in the same order. 
+con.lvls <- list(c(4,6,8,10), c(7,9))
+Profiles(lvls = at.lvls, coding = c.type, c.lvls = con.lvls)
 }
