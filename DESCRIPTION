@@ -11,4 +11,5 @@ Imports:
     dplyr,
     maxLik
 RoxygenNote: 6.0.1
+RdMacros: Rdpack
 URL: https://github.com/traets/mnldes
