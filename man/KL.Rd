@@ -2,20 +2,18 @@
 % Please edit documentation in R/efficiency_criterions.R
 \name{KL}
 \alias{KL}
-\title{KL information}
+\title{Kullback-Leibler divergence for a set}
 \usage{
 KL(set, par.samples, weights)
 }
 \arguments{
-\item{set}{Numeric matrix in which each row is a profile.}
+\item{set}{A choice set in which each row is a profile.}
 
-\item{par.samples}{A matrix in which each row is a sample.}
+\item{par.samples}{A matrix in which each row is a sample from the
+multivariate prior parameter distribution.}
 
-\item{weights}{A vector containing the weights of the samples.}
-}
-\value{
-The Kullback-Leibler divergence.
+\item{weights}{A vector containing the weights of the samples. Default is \code{NULL}}
 }
 \description{
-Calculates the Kullback-Leibler divergence for a choice set, given parameter values.
+Calculates the KL-divergence for a choice set given parameter values.
 }
