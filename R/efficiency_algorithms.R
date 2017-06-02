@@ -90,8 +90,8 @@ Modfed <- function(cand.set, n.sets, n.alts,  alt.cte, par.samples, start.des = 
   }
   # Create alternative specific design.
   cte.des <- Altspec(alt.cte = alt.cte, n.sets = n.sets)
-  # error handling
-  if (ncol(cand.set)+ ncol(cte.des) != ncol(par.samples)) {
+  # Error handling cte.des
+  if (ncol(cand.set) + ncol(cte.des) != ncol(par.samples)) {
     stop("dimension of par.samples does not match the dimension of alt.cte + cand.set.")
   }
   # Random start design.
@@ -206,7 +206,7 @@ Modfed <- function(cand.set, n.sets, n.alts,  alt.cte, par.samples, start.des = 
 #' \item{set}{A matrix representing a DB efficient choice set.}
 #' \item{db.error}{A numeric value indicating the DB-error of the whole design.}
 #' @examples 
-#' # DB efficient choice set given design and parameter samples. 
+#' # DB efficient choice set, given a design and parameter samples. 
 #' # Candidate profiles 
 #' cs <- Profiles(lvls = c(3, 3), coding = c("E", "E"))
 #' m <- c(0.3, 0.2, -0.3, -0.2) # Prior mean (total = 5 parameters).
@@ -216,19 +216,21 @@ Modfed <- function(cand.set, n.sets, n.alts,  alt.cte, par.samples, start.des = 
 #' # Initial design.
 #' des <- Modfed(cand.set = cs, n.sets = 6, n.alts = 2, alt.cte = ac, par.samples = ps)$design
 #' # Efficient choice set to add. 
-#' SeqDB(des = des, cand.set = cs, n.alts = 2, par.samples = ps, prior.covar = pc, reduce = TRUE)
+#' SeqDB(des = des, cand.set = cs, n.alts = 2, par.samples = ps, prior.covar = pc)
 #' 
-#' # DB efficient choice set given design and parameter samples. 
+#' # DB efficient choice set, given a design and parameter samples. 
 #' # Candidate profiles 
 #' cs <- Profiles(lvls = c(3, 3), coding = c("C", "E"), c.lvls = list(c(5,3,1)))
-#' m <- c(0.7, 0.3, -0.3, -0.2) # Prior mean (total = 5 parameters).
+#' m <- c(0.7, 0.3, -0.3, -0.2) # Prior mean (4 parameters).
 #' pc <- diag(length(m)) # Prior variance
 #' ps <- MASS::mvrnorm(n = 10, mu = m, Sigma = pc) # 10 Samples.
 #' ac <- c(1, 0) # Alternative specific constant. 
 #' # Initial design.
 #' des <- Modfed(cand.set = cs, n.sets = 6, n.alts = 2, alt.cte = ac, par.samples = ps)$design
 #' # Efficient choice set to add. 
-#' SeqDB(des = des, cand.set = cs, n.alts = 2, par.samples = ps, prior.covar = pc, reduce = TRUE)
+#' SeqDB(des = des, cand.set = cs, n.alts = 2, par.samples = ps, prior.covar = pc)
+#' @references
+#' \insertRef{ju}{mnldes} 
 #' @export
 SeqDB <- function(des, cand.set, n.alts, par.samples, prior.covar, reduce = TRUE, weights = NULL) {
   # Initialize.
@@ -260,7 +262,7 @@ SeqDB <- function(des, cand.set, n.alts, par.samples, prior.covar, reduce = TRUE
   i.cov <- solve(prior.covar)
   d.start <- apply(par.samples, 1, Derr, des = des,  n.alts = n.alts)
   db.start <- mean(d.start, na.rm = TRUE)
-  full.comb <- combinations(n = nrow(cand.set), r = n.alts, repeats.allowed = !reduce)
+  full.comb <- gtools::combinations(n = nrow(cand.set), r = n.alts, repeats.allowed = !reduce)
   n.par <- ncol(par.samples)
   # For each potential set, select best. 
   db.errors <- apply(full.comb, 1, DBerrS, cand.set, par.samples, des, n.alts, cte.des, i.cov, n.par, weights)
@@ -276,48 +278,71 @@ SeqDB <- function(des, cand.set, n.alts, par.samples, prior.covar, reduce = TRUE
 }
 
 
-#' KL set selecting
+#' Sequential Kullback-Leibler based algorithm for the MNL model. 
 #' 
-#' Provides the set that maximizes the Kullback-Leibler divergence, given
-#' parameter values.
-#' @param lvls A vector which contains for each attribute, the number of levels.
-#' @param n.sets Numeric value indicating the number of choice sets.
-#' @param n.alts Numeric value indicating the number of alternatives per choice
-#'   set.
-#' @param par.samples A matrix in which each row is a sample.
-#' @param weights A vector containing the weights of the samples.
+#' Selects the choice set that maximizes the Kullback-Leibler divergence
+#' between prior parameter values and the expected posterior, assuming an MNL
+#' model.
+#' 
+#' The algorithm selects the choice set that maximizes the Kullback-Leibler divergence between
+#' prior and expected posterior. Intuïtively this can be seen as selecting the
+#' choice set that maximizes the expected information gain.
+#' @inheritParams Modfed
+#' @param weights A vector containing the weights of the samples. Default is \code{NULL}
+#' @param reduce Logical value indicating whether the candidate set should be reduced or not. 
 #' @return Choice set that maximizes the expected KL divergence.
+#' @references
+#' \insertRef{crabbe}{mnldes} 
+#' @examples 
+#' # KL efficient choice set, given parameter samples. 
+#' # Candidate profiles 
+#' cs <- Profiles(lvls = c(3, 3), coding = c("E", "E"))
+#' m <- c(0.3, 0.2, -0.3, -0.2) # Prior mean (4 parameters).
+#' pc <- diag(length(m)) # Prior variance
+#' ps <- MASS::mvrnorm(n = 10, mu = m, Sigma = pc) # 10 Samples.
+#' ac <- c(0, 0) # No alternative specific constants. 
+#' # Efficient choice set to add. 
+#' SeqKL(cand.set = cs, n.alts = 2, alt.cte = ac, par.samples = ps, weights = NULL)
+#' 
+#' # KL efficient choice set, given parameter samples. 
+#' # Candidate profiles 
+#' cs <- Profiles(lvls = c(3, 3), coding = c("C", "E"), c.lvls = list(c(5,3,1)))
+#' m <- c(0.7, 0.3, -0.3, -0.2) # Prior mean (4 parameters).
+#' pc <- diag(length(m)) # Prior variance
+#' ps <- MASS::mvrnorm(n = 10, mu = m, Sigma = pc) # 10 Samples.
+#' ac <- c(1, 0) # Alternative specific constant. 
+#' # Efficient choice set to add. 
+#' SeqKL(cand.set = cs, n.alts = 2, alt.cte = ac, par.samples = ps, weights = NULL)
 #' @export
-KL_select <- function(lvls, n.sets, n.alts, par.samples, weights){
-
-  #All choice sets, without same profile twice
-  fp<-profiles(lvls)
-  fcomb<-full_sets(cand = fp, n.alts = n.alts)
-  rows<-apply(fcomb[, 1:ncol(fcomb)], 1, function(i) length(unique(i)) > ncol(fcomb)-1)
-  fcomb<-fcomb[rows, ]
-
-  #start value
-  kl_start <- 0
-  best_set<-0
-
-  for ( s in 1:nrow(fcomb)){
-
-    #take set
-    set<-as.matrix(fp[as.numeric(fcomb[s, ]), ])
-
-    #calculate for all sets the KLinfo.
-    klinfo<-KL(set, par.samples, weights)
-
-    #if better --> keep
-    if (klinfo > kl_start){
-      best_set<- set
-      kl_start<-klinfo
-    }
-    print(klinfo)
+SeqKL <- function(cand.set, n.alts, alt.cte, par.samples, weights, reduce = TRUE) {
+  # Handling par.samples.
+  if (!(is.matrix(par.samples))) {
+    par.samples <- matrix(par.samples, nrow = 1)
   }
-  return(list(best_set, kl_start))
+  # Error alternative specific constants. 
+  if (length(alt.cte) != n.alts) {
+    stop("n.alts does not match the alt.cte vector")
+  }
+  # Create alternative specific design.
+  cte.des <- Altspec(alt.cte = alt.cte, n.sets = 1)
+  # Error handling cte.des
+  if (ncol(cand.set) + ncol(cte.des) != ncol(par.samples)) {
+    stop("dimension of par.samples does not match the dimension of alt.cte + cand.set.")
+  }
+  # All choice sets.
+  full.comb <- gtools::combinations(n = nrow(cand.set), r = n.alts, repeats.allowed = !reduce)
+  # If no weights, equal weights.
+  if (is.null(weights)) {
+    weights <- rep(1, nrow(par.samples))
+  }
+  # Calculate KL for each set. 
+  kl.infos <- apply(full.comb, 1, KLs, par.samples, cte.des, cand.set, weights)
+  # Select maximum.
+  comb.nr <- as.numeric(full.comb[which.max(kl.infos), ])
+  set <- cand.set[comb.nr, ]
+  # return.
+  return(list(set = set, kl = max(kl.infos)))
 }
-
 
 
 
