@@ -56,7 +56,7 @@ Profiles <- function(lvls, coding, c.lvls = NULL) {
     }
   }
   # change into correct coding. 
-  coding <- recode(coding, D = "contr.treatment", E = "contr.sum")
+  coding <- dplyr::recode(coding, D = "contr.treatment", E = "contr.sum")
   # create all combinations of attribute levels
   levels.list <- lapply(X = as.list(lvls), function(x) (1:x))
   # replace continuous
