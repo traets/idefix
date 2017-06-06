@@ -4,7 +4,7 @@
 #' 
 #' Function to generate all possible combinations of attribute levels (i.e. all
 #' possible profiles).
-#' @param lvls  A vector which contains for each attribute, the number of
+#' @param lvls  A numeric vector which contains for each attribute, the number of
 #'   levels.
 #' @param coding Type op coding that needs to be used for each attribute.
 #' @param c.lvls A list containing vectors with attributelevels for continuous
@@ -25,58 +25,58 @@
 #' Profiles(lvls = at.lvls, coding = c.type, c.lvls = con.lvls)
 #' @export
 Profiles <- function(lvls, coding, c.lvls = NULL) {
-  # continuous attributes 
+  # Continuous attributes. 
   contins <-  which(coding == "C")
   n.contins <-  length(contins)
   # error continuous levels 
   if (!is.null(c.lvls) && !is.list(c.lvls)) { 
     stop('c.lvls should be a list.')
   }
-  # error correct coding types
+  # Error correct coding types.
   codings.types <- c("E", "D", "C")
   if (!all(coding %in% codings.types) || (length(coding) != length(lvls))) {
     stop("coding argument is incorrect.")
   } 
-  # error lvls vector
+  # Error lvls vector.
   if (length(lvls) < 2 || (!(is.numeric(lvls)))){
     stop("lvls argument is incorrect.")
   }
-  # error continuous specified and NULL
+  # Error continuous specified and NULL.
   if (length(contins) > 0 && is.null(c.lvls)) {
     stop("there are no levels provided for the continuous attributes")
   }
-  # error continuous levels specification 
+  # Error continuous levels specification. 
   if (!is.null(c.lvls)) {
     if (length(c.lvls) != n.contins) {
       stop("length of c.lvls does not match number of specified continuous attributes in coding")
     }
-    # error c.lvls same number of levels 
-    if (!all.equal(lvls[contins], lengths(c.lvls))) {
+    # Error c.lvls same number of levels. 
+    if (!isTRUE(all.equal(lvls[contins], lengths(c.lvls)))) {
       stop("the number of continuous attribute levels provided in c.lvls does not match the expected based on lvls")
     }
   }
-  # change into correct coding. 
+  # Change into correct coding. 
   coding <- dplyr::recode(coding, D = "contr.treatment", E = "contr.sum")
-  # create all combinations of attribute levels
+  # Create all combinations of attribute levels.
   levels.list <- lapply(X = as.list(lvls), function(x) (1:x))
-  # replace continuous
+  # Replace continuous.
   levels.list[contins] <- c.lvls
-  # create grid 
+  # Create grid. 
   dgrid <- as.data.frame(expand.grid(levels.list))
-  # apply coding to non continuous 
+  # Apply coding to non continuous. 
   cn <- names(dgrid)
   if (!is.null(c.lvls)) {
     cn <- cn[-contins]
   }
-  # create factors
+  # Create factors.
   dgrid[, cn] <- apply(dgrid[, cn, drop = FALSE], 2, factor)
   # coding 
   con <- as.list(setNames(coding, names(dgrid)))
   con[which(con == "C")] <- NULL
   cgrid <- as.data.frame(model.matrix(~., dgrid, contrasts = con))
-  # delete intercept
+  # Delete intercept.
   cgrid <- cgrid[, -1]
-  # return profiles
+  # Return profiles.
   return(as.matrix(cgrid))
 }
 
@@ -184,12 +184,11 @@ Lat <- function(K, b, m) {
 #' @param m Numeric value. Number of samples = b^m.
 #' @param b Numeric value indicating the base (default = 2).
 #' @return Matrix of lattice points drawn from a multivariate t-distribution. Each row is a sample.
-#' @export
-lattice_mvt <- function (mean, cvar, df, m, b=2) {
+Lattice_mvt <- function (mean, cvar, df, m, b=2) {
   # Dimension
   dim <- length(mean)
   # Generate lattice from standard normal
-  lattice <- lattice(K = dim, b, m)
+  lattice <- Lat(K = dim, b, m)
   mean <- t(mean)
   X <- matrix(NA, nrow(lattice), dim)
   A <- chol(cvar)
@@ -214,8 +213,7 @@ lattice_mvt <- function (mean, cvar, df, m, b=2) {
 #' @param m Numeric value. Number of samples = b^m.
 #' @param b Numeric value indicating the base (default = 2).
 #' @return Matrix of lattice points drawn from a multivariate normal distribution. Each row is a sample.
-#' @export
-lattice_mvn <- function (mean, cvar, m, b=2) {
+Lattice_mvn <- function(mean, cvar, m, b=2) {
   dim <- length(mean)
   l <- Lat(K = dim, b, m)
   mean <- t(mean)
