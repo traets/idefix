@@ -7,7 +7,7 @@
 Rdes(lvls, n.sets, n.alts, coding, c.lvls = NULL)
 }
 \arguments{
-\item{lvls}{A vector which contains for each attribute, the number of
+\item{lvls}{A numeric vector which contains for each attribute, the number of
 levels.}
 
 \item{n.sets}{Numeric value indicating the number of choide sets.}
