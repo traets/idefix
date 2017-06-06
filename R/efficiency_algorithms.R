@@ -288,9 +288,12 @@ SeqDB <- function(des, cand.set, n.alts, par.samples, prior.covar, reduce = TRUE
 #' prior parameter values and the expected posterior, assuming an MNL model.
 #' 
 #' The algorithm selects the choice set that maximizes the Kullback-Leibler
-#' divergence between prior and expected posterior. Intuïtively this can be seen
-#' as selecting the choice set that maximizes the expected information gain.
+#' divergence between prior and expected posterior. Otherwisely framed the
+#' algorithm selects the choice set that maximizes the expected information
+#' gain.
 #' @inheritParams SeqDB
+#' @param alt.cte A binary vector indicating for each alternative if an alternative 
+#'   specific constant is desired.
 #' @param reduce Logical value indicating whether the candidate set should be
 #'   reduced or not.
 #' @return Choice set that maximizes the expected KL divergence.
