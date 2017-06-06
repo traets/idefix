@@ -1,5 +1,85 @@
 
 
+#' Importance sampling MNL
+#'
+#' This function samples from the posterior distribution using importance
+#' sampling, assuming normal prior distributions and a MNL likelihood.
+#' @inheritParams SeqDB
+#' @param prior.mean Numeric vector indicating the mean of the multivariate normal distribution (prior).
+#' @param y A binary response vector. \code{\link{RespondMNL}} can be used for this. 
+#' @param m Numeric value. Number of samples = \code{base^m}.
+#' @param b Numeric value indicating the base. The default = 2.
+#' @return 
+#' \item{samples}{Numeric vector with the (unweigthted) samples from the posterior distribution.}
+#' \item{weights}{Numeric vector with the associated weights of the samples.}
+#' \item{max}{Numeric vector indicating the estimated mode of the posterior distribution.} 
+#' \item{covar}{Matrix representing the estimated variance covariance matrix.}
+#' @examples 
+#' # Importance sampling MNL 
+#' pm <- c(0.8, 0.3, 0.2, -0.3, -0.2) # Prior mean (4 parameters).
+#' pc <- diag(length(pm)) # Prior variance
+#' cs <- Profiles(lvls = c(3, 3), coding = c("E", "E"))
+#' ps <- MASS::mvrnorm(n = 10, mu = pm, Sigma = pc) # 10 Samples.
+#' # Efficient design. 
+#' design <- Modfed(cand.set = cs, n.sets = 8, n.alts = 2, alt.cte = c(1,0), par.samples = ps)$design
+#' # Respons
+#' resp <- RespondMNL(par = c(0.7, 0.6, 0.5, -0.5, -0.7), des = design, n.alts = 2)
+#' #parameters samples from posterior
+#' ImpsampMNL(prior.mean =  pm, prior.covar = pc, des = design, n.alts = 2, y = resp, m = 6)
+#'
+#' # Importance sampling MNL
+#' pm <- c(0.3, 0.2, -0.3, -0.2) # Prior mean (4 parameters).
+#' pc <- diag(length(pm)) # Prior variance
+#' cs <- Profiles(lvls = c(3, 3, 2), coding = c("D", "C", "D"), c.lvls = list(c(2,4,6)))
+#' ac <- c(0, 0) # No alternative specific constants. 
+#' ps <- MASS::mvrnorm(n = 10, mu = pm, Sigma = pc) # 10 Samples.
+#' # Efficient design. 
+#' design <- Modfed(cand.set = cs, n.sets = 8, n.alts = 2, alt.cte = c(0,0), par.samples = ps)$design
+#' # Respons
+#' resp <- RespondMNL(par = c(0.6, 0.5, -0.5, -0.7), des = design, n.alts = 2)
+#' # Parameters samples from posterior.
+#' ImpsampMNL(prior.mean =  pm, prior.covar = pc, des = design, n.alts = 2, y = resp, m = 6)
+#' @export
+ImpsampMNL <- function(prior.mean, prior.covar, des, n.alts, y, m, b = 2) {
+  # Error handling.
+  if (length(prior.mean) != ncol(prior.covar)) {
+    stop("different number of parameters in prior mean and prior covarance matrix.")
+  }
+  if (nrow(des) != length(y)) {
+    stop("response vector length differs from the expected based on design")
+  }
+  if(det(prior.covar) == 0) {
+    stop("prior covariance matrix is not invertible")
+  }
+  # Prior cte.
+  kPrior <- (2 * pi)^(-length(prior.mean) / 2) * (det(prior.covar))^(-0.5)
+  # Estimate mean importance distribution by finding maximum logposterior.
+  maxest <- maxLik::maxNR(LogPost, start = prior.mean, prior.mean = prior.mean, prior.covar = prior.covar,
+                          des = des, y = y, n.alts = n.alts)$estimate
+  # Draws from importance density.
+  hes <- Hessian(par = maxest, des = des, covar = prior.covar, n.alts = n.alts)
+  g.covar <- -solve(hes)
+  g.draws <- Lattice_mvt(mean = maxest, cvar = g.covar, df = length(maxest), m = m)
+  # Vectors.
+  prior <- likh <- dens.g <- weights <- numeric(nrow(g.draws))
+  # For every sample calculate prior density, likelihood and importance density.
+  spvc <- solve(prior.covar)
+  for (r in 1:nrow(g.draws)) {
+    # Prior.
+    prior[r] <- kPrior * exp(-0.5 * (g.draws[r, ] - prior.mean) %*% spvc %*% as.matrix(g.draws[r, ] - prior.mean))
+    # Likelihood.
+    likh[r] <- Lik(par = g.draws[r, ], des = des, y = y, n.alts = n.alts)
+    # Density of g.
+    dens.g[r] <- Gdens(par = g.draws[r, ], g.mean = maxest, g.covar = g.covar)
+  }
+  # Compute the weights of samples.
+  w <- likh * prior / dens.g   # posterior / importance density  
+  w <- w / sum(w)
+  # Return.
+  return(list(samples = g.draws, weights = w, max = maxest, covar = g.covar))
+}
+
+
 #' log Posterior
 #'
 #' Calculates the logposterior with a normal prior density
@@ -85,59 +165,6 @@ Gdens <- function(par, g.mean, g.covar) {
   iMVSTd <- 1 / (det(g.covar)^(0.5)) * (1 + ((1 / df) * differ))^(-(df + length(par)) / 2)
 }
 
-
-#' Importance sampling
-#'
-#' This functions samples from an imortance density (multivariate t-distribution),
-#' and gives weightes to the samples according to the posterior distribution. The prior is
-#' a normal distribution.
-#' @param prior.mean Numeric vector which is the mean of the multivariate normal distribution (prior).
-#' @param prior.covar A matrix, the covariance matrix of the multivariate normal distribution (prior).
-#' @param des A design matrix in which each row is a profile.
-#' @param n.alts Numeric value indicating the number of alternatives per choice set.
-#' @param y A binary response vector.
-#' @param m Numeric value. Number of samples = base^m.
-#' @param b Numeric value indicating the base (default = 2).
-#' @return A list containing samples, their associated weights, the maximum
-#'   likelihood estimates and the estimated covariance matrix.
-#' @export
-ImpSamp <- function(prior.mean, prior.covar, des,  n.alts, y, m, b=2, ...) {
-  #error handling
-  if (length(prior.mean != ncol(prior.covar))) {
-    stop("Different number of parameters in prior mean and prior covarance matrix.")
-  }
-  if (nrow(des) != length(y)) {
-    stop("Response vector length differs from the expected based on design")
-  }
-  if(det(prior.covar) == 0) {
-    stop("prior covariance matrix is not invertible")
-  }
-  #prior cte
-  kPrior <- (2 * pi)^(-length(prior.mean) / 2) * (det(prior.covar))^(-0.5)
-  #estimate importance distributions (g) mean by finding maximum logposterior
-  maxest <- maxLik::maxNR(logPost, start = prior.mean, prior.mean = prior.mean, prior.covar = prior.covar,
-                          des = des, y = y, n.alts = n.alts)$estimate
-  #draws from importance density
-  H <- hessian(par = maxest, des = des, covar = prior.covar, n.alts = n.alts)
-  g.covar <- -solve(H)
-  g.draws <- lattice_mvt(mean = maxest, cvar = g.covar, df = length(maxest), m = m, ...)
-  #vectors
-  prior <- LK <- dens.g <- weights <- numeric(nrow(g.draws))
-  # for every sample calculate prior density, likelihood and importance density 
-  for (r in 1:nrow(g.draws)) {
-    #prior
-    prior[r] <- kPrior * exp(-0.5 * (g.draws[r, ] - prior.mean) %*% solve(prior.covar) %*% as.matrix(g.draws[r, ] - prior.mean))
-    #likelihood
-    LK[r] <- Lik(par = g.draws[r, ], des = des, y = y, n.alts = n.alts)
-    #density of g
-    dens.g[r]<-Gdens(par = g.draws[r, ], g.mean = maxest, g.covar = g.covar)
-  }
-  #compute the weights of samples
-  w <- LK * prior / dens.g   # posterior / importance density  
-  w <- w / sum(w)
-  #return
-  return(list(g.draws, w, maxest, g.covar))
-}
 
 
 
