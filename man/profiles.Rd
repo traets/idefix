@@ -7,7 +7,7 @@
 Profiles(lvls, coding, c.lvls = NULL)
 }
 \arguments{
-\item{lvls}{A vector which contains for each attribute, the number of
+\item{lvls}{A numeric vector which contains for each attribute, the number of
 levels.}
 
 \item{coding}{Type op coding that needs to be used for each attribute.}
