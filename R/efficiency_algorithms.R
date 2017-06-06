@@ -4,7 +4,7 @@
 #' 
 #' The algorithm swipes every profile of an initial design with candidate
 #' profiles. By doing this it tries to minimize the D(B)-error, assuming
-#' a multinomial logit model. See reference for more information.  
+#' a multinomial logit model.  
 #' 
 #' The algorithm stops when an iteration occured without replacing a profile or 
 #' when \code{max.iter} is reached. An iteration is a loop through all profiles 
@@ -44,7 +44,7 @@
 #' @param max.iter A numeric value indicating the maximum number allowed 
 #'   iterations.
 #' @return 
-#' \item{design}{A matrix wich represents an efficient design.}
+#' \item{design}{A numeric matrix wich represents an efficient design.}
 #' \item{error}{Numeric value indicating the D(B)-error of the design.}
 #' \item{inf.error}{Numeric value indicating the percentage of
 #'  samples for which the D-error was \code{Inf}.}
@@ -65,6 +65,8 @@
 #' v <- diag(length(m)) # Prior variance. 
 #' ps <- MASS::mvrnorm(n = 10, mu = m, Sigma = v) # 10 Samples.
 #' Modfed(cand.set = cs, n.sets = 8, n.alts = 2, alt.cte = c(1,0), par.samples = ps)
+#' @references
+#' \insertRef{federov}{mnldes} 
 #' @export
 Modfed <- function(cand.set, n.sets, n.alts,  alt.cte, par.samples, start.des = NULL, max.iter = Inf) {
   # Handling par.samples.
@@ -198,10 +200,12 @@ Modfed <- function(cand.set, n.sets, n.alts,  alt.cte, par.samples, start.des = 
 #' is for example the case when parameter values are updated using
 #' \code{\link{ImpSamp}}.
 #' @inheritParams Modfed
+#' @param par.samples A matrix in which each row is a sample from the 
+#'   multivariate parameter distribution. See also \code{\link{ImpsamplingMNL}}.
 #' @param des A design matrix in which each row is a profile. Can be generated with \code{\link{Modfed}}
 #' @param prior.covar Covariance matrix of the prior distribution.
 #' @param reduce Logical value indicating whether the candidate set should be reduced or not. 
-#' @param weights A vector containing the weights of the samples. Default is \code{NULL}
+#' @param weights A vector containing the weights of the samples. Default is \code{NULL}, See also \code{\link{ImpsamplingMNL}}.
 #' @return 
 #' \item{set}{A matrix representing a DB efficient choice set.}
 #' \item{db.error}{A numeric value indicating the DB-error of the whole design.}
@@ -278,18 +282,17 @@ SeqDB <- function(des, cand.set, n.alts, par.samples, prior.covar, reduce = TRUE
 }
 
 
-#' Sequential Kullback-Leibler based algorithm for the MNL model. 
+#' Sequential Kullback-Leibler based algorithm for the MNL model.
 #' 
-#' Selects the choice set that maximizes the Kullback-Leibler divergence
-#' between prior parameter values and the expected posterior, assuming an MNL
-#' model.
+#' Selects the choice set that maximizes the Kullback-Leibler divergence between
+#' prior parameter values and the expected posterior, assuming an MNL model.
 #' 
-#' The algorithm selects the choice set that maximizes the Kullback-Leibler divergence between
-#' prior and expected posterior. Intuïtively this can be seen as selecting the
-#' choice set that maximizes the expected information gain.
-#' @inheritParams Modfed
-#' @param weights A vector containing the weights of the samples. Default is \code{NULL}
-#' @param reduce Logical value indicating whether the candidate set should be reduced or not. 
+#' The algorithm selects the choice set that maximizes the Kullback-Leibler
+#' divergence between prior and expected posterior. Intuïtively this can be seen
+#' as selecting the choice set that maximizes the expected information gain.
+#' @inheritParams SeqDB
+#' @param reduce Logical value indicating whether the candidate set should be
+#'   reduced or not.
 #' @return Choice set that maximizes the expected KL divergence.
 #' @references
 #' \insertRef{crabbe}{mnldes} 
