@@ -13,7 +13,7 @@
 #' @param bin Logical value indicating whether the reponse matrix contains binary data (TRUE) or not (FALSE).
 #' @return The data ready to be used by the specified package.
 #' @export
-datatrans<-function(pkg, des, Y, n_alts, n_sets, n_resp, n_beta, bin){
+Datatrans<-function(pkg, des, Y, n_alts, n_sets, n_resp, n_beta, bin){
 
 
   #transform data if binary
@@ -183,31 +183,41 @@ datatrans<-function(pkg, des, Y, n_alts, n_sets, n_resp, n_beta, bin){
 
 #' Response generation
 #'
-#' Function to generate responses given parameter values and a design matrix according to MNL model.
-#' @param par Vector containing parameter values.
-#' @param set A numeric matrix which represents a choice set. Each row is a profile.
-#' @param bin Indicates whether the returned value should be a binary vector or a discrete value which denotes the chosen alternative.
-#' @return Binary response vector or discrete value indicating the choosing alternative.
+#' Function to generate responses given parameter values and a design matrix,
+#' assuming a MNL model.
+#' @param par Numeric vector containing parameter values.
+#' @inheritParams SeqDB
+#' @param bin Indicates whether the returned value should be a binary vector or
+#'   a discrete value which denotes the chosen alternative.
+#' @return Numeric vector indicating the chosen alternatives.
 #' @export
-respond<-function (par, set, n_alts, bin=TRUE){
-
-  par<-as.matrix(par)
-  d <- as.matrix(set)
-
-  #prob
-  U <- d %*% t(par)
-  expU <- exp(U)
-  p <- expU/sum(expU)
-
-  #choice
-  choice<-findInterval(x=runif(1), vec=c(0,cumsum(p)))
-
-  Y<-rep(0,length(p))
+RespondMNL <- function(par, des, n.alts, bin = TRUE) {
+  # Error par is not vector
+  if (!is.vector(par)) {
+    stop('par should be a vector.')
+  }
+  # Error n.alts 
+  if ((nrow(des) %% n.alts) != 0) {
+    stop('number of rows in des is not a multiple of n.alts.')
+  }
+  # Error par
+  if (ncol(des) != length(par)) {
+    stop("length of par vector does not match the number of parameters in the design.")
+  }
+  # Probability
+  group <- rep(seq(1, nrow(des) / n.alts, 1), each = n.alts)
+  u <- des %*% diag(par)
+  u <- .rowSums(u, m = nrow(des), n = length(par))
+  p <- exp(u) / rep(rowsum(exp(u), group), each = n.alts)
+  # Choice
+  n.sets <- nrow(des) / n.alts
+  draws <- (0:(n.sets-1)) + (runif(n.sets))
+  choice <- findInterval(x = draws, vec = c(0, cumsum(p)))
+  Y <- rep(0, length(p))
   Y[choice] <- 1
-
-  #return
+  # Return
   ifelse(bin, return(Y), return(choice))
-
 }
+
 
 
