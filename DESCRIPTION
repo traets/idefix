@@ -9,7 +9,8 @@ License: What license is it under?
 LazyData: TRUE
 Imports:
     dplyr,
-    maxLik
+    maxLik,
+    gtools
 RoxygenNote: 6.0.1
 RdMacros: Rdpack
 URL: https://github.com/traets/mnldes
