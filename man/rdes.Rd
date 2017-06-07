@@ -20,7 +20,7 @@ levels.}
 attributes. The default is \code{NULL}}
 }
 \value{
-A design matrix
+A design matrix.
 }
 \description{
 Function to generate a random design matrix.
