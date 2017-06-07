@@ -86,8 +86,7 @@ Profiles <- function(lvls, coding, c.lvls = NULL) {
 #' @inherit Profiles
 #' @param n.sets Numeric value indicating the number of choide sets.
 #' @param n.alts Numeric value indicating the number of alternatives per choice set.
-#' @return A design matrix
-#' @export
+#' @return A design matrix.
 Rdes <- function(lvls, n.sets, n.alts, coding, c.lvls = NULL) {
   #generate all possible profiles
   profs <- Profiles(lvls = lvls, coding = coding, c.lvls = c.lvls)
