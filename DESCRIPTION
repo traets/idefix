@@ -10,7 +10,10 @@ LazyData: TRUE
 Imports:
     dplyr,
     maxLik,
-    gtools
+    gtools,
+    bayesm,
+    ChoiceModelR,
+    RSGHB
 RoxygenNote: 6.0.1
 RdMacros: Rdpack
 URL: https://github.com/traets/mnldes

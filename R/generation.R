@@ -2,14 +2,22 @@
 
 #' Profiles generation.
 #' 
-#' Function to generate all possible combinations of attribute levels (i.e. all
+#' Function to generate all possible combinations of attribute levels (i.e. all 
 #' possible profiles).
-#' @param lvls  A numeric vector which contains for each attribute, the number of
-#'   levels.
+#' 
+#' Valid arguments for \code{coding} are \code{C}, \code{D} and \code{E}. When
+#' using \code{C} the attribute will be treated as continuous and no coding will
+#' be applied. All possible levels should then be specified in \code{c.lvls}. If
+#' \code{D} (dummy coding) is used \code{\link{contr.treatment}} will be applied
+#' to that attribute. For \code{E} (effect coding) \code{\link{contr.sum}} will
+#' be applied.
+#' 
+#' @param lvls  A numeric vector which contains for each attribute, the number
+#'   of levels.
 #' @param coding Type op coding that needs to be used for each attribute.
-#' @param c.lvls A list containing vectors with attributelevels for continuous
-#'   attributes. The default is \code{NULL}
-#' @return A matrix which contains all possible profiles.
+#' @param c.lvls A list containing numeric vectors with the attributelevels for
+#'   each continuous attribute. The default is \code{NULL}.
+#' @return A numeric matrix which contains all possible profiles.
 #' @examples 
 #' # Without continuous attributes
 #' at.lvls <- c(3,4,2) # 3 Attributes with respectively 3, 4 and 2 levels. 
@@ -80,25 +88,8 @@ Profiles <- function(lvls, coding, c.lvls = NULL) {
   return(as.matrix(cgrid))
 }
 
-#' Random design generation
-#'
-#' Function to generate a random design matrix.
-#' @inherit Profiles
-#' @param n.sets Numeric value indicating the number of choide sets.
-#' @param n.alts Numeric value indicating the number of alternatives per choice set.
-#' @return A design matrix.
-Rdes <- function(lvls, n.sets, n.alts, coding, c.lvls = NULL) {
-  #generate all possible profiles
-  profs <- Profiles(lvls = lvls, coding = coding, c.lvls = c.lvls)
-  #draw random profiles 
-  r <- round(runif((n.alts*n.sets), 1, nrow(profs)))
-  des <- as.matrix(profs[r, ])
-  #return design
-  return(des)
-}
 
-
-#' Create alternative specific coding.
+# Create alternative specific coding.
 Altspec <- function(alt.cte, n.sets) {
   # create matrix
   mat <- diag(length(alt.cte))
@@ -115,7 +106,7 @@ Altspec <- function(alt.cte, n.sets) {
 }
 
 
-#' Create row and column names for designs 
+# Create row and column names for designs 
 Rcnames <- function(n.sets, n.alts, n.cte, alt.cte) {
   # rownames
   r.s <- rep(1:n.sets, each = n.alts)
@@ -127,13 +118,15 @@ Rcnames <- function(n.sets, n.alts, n.cte, alt.cte) {
   return(list(r.names, cte.names))
 }
 
-#' Lattice multivariate standard normal distribution.
-#'
-#' Generates a grid of points coming from a multivariate standard normal distribution.
-#' @param K Numeric value indicating the dimensionality of the grid.
-#' @param b Numeric value indicating the base.
-#' @param m Numeric value. Number of samples=b^m.
-#' @return Matrix of lattice points drawn from a multivariate standard normal distribution. Each row is a sample.
+# Lattice multivariate standard normal distribution.
+# 
+# Generates a grid of points coming from a multivariate standard normal
+# distribution.
+# @param K Numeric value indicating the dimensionality of the grid.
+# @param b Numeric value indicating the base.
+# @param m Numeric value. Number of samples=b^m.
+# @return Matrix of lattice points drawn from a multivariate standard normal
+#   distribution. Each row is a sample.
 Lat <- function(K, b, m) {
   base <- function(num){
     a1 <- c1 <- rep(0, m)
@@ -174,15 +167,17 @@ Lat <- function(K, b, m) {
 }
 
 
-#' Lattice multivariate t-distribution.
-#'
-#' Generates a grid of points coming from a multivariate t-distribution.
-#' @param mean Numeric vector indicating the multivariate mean.
-#' @param cvar A matrix which specifies the covariance matrix.
-#' @param df Numeric value indicating the degrees of freedom for the multivariate t-distribution.
-#' @param m Numeric value. Number of samples = b^m.
-#' @param b Numeric value indicating the base (default = 2).
-#' @return Matrix of lattice points drawn from a multivariate t-distribution. Each row is a sample.
+# Lattice multivariate t-distribution.
+# 
+# Generates a grid of points coming from a multivariate t-distribution.
+# @param mean Numeric vector indicating the multivariate mean.
+# @param cvar A matrix which specifies the covariance matrix.
+# @param df Numeric value indicating the degrees of freedom for the multivariate
+#   t-distribution.
+# @param m Numeric value. Number of samples = b^m.
+# @param b Numeric value indicating the base (default = 2).
+# @return Matrix of lattice points drawn from a multivariate t-distribution.
+#   Each row is a sample.
 Lattice_mvt <- function (mean, cvar, df, m, b=2) {
   # Dimension
   dim <- length(mean)
@@ -204,14 +199,15 @@ Lattice_mvt <- function (mean, cvar, df, m, b=2) {
 }
 
 
-#' Lattice multivariate normal distribution.
-#'
-#' Generates a grid of points coming from a multivariate normal distribution.
-#' @param mean Numeric vector indicating the multivariate mean.
-#' @param cvar A matrix which specifies the covariance matrix.
-#' @param m Numeric value. Number of samples = b^m.
-#' @param b Numeric value indicating the base (default = 2).
-#' @return Matrix of lattice points drawn from a multivariate normal distribution. Each row is a sample.
+# Lattice multivariate normal distribution.
+# 
+# Generates a grid of points coming from a multivariate normal distribution.
+# @param mean Numeric vector indicating the multivariate mean.
+# @param cvar A matrix which specifies the covariance matrix.
+# @param m Numeric value. Number of samples = b^m.
+# @param b Numeric value indicating the base (default = 2).
+# @return Matrix of lattice points drawn from a multivariate normal
+#   distribution. Each row is a sample.
 Lattice_mvn <- function(mean, cvar, m, b=2) {
   dim <- length(mean)
   l <- Lat(K = dim, b, m)
@@ -225,36 +221,4 @@ Lattice_mvn <- function(mean, cvar, m, b=2) {
   }
   return(X)
 }
-
-
-#' Minimum difference choice sets
-#'
-#' Filters all possible combinations of choice sets,
-#' taking into account the minimum ammount of attributelevels that need to be different per choice set.
-#' @param candset A numeric matrix in which each row is a possible profile.
-#' @param fcomb A matrix with all possible combinations of profiles (choice sets).
-#' @return Matrix with all possible combinations of profiles, taking into account the minimum difference between profiles per choice set.
-#' @export
-mindiff <- function(candset, fcomb, lvls, mindiff) {
-  parplace <- lvls-1
-  par2 <- cumsum(parplace)
-  par1 <- c(1, par2+1)
-  par1 <- par1[-length(par1)]
-  diff <- numeric()
-  newfcomb <- numeric()
-  cand <- candset
-  for (s in 1:nrow(fcomb)) {
-    set <- cand[as.numeric(fcomb[s, ]), ]
-    for (pp in 1:length(par1)) {
-      ifelse((sum(abs(diff(set[, par1[pp]:par2[pp]], 1))) != 0), dif <- 1, dif <- 0)
-      diff <- c(diff, dif)
-    }
-    if (sum(diff) > mindiff) {
-      newfcomb <- rbind(newfcomb, fcomb[s, ])
-    }
-    diff <- numeric(0)
-  }
-  return(newfcomb)
-}
-
 

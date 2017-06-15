@@ -1,19 +1,21 @@
 
 
 #' Importance sampling MNL
-#'
-#' This function samples from the posterior distribution using importance
+#' 
+#' This function samples from the posterior distribution using importance 
 #' sampling, assuming normal prior distributions and a MNL likelihood.
 #' @inheritParams SeqDB
-#' @param prior.mean Numeric vector indicating the mean of the multivariate normal distribution (prior).
-#' @param y A binary response vector. \code{\link{RespondMNL}} can be used for this. 
+#' @param prior.mean Numeric vector indicating the mean of the multivariate
+#'   normal distribution (prior).
+#' @param y A binary response vector. \code{\link{RespondMNL}} can be used for
+#'   this.
 #' @param m Numeric value. Number of samples = \code{base^m}.
 #' @param b Numeric value indicating the base. The default = 2.
-#' @return 
-#' \item{samples}{Numeric vector with the (unweigthted) samples from the posterior distribution.}
-#' \item{weights}{Numeric vector with the associated weights of the samples.}
-#' \item{max}{Numeric vector indicating the estimated mode of the posterior distribution.} 
-#' \item{covar}{Matrix representing the estimated variance covariance matrix.}
+#' @return \item{samples}{Numeric vector with the (unweigthted) samples from the
+#' posterior distribution.} \item{weights}{Numeric vector with the associated
+#' weights of the samples.} \item{max}{Numeric vector indicating the estimated
+#' mode of the posterior distribution.} \item{covar}{Matrix representing the
+#' estimated variance covariance matrix.}
 #' @examples 
 #' # Importance sampling MNL 
 #' pm <- c(0.8, 0.3, 0.2, -0.3, -0.2) # Prior mean (4 parameters).
@@ -80,16 +82,16 @@ ImpsampMNL <- function(prior.mean, prior.covar, des, n.alts, y, m, b = 2) {
 }
 
 
-#' log Posterior
-#'
-#' Calculates the logposterior with a normal prior density
-#' @param par Numeric vector with parametervalues.
-#' @param des A design matrix in which each row is a profile.
-#' @param y A binary response vector.
-#' @param n.alts The number of alternatives in each choice set.
-#' @param prior.mean vector containing the prior mean.
-#' @param prior.covar matrix containing the prior covariance.
-#' @return the logposterior probability
+# log Posterior
+# 
+# Calculates the logposterior with a normal prior density par Numeric vector
+# with parametervalues.
+# @param des A design matrix in which each row is a profile.
+# @param y A binary response vector.
+# @param n.alts The number of alternatives in each choice set.
+# @param prior.mean vector containing the prior mean.
+# @param prior.covar matrix containing the prior covariance.
+# @return the logposterior probability
 LogPost <- function(par, prior.mean, prior.covar, des,  n.alts, y) {
   #calcultate utility alternatives
   u <- t(t(des) * par)
@@ -107,13 +109,13 @@ LogPost <- function(par, prior.mean, prior.covar, des,  n.alts, y) {
 }
 
 
-#' Hessian
-#'
-#' @param par Numeric vector with parametervalues.
-#' @param des A design matrix in which each row is a profile.
-#' @param covar The covariance matrix.
-#' @param n.alts The number of alternatives in each choice set.
-#' @return the hessian matrix
+# Hessian
+#
+# @param par Numeric vector with parametervalues.
+# @param des A design matrix in which each row is a profile.
+# @param covar The covariance matrix.
+# @param n.alts The number of alternatives in each choice set.
+# @return the hessian matrix
 Hessian <- function(par, des, covar, n.alts) {
   # utility
   des <- as.matrix(des)
@@ -129,13 +131,13 @@ Hessian <- function(par, des, covar, n.alts) {
   return(hess)
 }
 
-#' Likelihood function
-#'
-#' @param par Numeric vector with parametervalues.
-#' @param des A design matrix in which each row is a profile.
-#' @param n.alts The number of alternatives in each choice set
-#' @param y A binary response vector.
-#' @return the likelihood
+# Likelihood function
+#
+# @param par Numeric vector with parametervalues.
+# @param des A design matrix in which each row is a profile.
+# @param n.alts The number of alternatives in each choice set
+# @param y A binary response vector.
+# @return the likelihood
 Lik <- function(par, des, n.alts, y) {
   # utility
   des <- as.matrix(des)
@@ -150,12 +152,12 @@ Lik <- function(par, des, n.alts, y) {
 }
 
 
-#' Density multivariate t-distribution
-#'
-#' @param par Numeric vector with parametervalues.
-#' @param g.mean vector containing the mean of the multivariate t-distribution.
-#' @param g.covar covariance matrix of the multivariate t-distribution.
-#' @return density
+# Density multivariate t-distribution
+#
+# @param par Numeric vector with parametervalues.
+# @param g.mean vector containing the mean of the multivariate t-distribution.
+# @param g.covar covariance matrix of the multivariate t-distribution.
+# @return density
 Gdens <- function(par, g.mean, g.covar) {
   df <- length(g.mean)
   n <- length(par)

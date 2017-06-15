@@ -1,173 +1,212 @@
 
 
-#' Transform coded choice set to Attribute level choice set
-#'
-#' Transforms a coded choice set into a choice set containing the attribute levels.
-#' @param set A numeric matrix which represents a choice set. Each row is a profile.
-#' @param lvl.names A list containing the values of each level of each attribute.
-#' @param coding Type of coding used in the given set. See \code{\link[stats]{model.matrix}} 
-#' @param intercept Logical argument indicating whether an intercept is included. The default is False.
+#' Coded choice set to character choice set.
+#' 
+#' Transforms a coded choice set into a choice set containing the true attribute
+#' levels, ready for use in a survey.
+#' 
+#' In \code{lvl.names}, the number of character vectors in the list should equal
+#' the number of attributes in de choice set. The number of elements in each 
+#' character vector should equal the number of levels for that attribute.
+#' 
+#' Valid arguments for \code{coding} are \code{C}, \code{D} and \code{E}. When
+#' using \code{C} the attribute will be treated as continuous and no coding will
+#' be applied. All possible levels should then be specified in \code{c.lvls}. If
+#' \code{D} (dummy coding) is used \code{\link{contr.treatment}} will be applied
+#' to that attribute. The first attribute wil be used as reference level.  For
+#' \code{E} (effect coding) \code{\link{contr.sum}} is applied, in this case the
+#' last attributelevel is used as reference level.
+#' 
+#' @param set A numeric matrix which represents a choice set. Each row is a
+#'   profile.
+#' @param lvl.names A list containing character vectors with the values of each
+#'   level of each attribute.
+#' @param coding A character vector denoting the type of coding used for each
+#'   attribute. See also \code{\link{Profiles}}.
+#' @inheritParams Profiles
+#' @inheritParams Modfed
 #' @return A character matrix which represents the choice set.
 #' @examples 
-#' #choice set that is dummy coded
-#' choice.set <- matrix(data = c(0, 1, 1, 0, 0, 0, 1, 0, 0, 0, 0, 1), 
-#' nrow=2, byrow = T) 
-#' att.levels <- vector(mode="list", 3) #level names
-#' att.levels[[1]] <- c("$50", "$75", "$100") #levels attribute 1
-#' att.levels[[2]] <- c("2min", "15min", "30min") #levels attribute 2
-#' att.levels[[3]] <- c("bad", "average", "good") #levels attribut 3
-#' coding.type = "contr.treatment" #coding type is dummy coded 
-#' #Transform
-#' Present(set = choice.set, lvl.names = att.levels, coding = coding.type) 
+#' # Example no continuous attributes.
+#' l <- c(3, 4, 2) # 3 Attributes.
+#' c <- c("D", "E", "D") # Coding.
+#' # All profiles.
+#' p <- Profiles(lvls = l, coding = c)
+#' cs <- p[c(4, 8), ] # Choice set 
+#' # Levels as they should appear in survey. 
+#' al <- list(
+#'  c("$50", "$75", "$100"), # Levels attribute 1.
+#'  c("2 min", "15 min", "30 min", "50 min"), # Levels attribute 2.
+#'  c("bad", "good") # Levels attribute 3.
+#' ) 
+#' # Decode
+#' Decode(set = cs, lvl.names = al, coding = c, alt.cte = c(0, 0)) 
+#'
+#' # Example with continuous attribute.
+#' l <- c(3, 4, 2) # 3 Attributes.
+#' c <- c("D", "C", "D") # Coding.
+#' cl <- list(c(50, 75, 80, 100))
+#' # All profiles.
+#' p <- Profiles(lvls = l, coding = c, c.lvls = cl)
+#' cs <- p[c(4, 8), ] # Set. 
+#' a <- c(1, 0) # Alternative specific constant. 
+#' cs <- cbind(a, cs) # set with alt.cte
+#' # Levels as they should appear in survey. 
+#' al <- list(
+#'   c("$50", "$75", "$100"), # Levels attribute 1.
+#'   c("50 min", "75 min", "80 min", "100 min"), # Levels attribute 2.
+#'   c("bad", "good") # Levels attribute 3.
+#' ) 
+#' # Decode
+#' Decode(set = cs, lvl.names = al, coding = c, alt.cte = c(1, 0), c.lvls = cl) 
 #' @export
-Present <- function(set, lvl.names, coding) {
-  #error handling
-  codings.types<-c("contr.treatment", "contr.helmert", "contr.poly", "contr.sum", "none")
-  if (!(coding %in% codings.types)) {
-    stop("Coding argument is incorrect.")
-  } 
-  n.alts <- nrow(set) #number of alternatives
-  n.att <- length(lvl.names) #number of attributes
-  #create vector where each element denotes the number of levels for each attribute
+Decode <- function(set, lvl.names, coding, alt.cte, c.lvls = NULL) {
+  # Delete alt.cte's 
+  contins <- which(alt.cte == 1)
+  if( !length(contins) == 0) {
+    set <- set[ ,-length(contins)]
+  }
+  n.alts <- nrow(set) # Number of alternatives.
+  n.att <- length(lvl.names) # Number of attributes.
+  conts <- which(coding == "C") # Continuous levels. 
+  # Create vector where each element denotes the number of levels for each attribute.
   lvls <- numeric(n.att) 
   for (i in 1:n.att) { 
     lvls[i] <- length(lvl.names[[i]])
   }
-  #generate all possible profiles coded and uncoded
-  dc <- Profiles(lvls = lvls, coding = coding)
-  d <- Profiles(lvls = lvls, coding = "none")
-  #create new matrix for choice set with attribute level names 
+  # Generate all possible profiles coded and uncoded
+  dc <- Profiles(lvls = lvls, coding = coding, c.lvls = c.lvls)
+  # Create uncoded grid. 
+  d <- as.data.frame(expand.grid(lvl.names))
+  # Create new matrix for choice set with attribute level names 
   m <- matrix(data = NA, nrow = n.alts, ncol = n.att)
-  #error handling
+  # Error handling
   if (ncol(set) != ncol(dc)) {
     stop("Number of columns of the set does not match expected number based on the other arguments.")
   }
-  #for each alternative look for matching profile  
+  # For each alternative look for matching profile  
   for (i in 1:n.alts) {
     # if coded choice set, look for match in coded version first, then take uncoded equivalent.
-    if (coding != "none") {
-      lev.num <- d[as.numeric(which(apply(dc, 1, function(x) all(x == set[i, ])))), ]
-      lev.num <- as.numeric(lev.num)
-    } else {
-      lev.num <- as.numeric(choice.set[i, ])
-    }
-    #error handling
+    lev.num <- d[as.numeric(which(apply(dc, 1, function(x) all(x == set[i, ])))), ]
+    lev.num <- as.numeric(lev.num)
+    # Error handling
     if (any(is.na(lev.num))) { 
       stop('The set does not match with the type of coding provided')
     }
-    #for each attribute fill in the attribute level name
+    # For each attribute fill in the attribute level name
     for (c in 1:n.att) {
-      m[i,c] <- lvl.names[[c]][lev.num[c]]
+      m[i, c] <- lvl.names[[c]][lev.num[c]]
     }
   }
   return(m)
 }
 
 
-#' Transform responses
-#'
+#' Character to binary responses.
+#' 
 #' Transforms character input responses to binary response vector.
 #' @param resp String vector containing input responses
-#' @param resp_options String vector containing all possible responses.
-#' The response options should be specified in increasing order, starting with the neutral response (if included).
-#' @param n_alts The number of alternatives per choice set.
-#' @param neutral Logical value indicating whether a neutral option is provided or not. Default = TRUE.
+#' @param resp.options String vector containing all possible responses. The
+#'   response options should be specified in increasing order, starting with the
+#'   no choice option (if included).
+#' @param n.alts The number of alternatives per choice set.
+#' @param no.choice Logical value indicating whether a no.choice option is
+#'   provided or not. Default = FALSE.
 #' @return A binary response vector.
+#' @examples 
+#' rm(list=ls())
+#' resp.opt <- c("no.choice", "alt1", "alt2", "alt3")
+#' resp <- c("alt1", "alt3", "alt2", "no.choice", "alt1") 
+#' CharBin(resp = resp, resp.opt = resp.opt, n.alts = 3, no.choice = TRUE)
 #' @export
-map_resp<-function(resp, resp_options, n_alts, neutral=T){
-
-  map<-match(resp, resp_options)
-  l<-list()
-
+CharBin <- function (resp, resp.opt, n.alts, no.choice = FALSE) {
+  # Error resp not in resp.options
+  if (!all(resp %in% resp.opt)) {
+    stop("1 or more responses do not match the possible response options.")
+  }
+  # Error resp.options
+  if (length(resp.opt) != (n.alts + no.choice)) {
+    stop("Number of response options is not correct")
+  }
+  map <- match(resp, resp.opt)
+  l <- list()
   for(i in 1:length(map)){
-
-    if (neutral){
-      l[[i]] <- rep(0, n_alts)
-      l[[i]][map[i]-1]<-1
-    }else{
-      l[[i]] <- rep(0, n_alts)
-      l[[i]][map[i]]<-1
+    l[[i]] <- rep(0, n.alts)
+    if (no.choice) {
+      l[[i]][map[i] - 1] <- 1
+    } else {
+      l[[i]][map[i]] <- 1
     }
   }
-  v<-unlist(l)
+  v <- unlist(l)
   return(v)
 }
 
 
-#' Load from dropbox
-#'
-#' Load design from dropbox map
-#'@param inputDir A dropbox directory that contains the design.
-#'@return the file in that directory (or concatenated files).
-#'@export
-loaddrop <- function(dir) {
-
-  filesInfo <- drop_dir(dir)
-  filePaths <- filesInfo$path
-  data <- lapply(filePaths, drop_read_csv, stringsAsFactors = FALSE)
-  # Concatenate all data together into one data frame
-  data <- do.call(rbind, data)
-  return(data)
-}
-
-
-#' Save to dropbox
-#'
-#' Save design and responses to dropbox map
-#' @param des A design matrix in which each row is a profile.
-#' @param Y A response vector.
+#' Binary to discrete choice matrix.
+#' 
+#' Transforms a numeric matrix with binary choice data for each respondent 
+#' (columns), to a matrix with discrete values representing the chosen 
+#' alternatives.
+#' @param y NUmeric matrix containing the binary choice data. Each column is a 
+#'   different ID.
+#' @param n.alts Numeric value indicating the number of alternatives per choice 
+#'   set.
+#' @param no.choice Logical value indicating whether a no choice response could 
+#'   be observed. This would be a \code{0} for each alternative.
+#' @return A matrix with discrete values, indicating the chosen alternatives per
+#'   ID.
+#' @examples  
+#' # Binary response data, 2 participants
+#' y <- matrix(data = c(0,1,1,0,0,0,0,1), ncol = 2, byrow = F)
+#' # no choice = TRUE 
+#' BinDis(y = y, n.alts = 2, no.choice = TRUE)
 #' @export
-savedrop <- function(des, Y, dir, filename) {
-
-  data<-cbind(des, Y)
-  fileName <- sprintf("%s.csv", filename )
-  filePath <- file.path(tempdir(), fileName)
-  write.csv(data, filePath, row.names = FALSE, quote = TRUE)
-
-  drop_upload(filePath, dest = dir)
-}
-
-
-#' Binary to discrete response matrix
-#'
-#' Transforms a matrix with binary choice data for each respondent (columns),
-#' to a matrix with discrete values representing the choices.
-#' @param y Matrix containing the binary choice data.
-#' @param n_alts The number of alternatives per choice set.
-#' @return A matrix with discrete values, indicating the choices.
-#' @export
-bindis<-function(y, n_alts){
-
-  #divide into choice sets
-  fun1<-function(x) split(x, ceiling(seq_along(x)/n_alts))
-  YY<-apply(y,2,fun1)
-
-  #warning 1
+BinDis <- function(y, n.alts, no.choice) {
+  # y matrix.
+  if (!is.matrix(y)) {
+    stop('y should be a matrix.')
+  }
+  # Error no.choice
+  if(!is.logical(no.choice)) {
+    stop('no.choice should be logical.')
+  }
+  # Create choice sets.
+  f <- function(x) {
+    split(x, ceiling(seq_along(x) / n.alts))
+  }
+  cs <- apply(y, 2, f)
+  # Error n.alts 
   for (i in 1:ncol(y)){
-    if((length(unique(lengths(YY[[i]]))) == 1L) == FALSE){
-      stop('length of Y vector does match expected length based on nr of alternatives')
+    if((length(unique(lengths(cs[[i]]))) != 1L)){
+      stop('length of Y vector does match expected length based on nr of alternatives.')
     }
   }
-
-  #index 1's
-  fun<-function(x){xx<-(x==1); indexone <-which(xx, arr.ind = TRUE); if(length(indexone) > 1){stop('Multiple alternatives are chosen per choice set.
-                                                                                                   The response data or the number of alternatives is probably incorrect.')}; return(indexone)}
-  Y_Y<-list()
-  for(r in 1: ncol(y)){
-    Y_Y[[r]]<-lapply(YY[[r]], fun)
+  # Index 1.
+  Ones <- function(x) {
+    xx <- (x == 1)
+    ione <- which(xx, arr.ind = TRUE)
+    if(length(ione) > 1) {
+      stop('Multiple alternatives are chosen per choice set. The response data or the number of alternatives is probably incorrect.')
+    }
+    # When no choice was chosen
+    if (length(ione) == 0) {
+      if (!no.choice) {
+        stop('no choice responses detected while no.choice = FALSE.')
+      }
+      ione <- 0
+    }
+    return(ione)
   }
-
-  #rbind
-  fun3<-function(x) {as.numeric(rbind(x))}
-  ynom<-lapply(Y_Y, fun3)
-
-
-  y_nom<-matrix(unlist(ynom), ncol=ncol(y), byrow= FALSE)
-
-  return(y_nom)
-
+  yy <- list()
+  for(c in 1:ncol(y)){
+    yy[[c]] <- lapply(cs[[c]], Ones)
   }
-
+  # Rbind.
+  ynom <- lapply(yy, rbind)
+  y.nom <- matrix(unlist(ynom), ncol = ncol(y), byrow = FALSE)
+  return(y.nom)
+}
 
 
 

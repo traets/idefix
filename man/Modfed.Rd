@@ -16,8 +16,8 @@ Modfed(cand.set, n.sets, n.alts, alt.cte, par.samples, start.des = NULL,
 \item{n.alts}{Numeric value indicating the number of alternatives per choice
 set.}
 
-\item{alt.cte}{A binary vector indicating for each alternative if an alternative
-specific constant is desired.}
+\item{alt.cte}{A binary vector indicating for each alternative if an
+alternative specific constant is desired.}
 
 \item{par.samples}{A matrix in which each row is a sample from the
 multivariate prior parameter distribution.}
@@ -32,16 +32,16 @@ iterations.}
 \value{
 \item{design}{A numeric matrix wich represents an efficient design.}
 \item{error}{Numeric value indicating the D(B)-error of the design.}
-\item{inf.error}{Numeric value indicating the percentage of
-samples for which the D-error was \code{Inf}.}
-\item{prob.diff}{Numeric value indicating the difference between the alternative with
-the highest and the one with the lowest probability for each choice set. If a
-sample matrix was provided this is based on the mean over all samples.}
+\item{inf.error}{Numeric value indicating the percentage of samples for which
+the D-error was \code{Inf}.} \item{prob.diff}{Numeric value indicating the
+difference between the alternative with the highest and the one with the
+lowest probability for each choice set. If a sample matrix was provided this
+is based on the mean over all samples.}
 }
 \description{
 The algorithm swipes every profile of an initial design with candidate
-profiles. By doing this it tries to minimize the D(B)-error, assuming
-a multinomial logit model.
+profiles. By doing this it tries to minimize the D(B)-error, assuming a
+multinomial logit model.
 }
 \details{
 The algorithm stops when an iteration occured without replacing a profile or
@@ -51,17 +51,16 @@ profile from \code{cand.set}.
 
 By specifying a numeric vector in \code{par.samples}, the D-error will be
 calculated and the design will be optimised locally. By specifying a matrix,
-in which each row is a sample from a multivariate distribution, the
-DB-error will be calculated, and the design will be optimised globally. The
-number of columns should equal the number of parameters needed for
-\code{alt.cte} + the number of parameters needed for \code{cand.set}. This is
-also the order in which they should be sorted (first \code{alt.cte}
-parameters).
+in which each row is a sample from a multivariate distribution, the DB-error
+will be calculated, and the design will be optimised globally. The number of
+columns should equal the number of parameters needed for \code{alt.cte} + the
+number of parameters needed for \code{cand.set}. This is also the order in
+which they should be sorted (first \code{alt.cte} parameters).
 
-The DB-error is calculated by taking the mean over
-D-errors. It could be that for some samples the design results in an infinite
-D-error. The percentage of samples for which this was true for the final
-design can be found in the output \code{inf.error}.
+The DB-error is calculated by taking the mean over D-errors. It could be that
+for some samples the design results in an infinite D-error. The percentage of
+samples for which this was true for the final design can be found in the
+output \code{inf.error}.
 
 Alternative specific constants can be specified in \code{alt.cte}. The lenght
 of this binary vector should equal \code{n.alts}, were 0 indicates no

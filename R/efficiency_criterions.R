@@ -1,26 +1,27 @@
 
 
-#' D-error
-#'
-#' Function to calculate d error given a design, and parameter values.
-#' @param par Vector containing parameter values.
-#' @param des A design matrix in which each row is a profile.
-#' @param n.alts Numeric value indicating the number of alternatives per choice set.
-#' @return D-error.
+# D-error
+# 
+# Function to calculate d error given a design, and parameter values.
+# @param par Vector containing parameter values.
+# @param des A design matrix in which each row is a profile.
+# @param n.alts Numeric value indicating the number of alternatives per choice
+#   set.
+# @return D-error.
 Derr <- function(par, des, n.alts) {
   info.des <- InfoDes(par, des, n.alts)
   detinfo <- det(info.des)
   ifelse((detinfo <= 0), return(NA), return(detinfo^(-1 / length(par))))
 }
 
-#' Sequential D-error
-#' 
-#' Function to calculate D-errors if set would be part of design. 
-#' @inheritParams Modfed
-#' @param set A choice set in which each row is a profile.
-#' @param des A design matrix in which each row is a profile.
-#' @param i.cov Inverse of covariance matrix.  
-#' @param n.par Number of parameters.
+# Sequential D-error
+# 
+# Function to calculate D-errors if set would be part of design.
+# @inheritParams Modfed
+# @param set A choice set in which each row is a profile.
+# @param des A design matrix in which each row is a profile.
+# @param i.cov Inverse of covariance matrix.
+# @param n.par Number of parameters.
 DerrS <- function(par.samples, set, des, n.alts, i.cov, n.par) {
   des.f <- rbind(des, set) 
   info.d <- InfoDes(par = par.samples, des = des.f, n.alts = n.alts) 
@@ -28,18 +29,17 @@ DerrS <- function(par.samples, set, des, n.alts, i.cov, n.par) {
   return(d.error)
 }
 
-#' Sequential DB-error
-#' 
-#' Function to calculate DB-errors for potential choice sets in combination with
-#' an initial design.
-#' @inheritParams Modfed
-#' @inheritParams DerrS
-#' @param full.comb A matrix with on each row a possible combination of
-#'   profiles.
-#' @param cte.des A matrix which represent the alternative specific constants. 
-#'   If there are none it value is \code{NULL}.
-#' @return The DB errors of the designs in which each design is a combination
-#'   with of the initial design with a potential choice set.
+# Sequential DB-error
+# 
+# Function to calculate DB-errors for potential choice sets in combination with 
+# an initial design.
+# @inheritParams Modfed
+# @inheritParams DerrS
+# @param full.comb A matrix with on each row a possible combination of profiles.
+# @param cte.des A matrix which represent the alternative specific constants. If
+#   there are none it value is \code{NULL}.
+# @return The DB errors of the designs in which each design is a combination 
+#   with of the initial design with a potential choice set.
 DBerrS <- function(full.comb, cand.set, par.samples, des, n.alts, cte.des, i.cov, n.par, weights) {
   # Take set.
   set <- as.matrix(cand.set[as.numeric(full.comb), ])
@@ -56,12 +56,12 @@ DBerrS <- function(full.comb, cand.set, par.samples, des, n.alts, cte.des, i.cov
 }
 
 
-#' Fisher Information of design
-#'
-#' Returns the Fisher Information of a design, given parameter values.
-#' @inheritParams Modfed
-#' @param par A vector containing the parameter values
-#' @return Fisher Information matrix.
+# Fisher Information of design
+# 
+# Returns the Fisher Information of a design, given parameter values.
+# @inheritParams Modfed
+# @param par A vector containing the parameter values
+# @return Fisher Information matrix.
 InfoDes <- function(par, des, n.alts) {
   group <- rep(seq(1, nrow(des) / n.alts, 1), each = n.alts)
   # probability
@@ -74,7 +74,7 @@ InfoDes <- function(par, des, n.alts) {
 }
 
 
-#' Utility balance 
+# Utility balance 
 Utbal <- function(par, des, n.alts) { 
   group <- rep(seq(1, nrow(des) / n.alts, 1), each = n.alts)
   u <- des %*% diag(par)
@@ -85,13 +85,13 @@ Utbal <- function(par, des, n.alts) {
   return(ub)
 }
 
-#' KL information
-#'
-#' Calculates the Kullback-Leibler divergence for all posible choice sets, given
-#' parameter values.
-#' @inheritParams SeqDB
-#' @param full.comb A matrix in which each row is a possible combination of profiles. 
-#' @return Numeric value indicating the Kullback-Leibler divergence.
+# KL information
+# 
+# Calculates the Kullback-Leibler divergence for all posible choice sets, given
+# @inheritParams SeqDB
+# @param full.comb A matrix in which each row is a possible combination of
+#   profiles.
+# @return Numeric value indicating the Kullback-Leibler divergence.
 KLs <- function(full.comb, par.samples, cte.des, cand.set, weights) {
   #take set
   set <- as.matrix(cand.set[as.numeric(full.comb), ])
@@ -103,11 +103,12 @@ KLs <- function(full.comb, par.samples, cte.des, cand.set, weights) {
 }
 
 
-#' Kullback-Leibler divergence for a set
-#' 
-#' Calculates the KL-divergence for a choice set given parameter values.
-#' @inheritParams DerrS
-#' @param weights A vector containing the weights of the samples. Default is \code{NULL}
+# Kullback-Leibler divergence for a set
+# 
+# Calculates the KL-divergence for a choice set given parameter values.
+# @inheritParams DerrS
+# @param weights A vector containing the weights of the samples. Default is
+#   \code{NULL}
 KL <- function (set, par.samples, weights){
   # Probabilities.
   num2 <- tcrossprod(set, par.samples)

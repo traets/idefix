@@ -13,13 +13,14 @@ SeqKL(cand.set, n.alts, alt.cte, par.samples, weights, reduce = TRUE)
 \item{n.alts}{Numeric value indicating the number of alternatives per choice
 set.}
 
-\item{alt.cte}{A binary vector indicating for each alternative if an alternative
-specific constant is desired.}
+\item{alt.cte}{A binary vector indicating for each alternative if an
+alternative specific constant is desired.}
 
 \item{par.samples}{A matrix in which each row is a sample from the
 multivariate parameter distribution. See also \code{\link{ImpsamplingMNL}}.}
 
-\item{weights}{A vector containing the weights of the samples. Default is \code{NULL}, See also \code{\link{ImpsamplingMNL}}.}
+\item{weights}{A vector containing the weights of the samples. Default is
+\code{NULL}, See also \code{\link{ImpsamplingMNL}}.}
 
 \item{reduce}{Logical value indicating whether the candidate set should be
 reduced or not.}

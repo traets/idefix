@@ -9,7 +9,8 @@ RespondMNL(par, des, n.alts, bin = TRUE)
 \arguments{
 \item{par}{Numeric vector containing parameter values.}
 
-\item{des}{A design matrix in which each row is a profile. Can be generated with \code{\link{Modfed}}}
+\item{des}{A design matrix in which each row is a profile. Can be generated
+with \code{\link{Modfed}}}
 
 \item{n.alts}{Numeric value indicating the number of alternatives per choice
 set.}
@@ -23,4 +24,13 @@ Numeric vector indicating the chosen alternatives.
 \description{
 Function to generate responses given parameter values and a design matrix,
 assuming a MNL model.
+}
+\examples{
+# 3 Attributes, 2 are dummy coded and 1 continuous.
+cs <- Profiles(lvls = c(2, 3, 2), coding = c("D", "C", "D"), c.lvls = list(c(2,4,6)))
+p <- c(0.8, 0.2, -0.3) # parameter vector
+# Generate design
+des <- Modfed(cand.set = cs, n.sets = 8, n.alts = 2, alt.cte = c(0,0), par.samples = p)$des
+# Generate responses
+y <- RespondMNL(par = p, des = des, n.alts = 2)
 }

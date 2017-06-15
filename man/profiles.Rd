@@ -7,20 +7,28 @@
 Profiles(lvls, coding, c.lvls = NULL)
 }
 \arguments{
-\item{lvls}{A numeric vector which contains for each attribute, the number of
-levels.}
+\item{lvls}{A numeric vector which contains for each attribute, the number
+of levels.}
 
 \item{coding}{Type op coding that needs to be used for each attribute.}
 
-\item{c.lvls}{A list containing vectors with attributelevels for continuous
-attributes. The default is \code{NULL}}
+\item{c.lvls}{A list containing numeric vectors with the attributelevels for
+each continuous attribute. The default is \code{NULL}.}
 }
 \value{
-A matrix which contains all possible profiles.
+A numeric matrix which contains all possible profiles.
 }
 \description{
 Function to generate all possible combinations of attribute levels (i.e. all
 possible profiles).
+}
+\details{
+Valid arguments for \code{coding} are \code{C}, \code{D} and \code{E}. When
+using \code{C} the attribute will be treated as continuous and no coding will
+be applied. All possible levels should then be specified in \code{c.lvls}. If
+\code{D} (dummy coding) is used \code{\link{contr.treatment}} will be applied
+to that attribute. For \code{E} (effect coding) \code{\link{contr.sum}} will
+be applied.
 }
 \examples{
 # Without continuous attributes

@@ -2,30 +2,49 @@
 % Please edit documentation in R/estimation_support.R
 \name{Datatrans}
 \alias{Datatrans}
-\title{data transformation.}
+\title{Data transformation.}
 \usage{
-Datatrans(pkg, des, Y, n_alts, n_sets, n_resp, n_beta, bin)
+Datatrans(pkg, des, y, n.alts, n.sets, n.resp, n.par, no.choice, bin)
 }
 \arguments{
-\item{pkg}{Indicates the required package or estimation (1=bayesm, 2=ChoiceModelR, 3=RSGHB, 4=Mixed Probit estimation (Bayesm))}
+\item{pkg}{Indicates the required package or estimation (\code{1 =
+\link{bayesm}} package, \code{2 = \link{ChoiceModelR}}, \code{3 =
+\link{RSGHB}} and \code{4 = Mixed probit estimation (\link{RSGHB})}.)}
 
-\item{des}{A design matrix in which each row is a profile.}
+\item{y}{A numeric matrix. Each column represents a respondent, there are
+\code{n.sets} rows (discrete choice data), or \code{n.sets * n.alts} rows
+(binary data). see \code{bin}}
 
-\item{Y}{A numeric matrix. Each column represents a respondent, there are n_sets rows (discrete choice data), or n_sets*n_alts rows (binary data).}
+\item{n.alts}{Numeric value indicating the number of alternatives per choice
+set.}
 
-\item{n_alts}{Numeric value indicating the number of alternatives per choice set.}
+\item{n.sets}{Numeric value indicating the number of choice sets.}
 
-\item{n_sets}{Numeric value indicating the number of choide sets.}
+\item{n.resp}{Numeric value indicating the number of respondents.}
 
-\item{n_resp}{Numeric value indicating the number of respondents.}
+\item{n.par}{Numeric value indicating the number of model parameters that
+needs to be estimated.}
 
-\item{n_beta}{Numeric value indicating the number of model parameters that needs to be estimated.}
-
-\item{bin}{Logical value indicating whether the reponse matrix contains binary data (TRUE) or not (FALSE).}
+\item{bin}{Logical value indicating whether the reponse matrix contains
+binary data (\code{TRUE}) or not (\code{FALSE}).}
 }
 \value{
 The data ready to be used by the specified package.
 }
 \description{
-Transforms the data into the neccesary format in order to use the bayesm package, ChoiceModelR package or the RSGHB package.
+Transforms the data into the neccesary format in order to use the
+\code{\link{bayesm}} package, \code{\link{ChoiceModelR}} package or the
+\code{\link{RSGHB}} package.
+}
+\examples{
+# 3 Attributes, 2 are dummy coded and 1 continuous.
+cs <- Profiles(lvls = c(2, 3, 2), coding = c("D", "C", "D"), c.lvls = list(c(2,4,6)))
+p <- c(0.8, 0.2, -0.3) # parameter vector
+# Generate design
+des <- Modfed(cand.set = cs, n.sets = 8, n.alts = 2, alt.cte = c(0,0), par.samples = p)$des
+# Generate responses
+y <- RespondMNL(par = p, des = des, n.alts = 2)
+y <- matrix(y, 16)
+#  data 
+Datatrans(pkg = 4, des = des, y = y, n.alts = 2, n.sets = 8, n.resp = 1, n.par = 3, no.choice = FALSE, bin = TRUE)
 }

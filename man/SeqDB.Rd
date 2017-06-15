@@ -8,7 +8,8 @@ SeqDB(des, cand.set, n.alts, par.samples, prior.covar, reduce = TRUE,
   weights = NULL)
 }
 \arguments{
-\item{des}{A design matrix in which each row is a profile. Can be generated with \code{\link{Modfed}}}
+\item{des}{A design matrix in which each row is a profile. Can be generated
+with \code{\link{Modfed}}}
 
 \item{cand.set}{A numeric matrix in which each row is a possible profile. The
 \code{\link{Profiles}} function can be used to generate this.}
@@ -21,17 +22,19 @@ multivariate parameter distribution. See also \code{\link{ImpsamplingMNL}}.}
 
 \item{prior.covar}{Covariance matrix of the prior distribution.}
 
-\item{reduce}{Logical value indicating whether the candidate set should be reduced or not.}
+\item{reduce}{Logical value indicating whether the candidate set should be
+reduced or not.}
 
-\item{weights}{A vector containing the weights of the samples. Default is \code{NULL}, See also \code{\link{ImpsamplingMNL}}.}
+\item{weights}{A vector containing the weights of the samples. Default is
+\code{NULL}, See also \code{\link{ImpsamplingMNL}}.}
 }
 \value{
 \item{set}{A matrix representing a DB efficient choice set.}
 \item{db.error}{A numeric value indicating the DB-error of the whole design.}
 }
 \description{
-Selects the choice set that minimizes the DB-error when added to an initial design, given (updated) parameter
-values.
+Selects the choice set that minimizes the DB-error when added to an initial
+design, given (updated) parameter values.
 }
 \details{
 This algorithm is ideally used in an adaptive context. The algorithm will
@@ -47,11 +50,11 @@ specific columns.
 
 The list of potential choice sets are created using
 \code{\link[gtools]{combinations}}. If \code{reduce} is \code{TRUE},
-\code{repeats.allowed = FALSE} and vice versa.
-If no alternative constants are used \code{reduce} should always be \code{TRUE}.
-When alternative specific constants are used \code{reduce} can be \code{TRUE}
-so that the algorithm will be faster, but the combinations of constants
-and profiles will not be evaluated exhaustively.
+\code{repeats.allowed = FALSE} and vice versa. If no alternative constants
+are used \code{reduce} should always be \code{TRUE}. When alternative
+specific constants are used \code{reduce} can be \code{TRUE} so that the
+algorithm will be faster, but the combinations of constants and profiles will
+not be evaluated exhaustively.
 
 The \code{weights} can be used when the \code{par.samples} have weights. This
 is for example the case when parameter values are updated using

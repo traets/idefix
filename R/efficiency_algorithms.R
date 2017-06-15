@@ -2,55 +2,53 @@
 
 #' Modified Federov algorithm for MNL models.
 #' 
-#' The algorithm swipes every profile of an initial design with candidate
-#' profiles. By doing this it tries to minimize the D(B)-error, assuming
-#' a multinomial logit model.  
+#' The algorithm swipes every profile of an initial design with candidate 
+#' profiles. By doing this it tries to minimize the D(B)-error, assuming a
+#' multinomial logit model.
 #' 
 #' The algorithm stops when an iteration occured without replacing a profile or 
 #' when \code{max.iter} is reached. An iteration is a loop through all profiles 
-#' from the initial design, evaluating the change in D(B)-error for every
+#' from the initial design, evaluating the change in D(B)-error for every 
 #' profile from \code{cand.set}.
 #' 
 #' By specifying a numeric vector in \code{par.samples}, the D-error will be 
 #' calculated and the design will be optimised locally. By specifying a matrix, 
-#' in which each row is a sample from a multivariate distribution, the
-#' DB-error will be calculated, and the design will be optimised globally. The
-#' number of columns should equal the number of parameters needed for
-#' \code{alt.cte} + the number of parameters needed for \code{cand.set}. This is
-#' also the order in which they should be sorted (first \code{alt.cte}
-#' parameters).
+#' in which each row is a sample from a multivariate distribution, the DB-error
+#' will be calculated, and the design will be optimised globally. The number of
+#' columns should equal the number of parameters needed for \code{alt.cte} + the
+#' number of parameters needed for \code{cand.set}. This is also the order in
+#' which they should be sorted (first \code{alt.cte} parameters).
 #' 
-#' The DB-error is calculated by taking the mean over
-#' D-errors. It could be that for some samples the design results in an infinite
-#' D-error. The percentage of samples for which this was true for the final
-#' design can be found in the output \code{inf.error}.
+#' The DB-error is calculated by taking the mean over D-errors. It could be that
+#' for some samples the design results in an infinite D-error. The percentage of
+#' samples for which this was true for the final design can be found in the
+#' output \code{inf.error}.
 #' 
 #' Alternative specific constants can be specified in \code{alt.cte}. The lenght
-#' of this binary vector should equal \code{n.alts}, were 0 indicates no
+#' of this binary vector should equal \code{n.alts}, were 0 indicates no 
 #' alternative specific constant and 1 the opposit.
 #' 
 #' @param cand.set A numeric matrix in which each row is a possible profile. The
-#'   \code{\link{Profiles}} function can be used to generate this. 
+#'   \code{\link{Profiles}} function can be used to generate this.
 #' @param n.sets Numeric value indicating the number of choice sets.
 #' @param n.alts Numeric value indicating the number of alternatives per choice 
 #'   set.
-#' @param alt.cte A binary vector indicating for each alternative if an alternative 
-#'   specific constant is desired.
+#' @param alt.cte A binary vector indicating for each alternative if an
+#'   alternative specific constant is desired.
 #' @param par.samples A matrix in which each row is a sample from the 
 #'   multivariate prior parameter distribution.
-#' @param start.des A matrix in which each row is a profile. The number of rows
-#'   equals \code{n.sets * n.alts}, and the number of columns equals the number
+#' @param start.des A matrix in which each row is a profile. The number of rows 
+#'   equals \code{n.sets * n.alts}, and the number of columns equals the number 
 #'   of columns of \code{cand.set}
 #' @param max.iter A numeric value indicating the maximum number allowed 
 #'   iterations.
-#' @return 
-#' \item{design}{A numeric matrix wich represents an efficient design.}
-#' \item{error}{Numeric value indicating the D(B)-error of the design.}
-#' \item{inf.error}{Numeric value indicating the percentage of
-#'  samples for which the D-error was \code{Inf}.}
-#' \item{prob.diff}{Numeric value indicating the difference between the alternative with
-#' the highest and the one with the lowest probability for each choice set. If a
-#' sample matrix was provided this is based on the mean over all samples.}
+#' @return \item{design}{A numeric matrix wich represents an efficient design.} 
+#' \item{error}{Numeric value indicating the D(B)-error of the design.} 
+#' \item{inf.error}{Numeric value indicating the percentage of samples for which
+#' the D-error was \code{Inf}.} \item{prob.diff}{Numeric value indicating the
+#' difference between the alternative with the highest and the one with the
+#' lowest probability for each choice set. If a sample matrix was provided this
+#' is based on the mean over all samples.}
 #' @examples
 #' # D-efficient design
 #' # 3 Attributes, 2 are dummy coded and 1 continuous (= 3 parameters).
@@ -83,7 +81,7 @@ Modfed <- function(cand.set, n.sets, n.alts,  alt.cte, par.samples, start.des = 
   }
   # Errors start design. 
   if (!is.null(start.des)) {
-    if (ncol(start.des) != ncol(cand.set))  {
+    if (ncol(start.des) != ncol(cand.set)) {
       stop("number of colums start design is different from number of columns candidate set.")
     }
     if (nrow(start.des) != (n.alts * n.sets)) {
@@ -174,40 +172,42 @@ Modfed <- function(cand.set, n.sets, n.alts,  alt.cte, par.samples, start.des = 
 
 #' Sequential modified federov algorithm for MNL model.
 #' 
-#' Selects the choice set that minimizes the DB-error when added to an initial design, given (updated) parameter
-#' values.
+#' Selects the choice set that minimizes the DB-error when added to an initial
+#' design, given (updated) parameter values.
 #' 
-#' This algorithm is ideally used in an adaptive context. The algorithm will
+#' This algorithm is ideally used in an adaptive context. The algorithm will 
 #' select the next DB-efficient choice set given parameter values and an initial
-#' design. In an adaptive context these parameter values are updated after each
+#' design. In an adaptive context these parameter values are updated after each 
 #' observed response.
 #' 
-#' The initial design \code{des} can be generated with \code{\link{Modfed}}. If
-#' alternative specific constants are included in the initial design, the
-#' algorithm will use the same for selecting the new choice set. Columns of
-#' \code{des} which contain ".cte" in their name are recognized as alternative
+#' The initial design \code{des} can be generated with \code{\link{Modfed}}. If 
+#' alternative specific constants are included in the initial design, the 
+#' algorithm will use the same for selecting the new choice set. Columns of 
+#' \code{des} which contain ".cte" in their name are recognized as alternative 
 #' specific columns.
 #' 
-#' The list of potential choice sets are created using
-#' \code{\link[gtools]{combinations}}. If \code{reduce} is \code{TRUE},
-#' \code{repeats.allowed = FALSE} and vice versa.
-#' If no alternative constants are used \code{reduce} should always be \code{TRUE}.
-#' When alternative specific constants are used \code{reduce} can be \code{TRUE}
-#' so that the algorithm will be faster, but the combinations of constants
-#' and profiles will not be evaluated exhaustively.
+#' The list of potential choice sets are created using 
+#' \code{\link[gtools]{combinations}}. If \code{reduce} is \code{TRUE}, 
+#' \code{repeats.allowed = FALSE} and vice versa. If no alternative constants
+#' are used \code{reduce} should always be \code{TRUE}. When alternative
+#' specific constants are used \code{reduce} can be \code{TRUE} so that the
+#' algorithm will be faster, but the combinations of constants and profiles will
+#' not be evaluated exhaustively.
 #' 
 #' The \code{weights} can be used when the \code{par.samples} have weights. This
-#' is for example the case when parameter values are updated using
+#' is for example the case when parameter values are updated using 
 #' \code{\link{ImpSamp}}.
 #' @inheritParams Modfed
 #' @param par.samples A matrix in which each row is a sample from the 
 #'   multivariate parameter distribution. See also \code{\link{ImpsamplingMNL}}.
-#' @param des A design matrix in which each row is a profile. Can be generated with \code{\link{Modfed}}
+#' @param des A design matrix in which each row is a profile. Can be generated
+#'   with \code{\link{Modfed}}
 #' @param prior.covar Covariance matrix of the prior distribution.
-#' @param reduce Logical value indicating whether the candidate set should be reduced or not. 
-#' @param weights A vector containing the weights of the samples. Default is \code{NULL}, See also \code{\link{ImpsamplingMNL}}.
-#' @return 
-#' \item{set}{A matrix representing a DB efficient choice set.}
+#' @param reduce Logical value indicating whether the candidate set should be
+#'   reduced or not.
+#' @param weights A vector containing the weights of the samples. Default is
+#'   \code{NULL}, See also \code{\link{ImpsamplingMNL}}.
+#' @return \item{set}{A matrix representing a DB efficient choice set.} 
 #' \item{db.error}{A numeric value indicating the DB-error of the whole design.}
 #' @examples 
 #' # DB efficient choice set, given a design and parameter samples. 
@@ -276,6 +276,7 @@ SeqDB <- function(des, cand.set, n.alts, par.samples, prior.covar, reduce = TRUE
   if (!is.null(cte.des)) {
     set <- cbind(cte.des, set)
   }
+  row.names(set) <- NULL
   db <- min(db.errors)
   #return best set and db error design.
   return(list(set = set, db.error = db))
@@ -287,18 +288,17 @@ SeqDB <- function(des, cand.set, n.alts, par.samples, prior.covar, reduce = TRUE
 #' Selects the choice set that maximizes the Kullback-Leibler divergence between
 #' prior parameter values and the expected posterior, assuming an MNL model.
 #' 
-#' The algorithm selects the choice set that maximizes the Kullback-Leibler
-#' divergence between prior and expected posterior. Otherwisely framed the
-#' algorithm selects the choice set that maximizes the expected information
+#' The algorithm selects the choice set that maximizes the Kullback-Leibler 
+#' divergence between prior and expected posterior. Otherwisely framed the 
+#' algorithm selects the choice set that maximizes the expected information 
 #' gain.
 #' @inheritParams SeqDB
-#' @param alt.cte A binary vector indicating for each alternative if an alternative 
-#'   specific constant is desired.
-#' @param reduce Logical value indicating whether the candidate set should be
+#' @param alt.cte A binary vector indicating for each alternative if an
+#'   alternative specific constant is desired.
+#' @param reduce Logical value indicating whether the candidate set should be 
 #'   reduced or not.
 #' @return Choice set that maximizes the expected KL divergence.
-#' @references
-#' \insertRef{crabbe}{mnldes} 
+#' @references \insertRef{crabbe}{mnldes}
 #' @examples 
 #' # KL efficient choice set, given parameter samples. 
 #' # Candidate profiles 
@@ -346,6 +346,11 @@ SeqKL <- function(cand.set, n.alts, alt.cte, par.samples, weights, reduce = TRUE
   # Select maximum.
   comb.nr <- as.numeric(full.comb[which.max(kl.infos), ])
   set <- cand.set[comb.nr, ]
+  # Add alternative specific constants if necessary
+  if (!is.null(cte.des)) {
+    set <- cbind(cte.des, set)
+  }
+  row.names(set) <- NULL
   # return.
   return(list(set = set, kl = max(kl.infos)))
 }

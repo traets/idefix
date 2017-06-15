@@ -7,26 +7,30 @@
 ImpsampMNL(prior.mean, prior.covar, des, n.alts, y, m, b = 2)
 }
 \arguments{
-\item{prior.mean}{Numeric vector indicating the mean of the multivariate normal distribution (prior).}
+\item{prior.mean}{Numeric vector indicating the mean of the multivariate
+normal distribution (prior).}
 
 \item{prior.covar}{Covariance matrix of the prior distribution.}
 
-\item{des}{A design matrix in which each row is a profile. Can be generated with \code{\link{Modfed}}}
+\item{des}{A design matrix in which each row is a profile. Can be generated
+with \code{\link{Modfed}}}
 
 \item{n.alts}{Numeric value indicating the number of alternatives per choice
 set.}
 
-\item{y}{A binary response vector. \code{\link{RespondMNL}} can be used for this.}
+\item{y}{A binary response vector. \code{\link{RespondMNL}} can be used for
+this.}
 
 \item{m}{Numeric value. Number of samples = \code{base^m}.}
 
 \item{b}{Numeric value indicating the base. The default = 2.}
 }
 \value{
-\item{samples}{Numeric vector with the (unweigthted) samples from the posterior distribution.}
-\item{weights}{Numeric vector with the associated weights of the samples.}
-\item{max}{Numeric vector indicating the estimated mode of the posterior distribution.}
-\item{covar}{Matrix representing the estimated variance covariance matrix.}
+\item{samples}{Numeric vector with the (unweigthted) samples from the
+posterior distribution.} \item{weights}{Numeric vector with the associated
+weights of the samples.} \item{max}{Numeric vector indicating the estimated
+mode of the posterior distribution.} \item{covar}{Matrix representing the
+estimated variance covariance matrix.}
 }
 \description{
 This function samples from the posterior distribution using importance
