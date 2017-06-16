@@ -4,7 +4,7 @@
 \alias{Modfed}
 \title{Modified Federov algorithm for MNL models.}
 \usage{
-Modfed(cand.set, n.sets, n.alts, alt.cte, par.samples, start.des = NULL,
+Modfed(cand.set, n.sets, n.alts, alt.cte, par.draws, start.des = NULL,
   max.iter = Inf)
 }
 \arguments{
@@ -19,59 +19,61 @@ set.}
 \item{alt.cte}{A binary vector indicating for each alternative if an
 alternative specific constant is desired.}
 
-\item{par.samples}{A matrix in which each row is a sample from the
-multivariate prior parameter distribution.}
+\item{par.draws}{A numeric vector containing the parameter values, or a
+numeric matrix in which each row is a draw from the multivariate prior
+parameter distribution.}
 
 \item{start.des}{A matrix in which each row is a profile. The number of rows
 equals \code{n.sets * n.alts}, and the number of columns equals the number
-of columns of \code{cand.set}}
+of columns of \code{cand.set}. If not specified a random start design will
+be generated.}
 
 \item{max.iter}{A numeric value indicating the maximum number allowed
 iterations.}
 }
 \value{
-\item{design}{A numeric matrix wich represents an efficient design.}
+\item{design}{A numeric matrix wich contains an efficient design.}
 \item{error}{Numeric value indicating the D(B)-error of the design.}
 \item{inf.error}{Numeric value indicating the percentage of samples for which
 the D-error was \code{Inf}.} \item{prob.diff}{Numeric value indicating the
 difference between the alternative with the highest and the one with the
 lowest probability for each choice set. If a sample matrix was provided this
-is based on the mean over all samples.}
+is based on the average over all draws.}
 }
 \description{
-The algorithm swipes every profile of an initial design with candidate
-profiles. By doing this it tries to minimize the D(B)-error, assuming a
+The algorithm swaps every profile of an initial design with candidate
+profiles. By doing this it tries to minimize the D(B)-error, based on a
 multinomial logit model.
 }
 \details{
+Each iteration will loop through all profiles from the initial design,
+evaluating the change in D(B)-error for every profile from \code{cand.set}.
 The algorithm stops when an iteration occured without replacing a profile or
-when \code{max.iter} is reached. An iteration is a loop through all profiles
-from the initial design, evaluating the change in D(B)-error for every
-profile from \code{cand.set}.
+when \code{max.iter} is reached.
 
-By specifying a numeric vector in \code{par.samples}, the D-error will be
+By specifying a numeric vector in \code{par.draws}, the D-error will be
 calculated and the design will be optimised locally. By specifying a matrix,
-in which each row is a sample from a multivariate distribution, the DB-error
+in which each row is a draw from a multivariate distribution, the DB-error
 will be calculated, and the design will be optimised globally. The number of
-columns should equal the number of parameters needed for \code{alt.cte} + the
-number of parameters needed for \code{cand.set}. This is also the order in
-which they should be sorted (first \code{alt.cte} parameters).
+columns should equal the number of parameter in \code{alt.cte} + the number
+of parameters in \code{cand.set}. This is also the order in which they should
+be sorted (first \code{alt.cte} parameters).
 
 The DB-error is calculated by taking the mean over D-errors. It could be that
-for some samples the design results in an infinite D-error. The percentage of
+for some draws the design results in an infinite D-error. The percentage of
 samples for which this was true for the final design can be found in the
 output \code{inf.error}.
 
 Alternative specific constants can be specified in \code{alt.cte}. The lenght
-of this binary vector should equal \code{n.alts}, were 0 indicates no
-alternative specific constant and 1 the opposit.
+of this binary vector should equal \code{n.alts}, were \code{0} indicates the
+absence of an alternative specific constant and \code{1} the opposite.
 }
 \examples{
 # D-efficient design
 # 3 Attributes, 2 are dummy coded and 1 continuous (= 3 parameters).
 cs <- Profiles(lvls = c(2, 3, 2), coding = c("D", "C", "D"), c.lvls = list(c(2,4,6)))
 ps <- c(0.8, 0.2, -0.3) # Prior parameter vector
-Modfed(cand.set = cs, n.sets = 8, n.alts = 2, alt.cte = c(0,0), par.samples = ps)
+Modfed(cand.set = cs, n.sets = 8, n.alts = 2, alt.cte = c(0,0), par.draws = ps)
 
 # DB-efficient design. 
 # 3 Attributes with 2, 3 and 2 levels, all effect coded (= 4 parameters).
@@ -79,7 +81,7 @@ cs <- Profiles(lvls = c(2, 3, 2), coding = c("E", "E", "E"))
 m <- c(0.8, 0.2, -0.3, -0.2, 0.7) # Prior mean (total = 5 parameters).
 v <- diag(length(m)) # Prior variance. 
 ps <- MASS::mvrnorm(n = 10, mu = m, Sigma = v) # 10 Samples.
-Modfed(cand.set = cs, n.sets = 8, n.alts = 2, alt.cte = c(1,0), par.samples = ps)
+Modfed(cand.set = cs, n.sets = 8, n.alts = 2, alt.cte = c(1,0), par.draws = ps)
 }
 \references{
 \insertRef{federov}{mnldes}

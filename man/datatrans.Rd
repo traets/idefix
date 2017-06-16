@@ -7,9 +7,13 @@
 Datatrans(pkg, des, y, n.alts, n.sets, n.resp, n.par, no.choice, bin)
 }
 \arguments{
-\item{pkg}{Indicates the required package or estimation (\code{1 =
-\link{bayesm}} package, \code{2 = \link{ChoiceModelR}}, \code{3 =
-\link{RSGHB}} and \code{4 = Mixed probit estimation (\link{RSGHB})}.)}
+\item{pkg}{Indicates the required package for estimation (\code{1 = 
+  \link[bayesm]{rhierMnlRwMixture}}, \code{2 =
+  \link[ChoiceModelR]{choicemodelr}}, \code{3 = \link[RSGHB]{doHB}} and
+\code{4 = \link[bayesm]{rbprobitGibbs}}).}
+
+\item{des}{A design matrix in which each row is a profile. Can be generated
+with \code{\link{Modfed}}}
 
 \item{y}{A numeric matrix. Each column represents a respondent, there are
 \code{n.sets} rows (discrete choice data), or \code{n.sets * n.alts} rows
@@ -25,6 +29,9 @@ set.}
 \item{n.par}{Numeric value indicating the number of model parameters that
 needs to be estimated.}
 
+\item{no.choice}{Logical value indicating whether a no choice response could
+be observed. This would be a \code{0} for each alternative.}
+
 \item{bin}{Logical value indicating whether the reponse matrix contains
 binary data (\code{TRUE}) or not (\code{FALSE}).}
 }
@@ -32,19 +39,18 @@ binary data (\code{TRUE}) or not (\code{FALSE}).}
 The data ready to be used by the specified package.
 }
 \description{
-Transforms the data into the neccesary format in order to use the
-\code{\link{bayesm}} package, \code{\link{ChoiceModelR}} package or the
-\code{\link{RSGHB}} package.
+Transforms the data into the neccesary format in order to use estimation functions from different packages.
 }
 \examples{
 # 3 Attributes, 2 are dummy coded and 1 continuous.
 cs <- Profiles(lvls = c(2, 3, 2), coding = c("D", "C", "D"), c.lvls = list(c(2,4,6)))
 p <- c(0.8, 0.2, -0.3) # parameter vector
 # Generate design
-des <- Modfed(cand.set = cs, n.sets = 8, n.alts = 2, alt.cte = c(0,0), par.samples = p)$des
+des <- Modfed(cand.set = cs, n.sets = 8, n.alts = 2, alt.cte = c(0,0), par.draws = p)$des
 # Generate responses
 y <- RespondMNL(par = p, des = des, n.alts = 2)
 y <- matrix(y, 16)
 #  data 
-Datatrans(pkg = 4, des = des, y = y, n.alts = 2, n.sets = 8, n.resp = 1, n.par = 3, no.choice = FALSE, bin = TRUE)
+Datatrans(pkg = 4, des = des, y = y, n.alts = 2, n.sets = 8, n.resp = 1,
+          n.par = 3, no.choice = FALSE, bin = TRUE)
 }

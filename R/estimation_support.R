@@ -2,19 +2,22 @@
 
 #' Data transformation.
 #'
-#' Transforms the data into the neccesary format in order to use the
-#' \code{\link{bayesm}} package, \code{\link{ChoiceModelR}} package or the
-#' \code{\link{RSGHB}} package.
-#' @param pkg Indicates the required package or estimation (\code{1 =
-#'   \link{bayesm}} package, \code{2 = \link{ChoiceModelR}}, \code{3 =
-#'   \link{RSGHB}} and \code{4 = Mixed probit estimation (\link{RSGHB})}.)
+#' Transforms the data into the neccesary format in order to use estimation functions from different packages. 
+#' @param pkg Indicates the required package for estimation (\code{1 = 
+#'   \link[bayesm]{rhierMnlRwMixture}}, \code{2 =
+#'   \link[ChoiceModelR]{choicemodelr}}, \code{3 = \link[RSGHB]{doHB}} and
+#'   \code{4 = \link[bayesm]{rbprobitGibbs}}).
+#' @param des A design matrix in which each row is a profile. Can be generated 
+#'   with \code{\link{Modfed}}
 #' @inheritParams Modfed
 #' @param y A numeric matrix. Each column represents a respondent, there are 
-#'   \code{n.sets} rows (discrete choice data), or \code{n.sets * n.alts} rows
+#'   \code{n.sets} rows (discrete choice data), or \code{n.sets * n.alts} rows 
 #'   (binary data). see \code{bin}
 #' @param n.resp Numeric value indicating the number of respondents.
 #' @param n.par Numeric value indicating the number of model parameters that 
 #'   needs to be estimated.
+#' @param no.choice Logical value indicating whether a no choice response could 
+#'   be observed. This would be a \code{0} for each alternative.
 #' @param bin Logical value indicating whether the reponse matrix contains 
 #'   binary data (\code{TRUE}) or not (\code{FALSE}).
 #' @return The data ready to be used by the specified package.
@@ -23,12 +26,13 @@
 #' cs <- Profiles(lvls = c(2, 3, 2), coding = c("D", "C", "D"), c.lvls = list(c(2,4,6)))
 #' p <- c(0.8, 0.2, -0.3) # parameter vector
 #' # Generate design
-#' des <- Modfed(cand.set = cs, n.sets = 8, n.alts = 2, alt.cte = c(0,0), par.samples = p)$des
+#' des <- Modfed(cand.set = cs, n.sets = 8, n.alts = 2, alt.cte = c(0,0), par.draws = p)$des
 #' # Generate responses
 #' y <- RespondMNL(par = p, des = des, n.alts = 2)
 #' y <- matrix(y, 16)
 #' #  data 
-#' Datatrans(pkg = 4, des = des, y = y, n.alts = 2, n.sets = 8, n.resp = 1, n.par = 3, no.choice = FALSE, bin = TRUE)
+#' Datatrans(pkg = 4, des = des, y = y, n.alts = 2, n.sets = 8, n.resp = 1,
+#'           n.par = 3, no.choice = FALSE, bin = TRUE)
 #' @export
 Datatrans <- function(pkg, des, y, n.alts, n.sets, n.resp, n.par, no.choice, bin) {
   rownames(des) <- NULL
@@ -41,7 +45,6 @@ Datatrans <- function(pkg, des, y, n.alts, n.sets, n.resp, n.par, no.choice, bin
   des <- as.matrix(des)
   # Bayesm package. 
   if(pkg == 1) {
-    library(bayesm)
     bayesmin <- function(des, y, n.alts, n.sets, n.resp) {
       # Initialize
       lgtdata <- NULL
@@ -72,7 +75,6 @@ Datatrans <- function(pkg, des, y, n.alts, n.sets, n.resp, n.par, no.choice, bin
   }
   # ChoiceModelR.
   else if(pkg == 2) {
-    library(ChoiceModelR)
     Cmodrin <- function(des, y, n.alts, n.sets, n.resp) {
       set <- rep(1:n.sets, each = n.alts, times = n.resp)
       id <- rep(1:n.resp, each = n.sets * n.alts)
@@ -94,7 +96,6 @@ Datatrans <- function(pkg, des, y, n.alts, n.sets, n.resp, n.par, no.choice, bin
   }
   # RSGHB.
   else if (pkg == 3) {
-    library(RSGHB)
     Rsg <- function(des, y, n.alts, n.sets, n.resp, n.par) {
       n.par <- ncol(des)
       rsghbid <- rep(1:n.resp, each = n.sets)
@@ -126,7 +127,6 @@ Datatrans <- function(pkg, des, y, n.alts, n.sets, n.resp, n.par, no.choice, bin
   }
   # Mixed Probit estimation.
   else if (pkg == 4) {
-    library(bayesm)
     mxpin <- function(des, y, n.alts, n.sets, n.resp, n.par) {
       ynum <- nrow(y)
       yind <- NULL
@@ -162,7 +162,7 @@ Datatrans <- function(pkg, des, y, n.alts, n.sets, n.resp, n.par, no.choice, bin
 #' cs <- Profiles(lvls = c(2, 3, 2), coding = c("D", "C", "D"), c.lvls = list(c(2,4,6)))
 #' p <- c(0.8, 0.2, -0.3) # parameter vector
 #' # Generate design
-#' des <- Modfed(cand.set = cs, n.sets = 8, n.alts = 2, alt.cte = c(0,0), par.samples = p)$des
+#' des <- Modfed(cand.set = cs, n.sets = 8, n.alts = 2, alt.cte = c(0,0), par.draws = p)$des
 #' # Generate responses
 #' y <- RespondMNL(par = p, des = des, n.alts = 2)
 #' @export
@@ -186,7 +186,7 @@ RespondMNL <- function(par, des, n.alts, bin = TRUE) {
   p <- exp(u) / rep(rowsum(exp(u), group), each = n.alts)
   # Choice
   n.sets <- nrow(des) / n.alts
-  draws <- (0:(n.sets-1)) + (runif(n.sets))
+  draws <- (0:(n.sets-1)) + (stats::runif(n.sets))
   choice <- findInterval(x = draws, vec = c(0, cumsum(p)))
   Y <- rep(0, length(p))
   Y[choice] <- 1

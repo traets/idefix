@@ -79,9 +79,9 @@ Profiles <- function(lvls, coding, c.lvls = NULL) {
   # Create factors.
   dgrid[, cn] <- apply(dgrid[, cn, drop = FALSE], 2, factor)
   # coding 
-  con <- as.list(setNames(coding, names(dgrid)))
+  con <- as.list(stats::setNames(coding, names(dgrid)))
   con[which(con == "C")] <- NULL
-  cgrid <- as.data.frame(model.matrix(~., dgrid, contrasts = con))
+  cgrid <- as.data.frame(stats::model.matrix(~., dgrid, contrasts = con))
   # Delete intercept.
   cgrid <- cgrid[, -1]
   # Return profiles.
@@ -140,7 +140,7 @@ Lat <- function(K, b, m) {
   }
   a <- 1571
   N <- b^m   #number of lattice points
-  u <- runif(K)
+  u <- stats::runif(K)
   av <- rep(1, K)
   for (i in 2:K) {
     av[i] <- (a * av[i - 1]) %% N
@@ -162,7 +162,7 @@ Lat <- function(K, b, m) {
       latt[j, i] <- 1 - abs(2 * e[j, i] - 1)
     }
   }
-  latt <- qnorm(latt)
+  latt <- stats::qnorm(latt)
   return(latt)
 }
 
@@ -188,7 +188,7 @@ Lattice_mvt <- function (mean, cvar, df, m, b=2) {
   A <- chol(cvar)
   # Transform to multivariate t distribution
   for (i in 1:nrow(lattice)) {
-    inv <- rgamma(1, df / 2)
+    inv <- stats::rgamma(1, df / 2)
     invw <- inv / (df / 2)
     W <- 1 / invw
     Z <- lattice[i, ]

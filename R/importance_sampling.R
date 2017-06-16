@@ -3,17 +3,17 @@
 #' Importance sampling MNL
 #' 
 #' This function samples from the posterior distribution using importance 
-#' sampling, assuming normal prior distributions and a MNL likelihood.
+#' sampling, assuming a multivariate normal prior distribution and a MNL likelihood.
 #' @inheritParams SeqDB
 #' @param prior.mean Numeric vector indicating the mean of the multivariate
 #'   normal distribution (prior).
-#' @param y A binary response vector. \code{\link{RespondMNL}} can be used for
-#'   this.
+#' @param y A binary response vector. \code{\link{RespondMNL}} can be used to
+#'   simulate respons data.
 #' @param m Numeric value. Number of samples = \code{base^m}.
 #' @param b Numeric value indicating the base. The default = 2.
 #' @return \item{samples}{Numeric vector with the (unweigthted) samples from the
 #' posterior distribution.} \item{weights}{Numeric vector with the associated
-#' weights of the samples.} \item{max}{Numeric vector indicating the estimated
+#' weights of the samples.} \item{max}{Numeric vector with the estimated
 #' mode of the posterior distribution.} \item{covar}{Matrix representing the
 #' estimated variance covariance matrix.}
 #' @examples 
@@ -23,10 +23,10 @@
 #' cs <- Profiles(lvls = c(3, 3), coding = c("E", "E"))
 #' ps <- MASS::mvrnorm(n = 10, mu = pm, Sigma = pc) # 10 Samples.
 #' # Efficient design. 
-#' design <- Modfed(cand.set = cs, n.sets = 8, n.alts = 2, alt.cte = c(1,0), par.samples = ps)$design
-#' # Respons
+#' design <- Modfed(cand.set = cs, n.sets = 8, n.alts = 2, alt.cte = c(1,0), par.draws = ps)$design
+#' # Respons.
 #' resp <- RespondMNL(par = c(0.7, 0.6, 0.5, -0.5, -0.7), des = design, n.alts = 2)
-#' #parameters samples from posterior
+#' # Parameters samples from posterior.
 #' ImpsampMNL(prior.mean =  pm, prior.covar = pc, des = design, n.alts = 2, y = resp, m = 6)
 #'
 #' # Importance sampling MNL
@@ -36,7 +36,7 @@
 #' ac <- c(0, 0) # No alternative specific constants. 
 #' ps <- MASS::mvrnorm(n = 10, mu = pm, Sigma = pc) # 10 Samples.
 #' # Efficient design. 
-#' design <- Modfed(cand.set = cs, n.sets = 8, n.alts = 2, alt.cte = c(0,0), par.samples = ps)$design
+#' design <- Modfed(cand.set = cs, n.sets = 8, n.alts = 2, alt.cte = c(0,0), par.draws = ps)$design
 #' # Respons
 #' resp <- RespondMNL(par = c(0.6, 0.5, -0.5, -0.7), des = design, n.alts = 2)
 #' # Parameters samples from posterior.

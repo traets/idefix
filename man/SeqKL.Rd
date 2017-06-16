@@ -4,7 +4,7 @@
 \alias{SeqKL}
 \title{Sequential Kullback-Leibler based algorithm for the MNL model.}
 \usage{
-SeqKL(cand.set, n.alts, alt.cte, par.samples, weights, reduce = TRUE)
+SeqKL(cand.set, n.alts, alt.cte, par.draws, weights, reduce = TRUE)
 }
 \arguments{
 \item{cand.set}{A numeric matrix in which each row is a possible profile. The
@@ -16,17 +16,18 @@ set.}
 \item{alt.cte}{A binary vector indicating for each alternative if an
 alternative specific constant is desired.}
 
-\item{par.samples}{A matrix in which each row is a sample from the
-multivariate parameter distribution. See also \code{\link{ImpsamplingMNL}}.}
+\item{par.draws}{A matrix in which each row is a sample from the
+multivariate parameter distribution. See also \code{\link{ImpsampMNL}}.}
 
 \item{weights}{A vector containing the weights of the samples. Default is
-\code{NULL}, See also \code{\link{ImpsamplingMNL}}.}
+\code{NULL}, See also \code{\link{ImpsampMNL}}.}
 
 \item{reduce}{Logical value indicating whether the candidate set should be
 reduced or not.}
 }
 \value{
-Choice set that maximizes the expected KL divergence.
+\item{set}{Numeric matrix containing the choice set that maximizes the expected KL divergence.}
+\item{kl}{Numeric value which is the Kullback leibler divergence.}
 }
 \description{
 Selects the choice set that maximizes the Kullback-Leibler divergence between
@@ -47,7 +48,7 @@ pc <- diag(length(m)) # Prior variance
 ps <- MASS::mvrnorm(n = 10, mu = m, Sigma = pc) # 10 Samples.
 ac <- c(0, 0) # No alternative specific constants. 
 # Efficient choice set to add. 
-SeqKL(cand.set = cs, n.alts = 2, alt.cte = ac, par.samples = ps, weights = NULL)
+SeqKL(cand.set = cs, n.alts = 2, alt.cte = ac, par.draws = ps, weights = NULL)
 
 # KL efficient choice set, given parameter samples. 
 # Candidate profiles 
@@ -57,7 +58,7 @@ pc <- diag(length(m)) # Prior variance
 ps <- MASS::mvrnorm(n = 10, mu = m, Sigma = pc) # 10 Samples.
 ac <- c(1, 0) # Alternative specific constant. 
 # Efficient choice set to add. 
-SeqKL(cand.set = cs, n.alts = 2, alt.cte = ac, par.samples = ps, weights = NULL)
+SeqKL(cand.set = cs, n.alts = 2, alt.cte = ac, par.draws = ps, weights = NULL)
 }
 \references{
 \insertRef{crabbe}{mnldes}

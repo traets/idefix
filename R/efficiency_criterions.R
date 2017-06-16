@@ -22,9 +22,9 @@ Derr <- function(par, des, n.alts) {
 # @param des A design matrix in which each row is a profile.
 # @param i.cov Inverse of covariance matrix.
 # @param n.par Number of parameters.
-DerrS <- function(par.samples, set, des, n.alts, i.cov, n.par) {
+DerrS <- function(par.draws, set, des, n.alts, i.cov, n.par) {
   des.f <- rbind(des, set) 
-  info.d <- InfoDes(par = par.samples, des = des.f, n.alts = n.alts) 
+  info.d <- InfoDes(par = par.draws, des = des.f, n.alts = n.alts) 
   d.error <- det(info.d + i.cov)^(-1 / n.par)
   return(d.error)
 }
@@ -40,7 +40,7 @@ DerrS <- function(par.samples, set, des, n.alts, i.cov, n.par) {
 #   there are none it value is \code{NULL}.
 # @return The DB errors of the designs in which each design is a combination 
 #   with of the initial design with a potential choice set.
-DBerrS <- function(full.comb, cand.set, par.samples, des, n.alts, cte.des, i.cov, n.par, weights) {
+DBerrS <- function(full.comb, cand.set, par.draws, des, n.alts, cte.des, i.cov, n.par, weights) {
   # Take set.
   set <- as.matrix(cand.set[as.numeric(full.comb), ])
   # Add alternative specific constants if necessary
@@ -48,7 +48,7 @@ DBerrS <- function(full.comb, cand.set, par.samples, des, n.alts, cte.des, i.cov
     set <- as.matrix(cbind(cte.des, set))
   }
   # For each draw calculate D-error.
-  d.errors <- apply(par.samples, 1, DerrS, set, des, n.alts, i.cov, n.par)
+  d.errors <- apply(par.draws, 1, DerrS, set, des, n.alts, i.cov, n.par)
   w.d.errors <- d.errors * weights
   # DB-error. 
   db.error <- mean(w.d.errors, na.rm = TRUE)
@@ -92,13 +92,13 @@ Utbal <- function(par, des, n.alts) {
 # @param full.comb A matrix in which each row is a possible combination of
 #   profiles.
 # @return Numeric value indicating the Kullback-Leibler divergence.
-KLs <- function(full.comb, par.samples, cte.des, cand.set, weights) {
+KLs <- function(full.comb, par.draws, cte.des, cand.set, weights) {
   #take set
   set <- as.matrix(cand.set[as.numeric(full.comb), ])
   #Alternative specific constants 
   set <- cbind(cte.des, set)
   #calculate for all sets the KLinfo.
-  kl <- KL(set, par.samples, weights)
+  kl <- KL(set, par.draws, weights)
   return(kl)
 }
 
@@ -109,9 +109,9 @@ KLs <- function(full.comb, par.samples, cte.des, cand.set, weights) {
 # @inheritParams DerrS
 # @param weights A vector containing the weights of the samples. Default is
 #   \code{NULL}
-KL <- function (set, par.samples, weights){
+KL <- function (set, par.draws, weights){
   # Probabilities.
-  num2 <- tcrossprod(set, par.samples)
+  num2 <- tcrossprod(set, par.draws)
   mmat2 <- as.matrix(t(apply(num2, 2, max)))
   numm2 <- exp(sweep(num2, 2, mmat2, FUN = "-"))
   nummax <- exp(sweep(num2, 2, mmat2, FUN = "-"))

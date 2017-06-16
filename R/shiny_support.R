@@ -106,7 +106,7 @@ Decode <- function(set, lvl.names, coding, alt.cte, c.lvls = NULL) {
 #' 
 #' Transforms character input responses to binary response vector.
 #' @param resp String vector containing input responses
-#' @param resp.options String vector containing all possible responses. The
+#' @param resp.opt String vector containing all possible responses. The
 #'   response options should be specified in increasing order, starting with the
 #'   no choice option (if included).
 #' @param n.alts The number of alternatives per choice set.
@@ -158,7 +158,7 @@ CharBin <- function (resp, resp.opt, n.alts, no.choice = FALSE) {
 #'   ID.
 #' @examples  
 #' # Binary response data, 2 participants
-#' y <- matrix(data = c(0,1,1,0,0,0,0,1), ncol = 2, byrow = F)
+#' y <- matrix(data = c(0,1,1,0,0,0,0,1), ncol = 2, byrow = FALSE)
 #' # no choice = TRUE 
 #' BinDis(y = y, n.alts = 2, no.choice = TRUE)
 #' @export

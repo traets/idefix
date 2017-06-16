@@ -30,7 +30,7 @@ assuming a MNL model.
 cs <- Profiles(lvls = c(2, 3, 2), coding = c("D", "C", "D"), c.lvls = list(c(2,4,6)))
 p <- c(0.8, 0.2, -0.3) # parameter vector
 # Generate design
-des <- Modfed(cand.set = cs, n.sets = 8, n.alts = 2, alt.cte = c(0,0), par.samples = p)$des
+des <- Modfed(cand.set = cs, n.sets = 8, n.alts = 2, alt.cte = c(0,0), par.draws = p)$des
 # Generate responses
 y <- RespondMNL(par = p, des = des, n.alts = 2)
 }

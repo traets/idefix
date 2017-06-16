@@ -1,16 +1,19 @@
 Package: mnldes
 Type: Package
-Title: Efficient designs for discrete choice experiments.
+Title: Efficient designs for discrete choice experiments
 Version: 0.1.0
 Roxygen: list(markdown = TRUE)
 Authors@R: person("Frits", "Traets", email = "first.traets@kuleuven.com", role = c("aut", "cre"))
-Description: Generates efficient designs for discrete choice experiments.
-License: What license is it under?
+Description: Generates (adaptive) efficient designs for discrete choice experiments based on the multinomial logit model.
+License: GPL-3
 LazyData: TRUE
 Imports:
     dplyr,
     maxLik,
     gtools,
+    MASS,
+    stats,
+    scales,
     bayesm,
     ChoiceModelR,
     RSGHB

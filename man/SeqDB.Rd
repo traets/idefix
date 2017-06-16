@@ -4,7 +4,7 @@
 \alias{SeqDB}
 \title{Sequential modified federov algorithm for MNL model.}
 \usage{
-SeqDB(des, cand.set, n.alts, par.samples, prior.covar, reduce = TRUE,
+SeqDB(des, cand.set, n.alts, par.draws, prior.covar, reduce = TRUE,
   weights = NULL)
 }
 \arguments{
@@ -17,8 +17,8 @@ with \code{\link{Modfed}}}
 \item{n.alts}{Numeric value indicating the number of alternatives per choice
 set.}
 
-\item{par.samples}{A matrix in which each row is a sample from the
-multivariate parameter distribution. See also \code{\link{ImpsamplingMNL}}.}
+\item{par.draws}{A matrix in which each row is a sample from the
+multivariate parameter distribution. See also \code{\link{ImpsampMNL}}.}
 
 \item{prior.covar}{Covariance matrix of the prior distribution.}
 
@@ -26,7 +26,7 @@ multivariate parameter distribution. See also \code{\link{ImpsamplingMNL}}.}
 reduced or not.}
 
 \item{weights}{A vector containing the weights of the samples. Default is
-\code{NULL}, See also \code{\link{ImpsamplingMNL}}.}
+\code{NULL}, See also \code{\link{ImpsampMNL}}.}
 }
 \value{
 \item{set}{A matrix representing a DB efficient choice set.}
@@ -56,9 +56,9 @@ specific constants are used \code{reduce} can be \code{TRUE} so that the
 algorithm will be faster, but the combinations of constants and profiles will
 not be evaluated exhaustively.
 
-The \code{weights} can be used when the \code{par.samples} have weights. This
+The \code{weights} can be used when the \code{par.draws} have weights. This
 is for example the case when parameter values are updated using
-\code{\link{ImpSamp}}.
+\code{\link{ImpsampMNL}}.
 }
 \examples{
 # DB efficient choice set, given a design and parameter samples. 
@@ -69,9 +69,9 @@ pc <- diag(length(m)) # Prior variance
 ps <- MASS::mvrnorm(n = 10, mu = m, Sigma = pc) # 10 Samples.
 ac <- c(0, 0) # No alternative specific constants. 
 # Initial design.
-des <- Modfed(cand.set = cs, n.sets = 6, n.alts = 2, alt.cte = ac, par.samples = ps)$design
+des <- Modfed(cand.set = cs, n.sets = 6, n.alts = 2, alt.cte = ac, par.draws = ps)$design
 # Efficient choice set to add. 
-SeqDB(des = des, cand.set = cs, n.alts = 2, par.samples = ps, prior.covar = pc)
+SeqDB(des = des, cand.set = cs, n.alts = 2, par.draws = ps, prior.covar = pc)
 
 # DB efficient choice set, given a design and parameter samples. 
 # Candidate profiles 
@@ -81,9 +81,9 @@ pc <- diag(length(m)) # Prior variance
 ps <- MASS::mvrnorm(n = 10, mu = m, Sigma = pc) # 10 Samples.
 ac <- c(1, 0) # Alternative specific constant. 
 # Initial design.
-des <- Modfed(cand.set = cs, n.sets = 6, n.alts = 2, alt.cte = ac, par.samples = ps)$design
+des <- Modfed(cand.set = cs, n.sets = 6, n.alts = 2, alt.cte = ac, par.draws = ps)$design
 # Efficient choice set to add. 
-SeqDB(des = des, cand.set = cs, n.alts = 2, par.samples = ps, prior.covar = pc)
+SeqDB(des = des, cand.set = cs, n.alts = 2, par.draws = ps, prior.covar = pc)
 }
 \references{
 \insertRef{ju}{mnldes}

@@ -28,7 +28,7 @@ alternatives.
 \examples{
  
 # Binary response data, 2 participants
-y <- matrix(data = c(0,1,1,0,0,0,0,1), ncol = 2, byrow = F)
+y <- matrix(data = c(0,1,1,0,0,0,0,1), ncol = 2, byrow = FALSE)
 # no choice = TRUE 
 BinDis(y = y, n.alts = 2, no.choice = TRUE)
 }

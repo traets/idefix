@@ -9,14 +9,14 @@ CharBin(resp, resp.opt, n.alts, no.choice = FALSE)
 \arguments{
 \item{resp}{String vector containing input responses}
 
+\item{resp.opt}{String vector containing all possible responses. The
+response options should be specified in increasing order, starting with the
+no choice option (if included).}
+
 \item{n.alts}{The number of alternatives per choice set.}
 
 \item{no.choice}{Logical value indicating whether a no.choice option is
 provided or not. Default = FALSE.}
-
-\item{resp.options}{String vector containing all possible responses. The
-response options should be specified in increasing order, starting with the
-no choice option (if included).}
 }
 \value{
 A binary response vector.
