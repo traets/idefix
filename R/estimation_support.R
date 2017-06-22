@@ -2,24 +2,28 @@
 
 #' Data transformation.
 #'
-#' Transforms the data into the neccesary format in order to use estimation functions from different packages. 
+#' Transforms the data into the neccesary format in order to use estimation 
+#' functions from different packages.
 #' @param pkg Indicates the required package for estimation (\code{1 = 
-#'   \link[bayesm]{rhierMnlRwMixture}}, \code{2 =
-#'   \link[ChoiceModelR]{choicemodelr}}, \code{3 = \link[RSGHB]{doHB}} and
+#'   \link[bayesm]{rhierMnlRwMixture}}, \code{2 = 
+#'   \link[ChoiceModelR]{choicemodelr}}, \code{3 = \link[RSGHB]{doHB}} and 
 #'   \code{4 = \link[bayesm]{rbprobitGibbs}}).
 #' @param des A design matrix in which each row is a profile. Can be generated 
 #'   with \code{\link{Modfed}}
 #' @inheritParams Modfed
-#' @param y A numeric matrix. Each column represents a respondent, there are 
-#'   \code{n.sets} rows (discrete choice data), or \code{n.sets * n.alts} rows 
-#'   (binary data). see \code{bin}
+#' @param y A numeric matrix. Each columnvector is the sequence of choices of a
+#'   unique respondent. There can be \code{n.sets} rows with discrete values
+#'   indicating the chosen alternative of that set, or there can be \code{n.sets
+#'   * n.alts} rows with binary values indicating for each alternative whether it
+#'   was chosen or not. In the latter case the \code{bin} argument should be
+#'   \code{TRUE}.
 #' @param n.resp Numeric value indicating the number of respondents.
 #' @param n.par Numeric value indicating the number of model parameters that 
 #'   needs to be estimated.
 #' @param no.choice Logical value indicating whether a no choice response could 
 #'   be observed. This would be a \code{0} for each alternative.
 #' @param bin Logical value indicating whether the reponse matrix contains 
-#'   binary data (\code{TRUE}) or not (\code{FALSE}).
+#'   binary data (\code{TRUE}) or discrete data (\code{FALSE}). See \code{y}.
 #' @return The data ready to be used by the specified package.
 #' @examples 
 #' # 3 Attributes, 2 are dummy coded and 1 continuous.

@@ -8,16 +8,19 @@ Datatrans(pkg, des, y, n.alts, n.sets, n.resp, n.par, no.choice, bin)
 }
 \arguments{
 \item{pkg}{Indicates the required package for estimation (\code{1 = 
-  \link[bayesm]{rhierMnlRwMixture}}, \code{2 =
+  \link[bayesm]{rhierMnlRwMixture}}, \code{2 = 
   \link[ChoiceModelR]{choicemodelr}}, \code{3 = \link[RSGHB]{doHB}} and
 \code{4 = \link[bayesm]{rbprobitGibbs}}).}
 
 \item{des}{A design matrix in which each row is a profile. Can be generated
 with \code{\link{Modfed}}}
 
-\item{y}{A numeric matrix. Each column represents a respondent, there are
-\code{n.sets} rows (discrete choice data), or \code{n.sets * n.alts} rows
-(binary data). see \code{bin}}
+\item{y}{A numeric matrix. Each columnvector is the sequence of choices of a
+unique respondent. There can be \code{n.sets} rows with discrete values
+indicating the chosen alternative of that set, or there can be \code{n.sets
+  * n.alts} rows with binary values indicating for each alternative whether it
+was chosen or not. In the latter case the \code{bin} argument should be
+\code{TRUE}.}
 
 \item{n.alts}{Numeric value indicating the number of alternatives per choice
 set.}
@@ -33,13 +36,14 @@ needs to be estimated.}
 be observed. This would be a \code{0} for each alternative.}
 
 \item{bin}{Logical value indicating whether the reponse matrix contains
-binary data (\code{TRUE}) or not (\code{FALSE}).}
+binary data (\code{TRUE}) or discrete data (\code{FALSE}). See \code{y}.}
 }
 \value{
 The data ready to be used by the specified package.
 }
 \description{
-Transforms the data into the neccesary format in order to use estimation functions from different packages.
+Transforms the data into the neccesary format in order to use estimation
+functions from different packages.
 }
 \examples{
 # 3 Attributes, 2 are dummy coded and 1 continuous.

@@ -26,8 +26,8 @@ each continuous attribute. The default is \code{NULL}.}
 A character matrix which represents the choice set.
 }
 \description{
-Transforms a coded choice set into a choice set containing the true attribute
-levels, ready for use in a survey.
+Transforms a coded choice set into a choice set containing character attribute
+levels, ready to be used in a survey.
 }
 \details{
 In \code{lvl.names}, the number of character vectors in the list should equal
@@ -43,7 +43,7 @@ to that attribute. The first attribute wil be used as reference level.  For
 last attributelevel is used as reference level.
 }
 \examples{
-# Example no continuous attributes.
+# Example without continuous attributes.
 l <- c(3, 4, 2) # 3 Attributes.
 c <- c("D", "E", "D") # Coding.
 # All profiles.

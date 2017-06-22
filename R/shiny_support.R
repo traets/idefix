@@ -2,8 +2,8 @@
 
 #' Coded choice set to character choice set.
 #' 
-#' Transforms a coded choice set into a choice set containing the true attribute
-#' levels, ready for use in a survey.
+#' Transforms a coded choice set into a choice set containing character attribute
+#' levels, ready to be used in a survey.
 #' 
 #' In \code{lvl.names}, the number of character vectors in the list should equal
 #' the number of attributes in de choice set. The number of elements in each 
@@ -27,7 +27,7 @@
 #' @inheritParams Modfed
 #' @return A character matrix which represents the choice set.
 #' @examples 
-#' # Example no continuous attributes.
+#' # Example without continuous attributes.
 #' l <- c(3, 4, 2) # 3 Attributes.
 #' c <- c("D", "E", "D") # Coding.
 #' # All profiles.
@@ -102,33 +102,47 @@ Decode <- function(set, lvl.names, coding, alt.cte, c.lvls = NULL) {
 }
 
 
-#' Character to binary responses.
+#' Character vector to binary vector.
 #' 
-#' Transforms character input responses to binary response vector.
+#' Transforms a character vector with responses into a binary vector. Each
+#' alternative in each choice set wil be either 0 or 1. If the
+#' alternative was not chosen 0, and 1 if it was. The function can be used for example in a
+#' shiny application to transform the response vector received from
+#' \code{\link[shiny]{radioButtons}} into a numeric vector that can be used for
+#' estimation.
+#' 
+#' The \code{n.alts} denotes the number of alternatives a respondent could
+#' choose from, without counting a possible no choice option.
+#' 
+#' If \code{no.choice} is \code{TRUE} the first alternative specified in 
+#' \code{alts} will be treated as a no choice option. If the no choice option 
+#' was chosen all alternatives are zero for that choice set.
 #' @param resp String vector containing input responses
-#' @param resp.opt String vector containing all possible responses. The
-#'   response options should be specified in increasing order, starting with the
-#'   no choice option (if included).
+#' @param alts String vector containing all possible alternatives. The order
+#'   should be the same as the order of the design matrix.
 #' @param n.alts The number of alternatives per choice set.
-#' @param no.choice Logical value indicating whether a no.choice option is
-#'   provided or not. Default = FALSE.
-#' @return A binary response vector.
+#' @param no.choice Logical value indicating whether a no.choice option is 
+#'   provided or not. The default = \code{FALSE}.
+#' @return A binary response vector with length equal to \code{length(resp) *
+#'   length(n.alts)}.
 #' @examples 
-#' rm(list=ls())
-#' resp.opt <- c("no.choice", "alt1", "alt2", "alt3")
+#' # Observed Responses 
 #' resp <- c("alt1", "alt3", "alt2", "no.choice", "alt1") 
-#' CharBin(resp = resp, resp.opt = resp.opt, n.alts = 3, no.choice = TRUE)
+#' # All possible alternatives 
+#' alts <- c("no.choice", "alt1", "alt2", "alt3")
+#' # 3 alternatives + no.choice 
+#' Charbin(resp = resp, alts = alts, n.alts = 3, no.choice = TRUE)
 #' @export
-CharBin <- function (resp, resp.opt, n.alts, no.choice = FALSE) {
-  # Error resp not in resp.options
-  if (!all(resp %in% resp.opt)) {
+Charbin <- function (resp, alts, n.alts, no.choice = FALSE) {
+  # Error resp not in altsions
+  if (!all(resp %in% alts)) {
     stop("1 or more responses do not match the possible response options.")
   }
-  # Error resp.options
-  if (length(resp.opt) != (n.alts + no.choice)) {
+  # Error altsions
+  if (length(alts) != (n.alts + no.choice)) {
     stop("Number of response options is not correct")
   }
-  map <- match(resp, resp.opt)
+  map <- match(resp, alts)
   l <- list()
   for(i in 1:length(map)){
     l[[i]] <- rep(0, n.alts)
@@ -143,25 +157,24 @@ CharBin <- function (resp, resp.opt, n.alts, no.choice = FALSE) {
 }
 
 
-#' Binary to discrete choice matrix.
-#' 
-#' Transforms a numeric matrix with binary choice data for each respondent 
-#' (columns), to a matrix with discrete values representing the chosen 
-#' alternatives.
-#' @param y NUmeric matrix containing the binary choice data. Each column is a 
-#'   different ID.
-#' @param n.alts Numeric value indicating the number of alternatives per choice 
-#'   set.
-#' @param no.choice Logical value indicating whether a no choice response could 
-#'   be observed. This would be a \code{0} for each alternative.
-#' @return A matrix with discrete values, indicating the chosen alternatives per
-#'   ID.
-#' @examples  
-#' # Binary response data, 2 participants
-#' y <- matrix(data = c(0,1,1,0,0,0,0,1), ncol = 2, byrow = FALSE)
-#' # no choice = TRUE 
-#' BinDis(y = y, n.alts = 2, no.choice = TRUE)
-#' @export
+# Binary to discrete choice matrix.
+# 
+# Transforms a numeric matrix with binary choice data for each respondent 
+# (columns), to a matrix with discrete values representing the chosen 
+# alternatives.
+# @param y NUmeric matrix containing the binary choice data. Each column is a 
+#   different ID.
+# @param n.alts Numeric value indicating the number of alternatives per choice 
+#   set.
+# @param no.choice Logical value indicating whether a no choice response could 
+#   be observed. This would be a \code{0} for each alternative.
+# @return A matrix with discrete values, indicating the chosen alternatives per
+#   ID.
+# @examples  
+# # Binary response data, 2 participants
+# y <- matrix(data = c(0,1,1,0,0,0,0,1), ncol = 2, byrow = FALSE)
+# # no choice = TRUE 
+# BinDis(y = y, n.alts = 2, no.choice = TRUE)
 BinDis <- function(y, n.alts, no.choice) {
   # y matrix.
   if (!is.matrix(y)) {
