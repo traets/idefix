@@ -1,11 +1,14 @@
-Package: mnldes
+Package: idefix
 Type: Package
 Title: Efficient designs for discrete choice experiments
 Version: 0.1.0
 Roxygen: list(markdown = TRUE)
 Authors@R: person("Frits", "Traets", email = "first.traets@kuleuven.com", role = c("aut", "cre"))
-Description: Generates (adaptive) efficient designs for discrete choice experiments based on the multinomial logit model.
+Author: Frits Traets [aut, cre]
+Maintainer: Frits Traets <frits.traets@kuleuven.be>
+Description: Generates adaptive efficient designs for discrete choice experiments based on MNL and MMNL models.
 License: GPL-3
+Depends: R (>= 3.1.1)
 LazyData: TRUE
 Imports:
     dplyr,
@@ -13,10 +16,7 @@ Imports:
     gtools,
     MASS,
     stats,
-    scales,
-    bayesm,
-    ChoiceModelR,
-    RSGHB
+    scales
 RoxygenNote: 6.0.1
 RdMacros: Rdpack
-URL: https://github.com/traets/mnldes
+URL: https://github.com/traets/idefix
