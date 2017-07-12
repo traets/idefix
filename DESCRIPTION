@@ -1,21 +1,24 @@
 Package: idefix
 Type: Package
-Title: Efficient designs for discrete choice experiments
-Version: 0.1.0
+Title: Efficient Designs for Discrete Choice Experiments
+Version: 0.1.1
 Roxygen: list(markdown = TRUE)
-Authors@R: person("Frits", "Traets", email = "first.traets@kuleuven.com", role = c("aut", "cre"))
+Authors@R: person("Frits", "Traets", email = "frits.traets@kuleuven.be", role = c("aut", "cre"))
 Author: Frits Traets [aut, cre]
 Maintainer: Frits Traets <frits.traets@kuleuven.be>
-Description: Generates adaptive efficient designs for discrete choice experiments based on MNL and MMNL models.
+Description: Generates efficient designs for discrete choice experiments based on the multinomial logit model,
+ and individually adapted designs for the mixed multinomial logit model. Crabbe M, Akinc D and Vandebroek M (2014)
+ <doi:10.1016/j.trb.2013.11.008>.
 License: GPL-3
 Depends: R (>= 3.1.1)
 LazyData: TRUE
+ByteCompile: TRUE 
 Imports:
     dplyr,
     maxLik,
     gtools,
-    MASS,
     stats,
+    MASS,
     scales
 RoxygenNote: 6.0.1
 RdMacros: Rdpack

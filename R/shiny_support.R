@@ -64,7 +64,7 @@ Decode <- function(set, lvl.names, coding, alt.cte, c.lvls = NULL) {
   # Delete alt.cte's 
   contins <- which(alt.cte == 1)
   if( !length(contins) == 0) {
-    set <- set[ ,-length(contins)]
+    set <- set[, -length(contins)]
   }
   n.alts <- nrow(set) # Number of alternatives.
   n.att <- length(lvl.names) # Number of attributes.

@@ -54,17 +54,18 @@
 #' @examples
 #' # D-efficient design
 #' # 3 Attributes, 2 are dummy coded and 1 continuous (= 3 parameters).
-#' cs <- Profiles(lvls = c(2, 3, 2), coding = c("D", "C", "D"), c.lvls = list(c(2,4,6)))
+#' cs <- Profiles(lvls = c(2, 3, 2), coding = c("D", "C", "D"), c.lvls = list(c(2, 4, 6)))
 #' ps <- c(0.8, 0.2, -0.3) # Prior parameter vector
-#' Modfed(cand.set = cs, n.sets = 8, n.alts = 2, alt.cte = c(0,0), par.draws = ps)
+#' Modfed(cand.set = cs, n.sets = 8, n.alts = 2, alt.cte = c(0, 0), par.draws = ps)
 #' 
 #' # DB-efficient design. 
 #' # 3 Attributes with 2, 3 and 2 levels, all effect coded (= 4 parameters).
 #' cs <- Profiles(lvls = c(2, 3, 2), coding = c("E", "E", "E")) 
 #' m <- c(0.8, 0.2, -0.3, -0.2, 0.7) # Prior mean (total = 5 parameters).
-#' v <- diag(length(m)) # Prior variance. 
+#' v <- diag(length(m)) # Prior variance.
+#' set.seed(123) 
 #' ps <- MASS::mvrnorm(n = 10, mu = m, Sigma = v) # 10 Samples.
-#' Modfed(cand.set = cs, n.sets = 8, n.alts = 2, alt.cte = c(1,0), par.draws = ps)
+#' Modfed(cand.set = cs, n.sets = 8, n.alts = 2, alt.cte = c(1, 0), par.draws = ps)
 #' @references
 #' \insertRef{federov}{mnldes} 
 #' @export
@@ -97,17 +98,23 @@ Modfed <- function(cand.set, n.sets, n.alts,  alt.cte, par.draws, start.des = NU
     stop("dimension of par.draws does not match the dimension of alt.cte + cand.set.")
   }
   # Random start design.
-  if (!is.null(start.des)) {
-    des <- start.des
-  } else {
-    r <- round(stats::runif((n.sets * n.alts), 1, nrow(cand.set)))
-    des <- data.matrix(cand.set[r, ])
+  db.start <- NA
+  while (is.na(db.start)) {
+    if (!is.null(start.des)) {
+      des <- start.des
+    } else {
+      r <- round(stats::runif((n.sets * n.alts), 1, nrow(cand.set)))
+      des <- data.matrix(cand.set[r, ])
+    }
+    # Combine with alt.spec design.
+    des <- cbind(cte.des, des)
+    # Starting values. 
+    d.start <- apply(par.draws, 1, Derr, des = des,  n.alts = n.alts)
+    db.start <- mean(d.start, na.rm = TRUE)
+    if (!is.null(start.des) && is.na(db.start)) {
+      stop("the provided start design results in an unvalid db-error.")
+    }
   }
-  # Combine with alt.spec design.
-  des <- cbind(cte.des, des)
-  # Starting values. 
-  d.start <- apply(par.draws, 1, Derr, des = des,  n.alts = n.alts)
-  db.start <- mean(d.start, na.rm = TRUE)
   converge <- FALSE
   change <- FALSE
   it <- 1
@@ -118,7 +125,9 @@ Modfed <- function(cand.set, n.sets, n.alts,  alt.cte, par.draws, start.des = NU
   while (!converge & it <= max.iter) {
     it <- it + 1
     # show progress iteration.
-    pb <- utils::txtProgressBar(min = 0, max = nrow(des), style = 3)     
+    if (interactive()) {
+      pb <- utils::txtProgressBar(min = 0, max = nrow(des), style = 3)
+    }
     # save design before iteration.
     iter.des <- des
     # For every row in the design.
@@ -131,7 +140,7 @@ Modfed <- function(cand.set, n.sets, n.alts,  alt.cte, par.draws, start.des = NU
         # DB-error. 
         db <- mean(d.errors, na.rm = TRUE)
         # Change if lower db error.
-        if (!is.na(db)) {
+        if (!is.na(db) && !is.na(db.start)) {
           if (db < db.start) {
             best.row <- as.numeric(des[r, ])
             db.start <- db
@@ -139,7 +148,9 @@ Modfed <- function(cand.set, n.sets, n.alts,  alt.cte, par.draws, start.des = NU
           }
         }
         # Show progress iteration.
-        utils::setTxtProgressBar(pb, r)
+        if (interactive()) {
+          utils::setTxtProgressBar(pb, r)
+        }
       }
       # Replace with best profile if change.
       if (change) {
@@ -151,13 +162,15 @@ Modfed <- function(cand.set, n.sets, n.alts,  alt.cte, par.draws, start.des = NU
       change <- FALSE
       na.percentage <- 0
     }
-    close(pb)  # Print progress. 
+    if (interactive()) {
+      close(pb)
+    } 
     converge <- isTRUE(all.equal(des, iter.des)) # Convergence if no profile is swapped this iteration.
   }
   # calculate percentage NA values.
   d.errors <- apply(par.draws, 1, Derr, des = des,  n.alts = n.alts)
   if (any(is.na(d.errors))) {
-    na.percentage <- scales::percent(sum(is.na(d.errors))/n.samples)
+    na.percentage <- scales::percent(sum(is.na(d.errors)) / n.samples)
   } 
   # Utility balance.
   ub <- apply(par.draws, 1, Utbal, des = des,  n.alts = n.alts)
@@ -166,7 +179,7 @@ Modfed <- function(cand.set, n.sets, n.alts,  alt.cte, par.draws, start.des = NU
   des.names <- Rcnames(n.sets = n.sets, n.alts = n.alts, n.cte = n.cte, alt.cte = alt.cte)
   rownames(des) <- des.names[[1]]
   # Colnames alternative specific constants. 
-  if (n.cte != 0) {
+  if (n.cte != 0 && !is.null(colnames(des))) {
     colnames(des)[1:n.cte] <- des.names[[2]]
   }
   # Return design, D(B)error, percentage NA's, utility balance. 
@@ -219,6 +232,7 @@ Modfed <- function(cand.set, n.sets, n.alts,  alt.cte, par.draws, start.des = NU
 #' cs <- Profiles(lvls = c(3, 3), coding = c("E", "E"))
 #' m <- c(0.3, 0.2, -0.3, -0.2) # Prior mean (total = 5 parameters).
 #' pc <- diag(length(m)) # Prior variance
+#' set.seed(123)
 #' ps <- MASS::mvrnorm(n = 10, mu = m, Sigma = pc) # 10 Samples.
 #' ac <- c(0, 0) # No alternative specific constants. 
 #' # Initial design.
@@ -231,6 +245,7 @@ Modfed <- function(cand.set, n.sets, n.alts,  alt.cte, par.draws, start.des = NU
 #' cs <- Profiles(lvls = c(3, 3), coding = c("C", "E"), c.lvls = list(c(5,3,1)))
 #' m <- c(0.7, 0.3, -0.3, -0.2) # Prior mean (4 parameters).
 #' pc <- diag(length(m)) # Prior variance
+#' set.seed(123)
 #' ps <- MASS::mvrnorm(n = 10, mu = m, Sigma = pc) # 10 Samples.
 #' ac <- c(1, 0) # Alternative specific constant. 
 #' # Initial design.
@@ -310,6 +325,7 @@ SeqDB <- function(des, cand.set, n.alts, par.draws, prior.covar, reduce = TRUE, 
 #' cs <- Profiles(lvls = c(3, 3), coding = c("E", "E"))
 #' m <- c(0.3, 0.2, -0.3, -0.2) # Prior mean (4 parameters).
 #' pc <- diag(length(m)) # Prior variance
+#' set.seed(123)
 #' ps <- MASS::mvrnorm(n = 10, mu = m, Sigma = pc) # 10 Samples.
 #' ac <- c(0, 0) # No alternative specific constants. 
 #' # Efficient choice set to add. 
@@ -320,6 +336,7 @@ SeqDB <- function(des, cand.set, n.alts, par.draws, prior.covar, reduce = TRUE, 
 #' cs <- Profiles(lvls = c(3, 3), coding = c("C", "E"), c.lvls = list(c(5,3,1)))
 #' m <- c(0.7, 0.3, -0.3, -0.2) # Prior mean (4 parameters).
 #' pc <- diag(length(m)) # Prior variance
+#' set.seed(123)
 #' ps <- MASS::mvrnorm(n = 10, mu = m, Sigma = pc) # 10 Samples.
 #' ac <- c(1, 0) # Alternative specific constant. 
 #' # Efficient choice set to add. 

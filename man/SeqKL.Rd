@@ -45,6 +45,7 @@ gain.
 cs <- Profiles(lvls = c(3, 3), coding = c("E", "E"))
 m <- c(0.3, 0.2, -0.3, -0.2) # Prior mean (4 parameters).
 pc <- diag(length(m)) # Prior variance
+set.seed(123)
 ps <- MASS::mvrnorm(n = 10, mu = m, Sigma = pc) # 10 Samples.
 ac <- c(0, 0) # No alternative specific constants. 
 # Efficient choice set to add. 
@@ -55,6 +56,7 @@ SeqKL(cand.set = cs, n.alts = 2, alt.cte = ac, par.draws = ps, weights = NULL)
 cs <- Profiles(lvls = c(3, 3), coding = c("C", "E"), c.lvls = list(c(5,3,1)))
 m <- c(0.7, 0.3, -0.3, -0.2) # Prior mean (4 parameters).
 pc <- diag(length(m)) # Prior variance
+set.seed(123)
 ps <- MASS::mvrnorm(n = 10, mu = m, Sigma = pc) # 10 Samples.
 ac <- c(1, 0) # Alternative specific constant. 
 # Efficient choice set to add. 

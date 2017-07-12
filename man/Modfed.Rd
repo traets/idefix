@@ -71,17 +71,18 @@ absence of an alternative specific constant and \code{1} the opposite.
 \examples{
 # D-efficient design
 # 3 Attributes, 2 are dummy coded and 1 continuous (= 3 parameters).
-cs <- Profiles(lvls = c(2, 3, 2), coding = c("D", "C", "D"), c.lvls = list(c(2,4,6)))
+cs <- Profiles(lvls = c(2, 3, 2), coding = c("D", "C", "D"), c.lvls = list(c(2, 4, 6)))
 ps <- c(0.8, 0.2, -0.3) # Prior parameter vector
-Modfed(cand.set = cs, n.sets = 8, n.alts = 2, alt.cte = c(0,0), par.draws = ps)
+Modfed(cand.set = cs, n.sets = 8, n.alts = 2, alt.cte = c(0, 0), par.draws = ps)
 
 # DB-efficient design. 
 # 3 Attributes with 2, 3 and 2 levels, all effect coded (= 4 parameters).
 cs <- Profiles(lvls = c(2, 3, 2), coding = c("E", "E", "E")) 
 m <- c(0.8, 0.2, -0.3, -0.2, 0.7) # Prior mean (total = 5 parameters).
-v <- diag(length(m)) # Prior variance. 
+v <- diag(length(m)) # Prior variance.
+set.seed(123) 
 ps <- MASS::mvrnorm(n = 10, mu = m, Sigma = v) # 10 Samples.
-Modfed(cand.set = cs, n.sets = 8, n.alts = 2, alt.cte = c(1,0), par.draws = ps)
+Modfed(cand.set = cs, n.sets = 8, n.alts = 2, alt.cte = c(1, 0), par.draws = ps)
 }
 \references{
 \insertRef{federov}{mnldes}
