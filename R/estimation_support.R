@@ -8,8 +8,7 @@
 #'   \link[bayesm]{rhierMnlRwMixture}}, \code{2 = 
 #'   \link[ChoiceModelR]{choicemodelr}}, \code{3 = \link[RSGHB]{doHB}} and 
 #'   \code{4 = \link[bayesm]{rbprobitGibbs}}).
-#' @param des A design matrix in which each row is a profile. Can be generated 
-#'   with \code{\link{Modfed}}
+#' @param des A design matrix in which each row is a profile. 
 #' @inheritParams Modfed
 #' @param y A numeric matrix. Each columnvector is the sequence of choices of a
 #'   unique respondent. There can be \code{n.sets} rows with discrete values
@@ -79,6 +78,9 @@ Datatrans <- function(pkg, des, y, n.alts, n.sets, n.resp, n.par, no.choice, bin
   }
   # ChoiceModelR.
   else if(pkg == 2) {
+    # matrix y to 1 dim 
+    y <- as.vector(y)
+    y <- matrix(y, length(y))
     Cmodrin <- function(des, y, n.alts, n.sets, n.resp) {
       set <- rep(1:n.sets, each = n.alts, times = n.resp)
       id <- rep(1:n.resp, each = n.sets * n.alts)
@@ -100,6 +102,9 @@ Datatrans <- function(pkg, des, y, n.alts, n.sets, n.resp, n.par, no.choice, bin
   }
   # RSGHB.
   else if (pkg == 3) {
+    # matrix y to 1 dim 
+    y <- as.vector(y)
+    y <- matrix(y, length(y))
     Rsg <- function(des, y, n.alts, n.sets, n.resp, n.par) {
       n.par <- ncol(des)
       rsghbid <- rep(1:n.resp, each = n.sets)
@@ -131,6 +136,9 @@ Datatrans <- function(pkg, des, y, n.alts, n.sets, n.resp, n.par, no.choice, bin
   }
   # Mixed Probit estimation.
   else if (pkg == 4) {
+    # matrix y to 1 dim 
+    y <- as.vector(y)
+    y <- matrix(y, length(y))
     mxpin <- function(des, y, n.alts, n.sets, n.resp, n.par) {
       ynum <- nrow(y)
       yind <- NULL
