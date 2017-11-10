@@ -12,8 +12,7 @@ Datatrans(pkg, des, y, n.alts, n.sets, n.resp, n.par, no.choice, bin)
   \link[ChoiceModelR]{choicemodelr}}, \code{3 = \link[RSGHB]{doHB}} and
 \code{4 = \link[bayesm]{rbprobitGibbs}}).}
 
-\item{des}{A design matrix in which each row is a profile. Can be generated
-with \code{\link{Modfed}}}
+\item{des}{A design matrix in which each row is a profile.}
 
 \item{y}{A numeric matrix. Each columnvector is the sequence of choices of a
 unique respondent. There can be \code{n.sets} rows with discrete values
