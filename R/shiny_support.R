@@ -1,23 +1,64 @@
 #' Shiny application to generate a discrete choice survey.
 #' 
 #' This function starts a shiny application which puts choice sets on screen and
-#' saves the responses. The complete choice design can be provided in advance,
-#' or can be generated sequentially adaptively, or will be a combination of
-#' both.
+#' saves the responses. The complete choice design can be provided in advance, 
+#' or can be generated sequentially adaptively, or can be a combination of both.
 #' 
-#' @param alts
-#' @param atts 
-#' @param n.total
-#' @param lvl.names
-#' @param buttons.text
-#' @param intro.text
-#' @param end.text
+#' A pregenerated design can be specified in \code{des}. This should be a matrix
+#' in which each row is a profile. This can be generated with \code{Modfed}, but
+#' is not necesarry.
+#' 
+#' If \code{n.total} equals the number of \code{nrow(des)} / 
+#' \code{length(alts)}, the specified design will be be put 
+#' on screen, one set after another, and the responses will be saved. If no design
+#' is specified in \code{des}, \code{n.total} choice sets will be generated 
+#' adaptively sequentially using the KL criterion (see \code{\link{SeqKL}} for 
+#' more information). If \code{n.total} > (\code{nrow(des)} / 
+#' \code{length(alts)}), first the specified design will be shown and afterwards
+#' the remaining sets will be generated adaptively sequentially.
+#' 
+#' Whenever adaptively sequentially sets will be generated, \code{prior.mean}, 
+#' \code{prior.covar} and \code{cand.set} should be specified.
+#' 
+#' The names specified in \code{alts} will be used to label the choice 
+#' alternatives. The names specified in \code{atts} will be used to name the 
+#' attributes in the choice sets. The values of \code{lvl.names} will be used to
+#' create the values in the choice sets. See \code{\link{Decode}} for more 
+#' details.
+#' 
+#' The text specified in \code{buttons.text} will be displayed above the buttons
+#' to indicate the preferred choice (for example: "indicate your preferred 
+#' choice"). The text specified in \code{intro.text} will be displayed before 
+#' the choice sets. This will generally be a description of the survey and some 
+#' instructions. The text specified in \code{end.text} will be displayed after 
+#' the survey. This will generally be a thanking note and some further 
+#' instructions.
+#' 
+#' 
+#' @param alts A character vector containing the names of the alternatives.
+#' @param atts A character vector containing the names of the attributes.
+#' @param n.total A numeric value indicating the total number of choice sets.
+#' @param buttons.text A string containing the text presented together with the 
+#'   option buttons.
+#' @param intro.text A string containing the text presented before the choice 
+#'   survey.
+#' @param end.text A string containing the text presented after the choice 
+#'   survey.
 #' @inheritParams Decode
 #' @inheritParams Modfed
 #' @inheritParams Profiles
-#' 
-#' @export 
-SurveyApp <- function(des = NULL, n.total, alts, atts, lvl.names, alt.cte, coding,  c.lvls = NULL, p.mean = NULL, p.cov = NULL, cand.set = NULL, m = 6, buttons.text, intro.text, end.text) {
+#' @inheritParams SeqKL
+#' @inheritParams ImpsampMNL
+#' @references \insertRef{crabbe}{mnldes}
+#' @return A list object named "survey" can be found in the global environment.
+#'   \item{bin.responses}{A binary response vector indicating the observed
+#'   responses during the survey.} \item{responses}{A character string
+#'   containing the responses observed during the survey.} \item{design}{The
+#'   coded design matrix containing all presented choice sets during the
+#'   survey.}\item{survey}{All the choice sets (decoded), that were presented on
+#'   screen.}
+#' @export
+SurveyApp <- function(des = NULL, n.total, alts, atts, lvl.names, alt.cte, coding,  c.lvls = NULL, prior.mean = NULL, prior.covar = NULL, cand.set = NULL, m = 6, buttons.text, intro.text, end.text) {
   
   # Libraries
   require(shiny)
@@ -42,8 +83,8 @@ SurveyApp <- function(des = NULL, n.total, alts, atts, lvl.names, alt.cte, codin
       stop("The number of design rows does not match the number of alternatives times the number of sets.")
     }
     if (n.total > n.init) {
-      if (any(c(is.null(p.mean), is.null(p.cov), is.null(cand.set)))) {
-        stop("When n.total is larger than the number of sets in des, arguments p.mean, p.cov, and cand.set should be specified")
+      if (any(c(is.null(prior.mean), is.null(prior.covar), is.null(cand.set)))) {
+        stop("When n.total is larger than the number of sets in des, arguments prior.mean, prior.covar, and cand.set should be specified")
       }
     }
   }
@@ -80,12 +121,12 @@ SurveyApp <- function(des = NULL, n.total, alts, atts, lvl.names, alt.cte, codin
             # if First set
             if (sn == 1) {
               # Draw samples from prior
-              s <- MASS::mvrnorm(n = 50, mu = p.mean, Sigma  = p.cov)
+              s <- MASS::mvrnorm(n = 50, mu = prior.mean, Sigma  = prior.covar)
               w <- rep(1, nrow(s)) / nrow(s)
               # From second set
             } else {
               # Draw samples from updated posterior
-              sam <- ImpsampMNL(prior.mean = p.mean, prior.covar = p.cov, des = des, n.alts = n.alts, y = y.bin, m = m)
+              sam <- ImpsampMNL(prior.mean = prior.mean, prior.covar = prior.covar, des = des, n.alts = n.alts, y = y.bin, m = m)
               s <- sam$samples
               w <- sam$weights
             }
@@ -392,4 +433,4 @@ BinDis <- function(y, n.alts, no.choice) {
 
 
 
-
+warnings()
