@@ -95,7 +95,7 @@ Modfed <- function(cand.set, n.sets, n.alts,  alt.cte, par.draws, start.des = NU
   cte.des <- Altspec(alt.cte = alt.cte, n.sets = n.sets)
   # Error handling cte.des
   if (ncol(cand.set) + ncol(cte.des) != ncol(par.draws)) {
-    stop("dimension of par.draws does not match the dimension of alt.cte + cand.set.")
+    stop("The number of parameters in par.draws does not match the number of parameters for alt.cte + the number of paramters in cand.set.")
   }
   # Random start design.
   db.start <- NA
