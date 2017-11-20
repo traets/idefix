@@ -58,7 +58,9 @@
 #'   survey.}\item{survey}{All the choice sets (decoded), that were presented on
 #'   screen.}
 #' @export
-SurveyApp <- function(des = NULL, n.total, alts, atts, lvl.names, alt.cte, coding,  c.lvls = NULL, prior.mean = NULL, prior.covar = NULL, cand.set = NULL, m = 6, buttons.text, intro.text, end.text) {
+SurveyApp <- function(des = NULL, n.total, alts, atts, lvl.names, alt.cte, coding, buttons.text, intro.text, end.text, crit = NULL, 
+                      c.lvls = NULL, prior.mean = NULL, prior.covar = NULL, 
+                      cand.set = NULL, m = 6) {
   
   # Libraries
   require(shiny)
@@ -84,7 +86,7 @@ SurveyApp <- function(des = NULL, n.total, alts, atts, lvl.names, alt.cte, codin
     }
     if (n.total > n.init) {
       if (any(c(is.null(prior.mean), is.null(prior.covar), is.null(cand.set)))) {
-        stop("When n.total is larger than the number of sets in des, arguments prior.mean, prior.covar, and cand.set should be specified")
+        stop("When n.total is larger than the number of sets in argument des, arguments crit, prior.mean, prior.covar, and cand.set should be specified.")
       }
     }
   }
@@ -92,6 +94,8 @@ SurveyApp <- function(des = NULL, n.total, alts, atts, lvl.names, alt.cte, codin
   shinyApp(
     ### User interface
     ui <- fluidPage(
+      # Put setnr on screen
+      column(8, align = 'center', textOutput("set.nr")),
       # Put design on screen
       column(8, align = 'center', tableOutput("choice.set")),
       # Put answer options on screen
@@ -112,26 +116,38 @@ SurveyApp <- function(des = NULL, n.total, alts, atts, lvl.names, alt.cte, codin
       # Set selection function
       Select <- function () {
         if (sn <= n.total) {
-          # Take set 
+          
           # for initial sets 
           if (sn <= n.init) {
-            set <- design[bs[sn] : es[sn], ]
+            set <- des[bs[sn] : es[sn], ]
           } else {
             # for adaptive sets
             # if First set
             if (sn == 1) {
               # Draw samples from prior
-              s <- MASS::mvrnorm(n = 50, mu = prior.mean, Sigma  = prior.covar)
+              s <- MASS::mvrnorm(n = 2^m, mu = prior.mean, Sigma  = prior.covar)
               w <- rep(1, nrow(s)) / nrow(s)
               # From second set
             } else {
+              # Add alternative specific constant if necessary
+              cte.des <- Altspec(alt.cte = alt.cte, n.sets = (nrow(des) / n.alts))
+              fdes <- cbind(cte.des, des)
               # Draw samples from updated posterior
-              sam <- ImpsampMNL(prior.mean = prior.mean, prior.covar = prior.covar, des = des, n.alts = n.alts, y = y.bin, m = m)
+              sam <- ImpsampMNL(prior.mean = prior.mean, prior.covar = prior.covar, des = fdes, n.alts = n.alts, y = y.bin, m = m)
               s <- sam$samples
               w <- sam$weights
             }
-            # Select new set based on KL info
-            set <- SeqKL(cand.set = cand.set, n.alts = n.alts, par.draws = s, alt.cte = alt.cte, weights = w)$set
+            if (crit == "KL") {
+              # Select new set based on KL info
+              set <- SeqKL(cand.set = cand.set, n.alts = n.alts, par.draws = s, alt.cte = alt.cte, weights = w)$set
+            } else if (crit == "DB") {
+              # Select new set based on DB 
+              setobject <- SeqDBApp(des = des, cand.set = cand.set, n.alts = n.alts, par.draws = s, prior.covar = prior.covar, alt.cte = alt.cte, w = w)
+              set <- setobject$set
+              db  <- setobject$db
+            } else {
+              stop("Argument crit should eihter be KL or DB.")
+            }
             # Design storage
             if (sn == 1) { 
               rownames(set) <- rownames(set, do.NULL = FALSE, prefix = paste(paste("set", sn , sep = ""), "alt", sep = "."))
@@ -142,7 +158,7 @@ SurveyApp <- function(des = NULL, n.total, alts, atts, lvl.names, alt.cte, codin
             }
           }
           # Transform coded set to attribute level character set.
-          choice.set <- Decode(set = set, lvl.names = lvl.names, coding = coding, alt.cte = alt.cte, c.lvls = c.lvls)
+          choice.set <- Decode(set = set, lvl.names = lvl.names, coding = coding, c.lvls = c.lvls)
           choice.set <- t(choice.set[ , 1:n.atts])
           # Fill in attribute names and alternatives names
           colnames(choice.set) <- alts
@@ -153,7 +169,7 @@ SurveyApp <- function(des = NULL, n.total, alts, atts, lvl.names, alt.cte, codin
           } else {
             choice.sets <<- rbind(choice.sets, choice.set)
           }
-          #return choice set and design
+          #return design 
           return(choice.set)
         }
       }
@@ -186,6 +202,10 @@ SurveyApp <- function(des = NULL, n.total, alts, atts, lvl.names, alt.cte, codin
           return(list(radioButtons("survey", buttons.text,
                                    alts , inline = T, selected = "None")))
         }
+      })
+      # set nr
+      observeEvent(input$OK, {
+        output$set.nr <- renderText(paste(c("choice set:", sn, "/", n.total)))
       })
       # Introtext
       output$intro <- renderText(intro.text)
@@ -233,6 +253,8 @@ SurveyApp <- function(des = NULL, n.total, alts, atts, lvl.names, alt.cte, codin
 #'   level of each attribute.
 #' @param coding A character vector denoting the type of coding used for each
 #'   attribute. See also \code{\link{Profiles}}.
+#' @param alt.cte A binary vector indicating for each alternative if an 
+#'   alternative specific constant is present. The default is \code{NULL}. 
 #' @inheritParams Profiles
 #' @inheritParams Modfed
 #' @return A character matrix which represents the choice set.
@@ -270,12 +292,15 @@ SurveyApp <- function(des = NULL, n.total, alts, atts, lvl.names, alt.cte, codin
 #' # Decode
 #' Decode(set = cs, lvl.names = al, coding = c, alt.cte = c(1, 0), c.lvls = cl) 
 #' @export
-Decode <- function(set, lvl.names, coding, alt.cte, c.lvls = NULL) {
-  # Delete alt.cte's 
-  contins <- which(alt.cte == 1)
-  if( !length(contins) == 0) {
-    set <- set[, -length(contins)]
+Decode <- function(set, lvl.names, coding, alt.cte = NULL, c.lvls = NULL) {
+  
+  if(!is.null(alt.cte)) {
+    contins <- which(alt.cte == 1)
+    if( !length(contins) == 0) {
+      set <- set[, -length(contins)]
+    }
   }
+  
   n.alts <- nrow(set) # Number of alternatives.
   n.att <- length(lvl.names) # Number of attributes.
   conts <- which(coding == "C") # Continuous levels. 
@@ -431,6 +456,52 @@ BinDis <- function(y, n.alts, no.choice) {
   return(y.nom)
 }
 
+# Sequential DB function for shiny
+# 
+# Small changes in alt.cte argument in comparison with the \code{SeqDB}
+# function. This way the function can be easily used in the SurveyApp function
+SeqDBApp <- function(des, cand.set, n.alts, par.draws, prior.covar, alt.cte, reduce = TRUE, w = NULL) {
+  # Initialize.
+  n.sets <- nrow(des) / n.alts
+  # If no w, equal w.
+  if (is.null(w)) {
+    w <- rep(1, nrow(par.draws))
+  }
+  # Create alternative specific design if necessay.
+  if (!all(alt.cte == 0)) {
+    cte.set <- Altspec(alt.cte = alt.cte, n.sets = 1)
+    cte.des <- Altspec(alt.cte = alt.cte, n.sets = n.sets)
+    fdes <- cbind(cte.des, des)
+  } else {fdes <- des}
+  # Error handling cte.des
+  if (ncol(cand.set) + ncol(cte.des) != ncol(par.draws)) {
+    stop("dimension of par.draws does not match the dimension of alt.cte + cand.set.")
+  }
+  # Handling par.draws.
+  if (!(is.matrix(par.draws))) {
+    par.draws <- matrix(par.draws, nrow = 1)
+  }
+  # Error identifying model.
+  if (n.sets < ncol(par.draws)) {
+    stop("Model is unidentified. Increase the number of choice sets or decrease parameters to estimate.")
+  }
+  # Error par.draws
+  if (ncol(fdes) != ncol(par.draws)) {
+    stop("Numbers of parameters in par.draws does not match the number of parameters in the design.")
+  }
+  # Starting and initializing values.
+  i.cov <- solve(prior.covar)
+  d.start <- apply(par.draws, 1, Derr, des = fdes,  n.alts = n.alts)
+  db.start <- mean(d.start, na.rm = TRUE)
+  full.comb <- gtools::combinations(n = nrow(cand.set), r = n.alts, repeats.allowed = !reduce)
+  n.par <- ncol(par.draws)
+  # For each potential set, select best. 
+  db.errors <- apply(full.comb, 1, DBerrS, cand.set, par.draws, fdes, n.alts, cte.set, i.cov, n.par, w)
+  comb.nr <- as.numeric(full.comb[which.min(db.errors), ])
+  set <- cand.set[comb.nr, ]
+  row.names(set) <- NULL
+  db <- min(db.errors)
+  #return best set and db error design.
+  return(list(set = set, db.error = db))
+}
 
-
-warnings()
