@@ -351,7 +351,7 @@ SeqKL <- function(cand.set, n.alts, alt.cte, par.draws, weights, reduce = TRUE) 
   if (length(alt.cte) != n.alts) {
     stop("n.alts does not match the alt.cte vector")
   }
-  # Create alternative specific design.
+  # Create alternative specific design. 
   cte.des <- Altspec(alt.cte = alt.cte, n.sets = 1)
   # Error handling cte.des
   if (ncol(cand.set) + ncol(cte.des) != ncol(par.draws)) {
