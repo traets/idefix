@@ -4,7 +4,7 @@
 \alias{Decode}
 \title{Coded choice set to character choice set.}
 \usage{
-Decode(set, lvl.names, coding, alt.cte, c.lvls = NULL)
+Decode(set, lvl.names, coding, alt.cte = NULL, c.lvls = NULL)
 }
 \arguments{
 \item{set}{A numeric matrix which represents a choice set. Each row is a
@@ -17,7 +17,7 @@ level of each attribute.}
 attribute. See also \code{\link{Profiles}}.}
 
 \item{alt.cte}{A binary vector indicating for each alternative if an
-alternative specific constant is desired.}
+alternative specific constant is present. The default is \code{NULL}.}
 
 \item{c.lvls}{A list containing numeric vectors with the attributelevels for
 each continuous attribute. The default is \code{NULL}.}
