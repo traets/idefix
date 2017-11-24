@@ -4,9 +4,9 @@
 \alias{SurveyApp}
 \title{Shiny application to generate a discrete choice survey.}
 \usage{
-SurveyApp(des = NULL, n.total, alts, atts, lvl.names, alt.cte, coding,
-  c.lvls = NULL, prior.mean = NULL, prior.covar = NULL, cand.set = NULL,
-  m = 6, buttons.text, intro.text, end.text)
+SurveyApp(des = NULL, n.total, alts, atts, lvl.names, coding, buttons.text,
+  intro.text, end.text, c.lvls = NULL, crit = NULL, alt.cte = NULL,
+  prior.mean = NULL, prior.covar = NULL, cand.set = NULL, m = NULL)
 }
 \arguments{
 \item{des}{A design matrix in which each row is a profile. Can be generated
@@ -21,14 +21,23 @@ with \code{\link{Modfed}}}
 \item{lvl.names}{A list containing character vectors with the values of each
 level of each attribute.}
 
-\item{alt.cte}{A binary vector indicating for each alternative if an
-alternative specific constant is desired.}
-
 \item{coding}{A character vector denoting the type of coding used for each
 attribute. See also \code{\link{Profiles}}.}
 
+\item{buttons.text}{A string containing the text presented together with the
+option buttons.}
+
+\item{intro.text}{A string containing the text presented before the choice
+survey.}
+
+\item{end.text}{A string containing the text presented after the choice
+survey.}
+
 \item{c.lvls}{A list containing numeric vectors with the attributelevels for
 each continuous attribute. The default is \code{NULL}.}
+
+\item{alt.cte}{A binary vector indicating for each alternative if an
+alternative specific constant is present. The default is \code{NULL}.}
 
 \item{prior.mean}{Numeric vector indicating the mean of the multivariate
 normal distribution (prior).}
@@ -39,15 +48,6 @@ normal distribution (prior).}
 \code{\link{Profiles}} function can be used to generate this.}
 
 \item{m}{Numeric value. Number of samples = \code{base^m}.}
-
-\item{buttons.text}{A string containing the text presented together with the
-option buttons.}
-
-\item{intro.text}{A string containing the text presented before the choice
-survey.}
-
-\item{end.text}{A string containing the text presented after the choice
-survey.}
 }
 \value{
 A list object named "survey" can be found in the global environment.
