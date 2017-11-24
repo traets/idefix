@@ -58,9 +58,9 @@
 #'   survey.}\item{survey}{All the choice sets (decoded), that were presented on
 #'   screen.}
 #' @export
-SurveyApp <- function(des = NULL, n.total, alts, atts, lvl.names, alt.cte, coding, buttons.text, intro.text, end.text, crit = NULL, 
-                      c.lvls = NULL, prior.mean = NULL, prior.covar = NULL, 
-                      cand.set = NULL, m = 6) {
+SurveyApp <- function(des = NULL, n.total, alts, atts, lvl.names, coding, buttons.text, intro.text, end.text, 
+                      c.lvls = NULL, crit = NULL, alt.cte = NULL, prior.mean = NULL, prior.covar = NULL, 
+                      cand.set = NULL, m = NULL) {
   
   # Libraries
   require(shiny)
@@ -73,22 +73,56 @@ SurveyApp <- function(des = NULL, n.total, alts, atts, lvl.names, alt.cte, codin
   n.alts <- length(alts)
   buttons <- NULL
   sn <- 0
+  if (is.null(alt.cte)) {
+    alt.cte <- rep(0, n.alts)
+    cte.des <- NULL
+  } 
   
   if (is.null(des)) {
     n.init <- 0
+    fulldes <- matrix(data = NA, nrow = (n.alts * n.total), ncol = ncol(cand.set))
   } else {
     n.init <- nrow(des) / n.alts 
     bs <- seq(1, (nrow(des) - n.alts + 1), n.alts)
     es <- c((bs - 1), nrow(des))[-1] 
+    if (sum(alt.cte) > 0) {
+      cte.des <- Altspec(alt.cte = alt.cte, n.sets = (nrow(des) / n.alts))
+      colnames(cte.des) <- paste(paste("alt", which(alt.cte == 1), sep = ""), ".cte", sep = "")
+    }
+    colnames(des) <- paste("par", 1:ncol(des), sep = ".")
+    fulldes <- cbind(cte.des, des)
     # Error handling
     if (length(bs) != n.init) {
       stop("The number of design rows does not match the number of alternatives times the number of sets.")
     }
-    if (n.total > n.init) {
-      if (any(c(is.null(prior.mean), is.null(prior.covar), is.null(cand.set)))) {
-        stop("When n.total is larger than the number of sets in argument des, arguments crit, prior.mean, prior.covar, and cand.set should be specified.")
+  }
+  # Error handling
+  if (n.total > n.init) {
+      if (any(c(is.null(prior.mean), is.null(prior.covar), is.null(cand.set), is.null(m), is.null(crit)))) {
+        stop("When n.total is larger than the number of sets in argument des, arguments crit, prior.mean, prior.covar, cand.set and m should be specified.")
+      }
+    if (length(prior.mean) != ncol(cand.set) + sum(alt.cte)) {
+      stop("Number of parameters in prior.mean does not match with cand.set + alt.cte")
+    }
+    } else {
+      if (!is.null(prior.mean)) {
+        warning("prior.mean will be ignored, since there are no adaptive sets.")
+      } 
+      if (!is.null(prior.covar)) {
+        warning("prior.covar will be ignored, since there are no adaptive sets.")
+      }
+      if (!is.null(cand.set)) {
+        warning("cand.set will be ignored, since there are no adaptive sets.")
+      }
+      if (sum(alt.cte) == 0) {
+        warning("alt.cte will be ignored, since there are no adaptive sets.")
+      }
+      if (!is.null(m)) {
+        warning("m will be ignored, since there are no adaptive sets.")
       }
     }
+  if (crit =="DB" && is.null(des)) {
+    stop("In order to use the DB criterion, an initial design has to be provided.")
   }
   
   shinyApp(
@@ -121,49 +155,69 @@ SurveyApp <- function(des = NULL, n.total, alts, atts, lvl.names, alt.cte, codin
           if (sn <= n.init) {
             set <- des[bs[sn] : es[sn], ]
           } else {
-            # for adaptive sets
+            ## sample drawing for adaptive sets
             # if First set
             if (sn == 1) {
               # Draw samples from prior
-              s <- MASS::mvrnorm(n = 2^m, mu = prior.mean, Sigma  = prior.covar)
+              s <- MASS::mvrnorm(n = 2 ^ m, mu = prior.mean, Sigma  = prior.covar)
               w <- rep(1, nrow(s)) / nrow(s)
               # From second set
             } else {
-              # Add alternative specific constant if necessary
-              cte.des <- Altspec(alt.cte = alt.cte, n.sets = (nrow(des) / n.alts))
-              fdes <- cbind(cte.des, des)
               # Draw samples from updated posterior
-              sam <- ImpsampMNL(prior.mean = prior.mean, prior.covar = prior.covar, des = fdes, n.alts = n.alts, y = y.bin, m = m)
+              sam <- ImpsampMNL(prior.mean = prior.mean, prior.covar = prior.covar, des = fulldes, n.alts = n.alts, y = y.bin, m = m)
               s <- sam$samples
               w <- sam$weights
             }
+            
+            ## Selecting set
             if (crit == "KL") {
               # Select new set based on KL info
               set <- SeqKL(cand.set = cand.set, n.alts = n.alts, par.draws = s, alt.cte = alt.cte, weights = w)$set
+              #delete alt.cte if necessary
+              if (sum(alt.cte) > 0) {
+                set <- set[ , -(1 : (sum(alt.cte)))]
+              }
             } else if (crit == "DB") {
               # Select new set based on DB 
-              setobject <- SeqDBApp(des = des, cand.set = cand.set, n.alts = n.alts, par.draws = s, prior.covar = prior.covar, alt.cte = alt.cte, w = w)
-              set <- setobject$set
-              db  <- setobject$db
+              setobj <- SeqDBApp(des = des, cand.set = cand.set, n.alts = n.alts, par.draws = s, prior.covar = prior.covar, alt.cte = alt.cte, w = w)
+              set <- setobj$set
+              db  <- setobj$db
             } else {
               stop("Argument crit should eihter be KL or DB.")
             }
-            # Design storage
+            
+            ## Design storage
             if (sn == 1) { 
               rownames(set) <- rownames(set, do.NULL = FALSE, prefix = paste(paste("set", sn , sep = ""), "alt", sep = "."))
+              colnames(set) <- paste("par", 1:ncol(set), sep = ".")
               des <<- set
+              # with alt.cte
+              altset <- Altspec(alt.cte, n.sets = 1)
+              if (sum(alt.cte) > 0) {
+                colnames(altset) <- paste(paste("alt", which(alt.cte == 1), sep = ""), ".cte", sep = "")
+              }
+              fullset <- cbind(altset, set)
+              fulldes <<- fullset
             } else {
               rownames(set) <- rownames(set, do.NULL = FALSE, prefix = paste(paste("set", sn , sep = ""), "alt", sep = "."))
+              colnames(set) <- paste("par", 1:ncol(set), sep = ".")
               des <<- rbind(des, set)
+              # with alt.cte
+              altset <- Altspec(alt.cte, n.sets = 1)
+              if (sum(alt.cte) > 0) {
+                colnames(altset) <- paste(paste("alt", which(alt.cte == 1), sep = ""), ".cte", sep = "")
+              }
+              fullset <- cbind(altset, set)
+              fulldes <<- rbind(fulldes, fullset)
             }
           }
           # Transform coded set to attribute level character set.
-          choice.set <- Decode(set = set, lvl.names = lvl.names, coding = coding, c.lvls = c.lvls)
-          choice.set <- t(choice.set[ , 1:n.atts])
+            choice.set <- Decode(set = set, lvl.names = lvl.names, coding = coding, c.lvls = c.lvls)
+            choice.set <- t(choice.set[ , 1:n.atts])
           # Fill in attribute names and alternatives names
           colnames(choice.set) <- alts
           rownames(choice.set) <- atts
-          #store uncoded choice set
+          # Store uncoded choice set
           if (sn == 1) {
             choice.sets <<- choice.set
           } else {
@@ -186,7 +240,7 @@ SurveyApp <- function(des = NULL, n.total, alts, atts, lvl.names, alt.cte, codin
           y.bin <<- Charbin(resp = resp, alts = alts, n.alts = n.alts)
           survey$bin.responses <<- y.bin
           survey$responses <<- resp
-          survey$design <<- des
+          survey$design <<- fulldes
           survey$survey <<- choice.sets
         } 
         # end phase 
@@ -205,12 +259,14 @@ SurveyApp <- function(des = NULL, n.total, alts, atts, lvl.names, alt.cte, codin
       })
       # set nr
       observeEvent(input$OK, {
-        output$set.nr <- renderText(paste(c("choice set:", sn, "/", n.total)))
+        if (sn < n.total) {
+          output$set.nr <- renderText(paste(c("choice set:", sn, "/", n.total)))
+        } else {output$set.nr <- renderText(NULL)}
       })
       # Introtext
       output$intro <- renderText(intro.text)
       observeEvent(input$OK, {
-        output$intro <- renderText("")
+        output$intro <- renderText(NULL)
       })
       # End of survey
       observeEvent(input$OK, {
@@ -471,10 +527,15 @@ SeqDBApp <- function(des, cand.set, n.alts, par.draws, prior.covar, alt.cte, red
   if (!all(alt.cte == 0)) {
     cte.set <- Altspec(alt.cte = alt.cte, n.sets = 1)
     cte.des <- Altspec(alt.cte = alt.cte, n.sets = n.sets)
+    kcte <- ncol(cte.des)
     fdes <- cbind(cte.des, des)
-  } else {fdes <- des}
+  } else {
+    cte.set <- NULL
+    kcte <- 0
+    fdes <- des
+  }
   # Error handling cte.des
-  if (ncol(cand.set) + ncol(cte.des) != ncol(par.draws)) {
+  if (ncol(cand.set) + kcte != ncol(par.draws)) {
     stop("dimension of par.draws does not match the dimension of alt.cte + cand.set.")
   }
   # Handling par.draws.
