@@ -66,6 +66,8 @@
 #' set.seed(123) 
 #' ps <- MASS::mvrnorm(n = 10, mu = m, Sigma = v) # 10 Samples.
 #' Modfed(cand.set = cs, n.sets = 8, n.alts = 2, alt.cte = c(1, 0), par.draws = ps)
+#' @references
+#' \insertRef{federov}{mnldes} 
 #' @export
 Modfed <- function(cand.set, n.sets, n.alts,  alt.cte, par.draws, start.des = NULL, max.iter = Inf) {
   # Handling par.draws.
