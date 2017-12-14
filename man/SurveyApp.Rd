@@ -36,6 +36,8 @@ survey.}
 \item{c.lvls}{A list containing numeric vectors with the attributelevels for
 each continuous attribute. The default is \code{NULL}.}
 
+\item{crit}{A string containing eihter KL or DB indicating the adaptive criterion to be used.}
+
 \item{alt.cte}{A binary vector indicating for each alternative if an
 alternative specific constant is present. The default is \code{NULL}.}
 
@@ -50,7 +52,7 @@ normal distribution (prior).}
 \item{m}{Numeric value. Number of samples = \code{base^m}.}
 }
 \value{
-A list object named "survey" can be found in the global environment.
+A list object named "survey_data" can be found in the global environment.
 \item{bin.responses}{A binary response vector indicating the observed
 responses during the survey.} \item{responses}{A character string
 containing the responses observed during the survey.} \item{design}{The
@@ -68,23 +70,24 @@ A pregenerated design can be specified in \code{des}. This should be a matrix
 in which each row is a profile. This can be generated with \code{Modfed}, but
 is not necesarry.
 
-If \code{n.total} equals the number of \code{nrow(des)} /
-\code{length(alts)}, the specified design will be be put
-on screen, one set after another, and the responses will be saved. If no design
-is specified in \code{des}, \code{n.total} choice sets will be generated
-adaptively sequentially using the KL criterion (see \code{\link{SeqKL}} for
-more information). If \code{n.total} > (\code{nrow(des)} /
-\code{length(alts)}), first the specified design will be shown and afterwards
-the remaining sets will be generated adaptively sequentially.
+If \code{n.total} = \code{nrow(des)} /
+\code{length(alts)}, the specified design will be put
+on screen, one set after the other, and the responses will be saved. If
+\code{n.total} > (\code{nrow(des)} / \code{length(alts)}), first the
+specified design will be shown and afterwards the remaining sets will be
+generated adaptively. If \code{des} = \code{NULL}, \code{n.total} sets will
+be generated adaptively.
 
-Whenever adaptively sequentially sets will be generated, \code{prior.mean},
-\code{prior.covar} and \code{cand.set} should be specified.
+Whenever adaptive sets will be generated, \code{crit}, \code{prior.mean},
+\code{prior.covar}, \code{cand.set} and \code{m}, should be specified.
 
 The names specified in \code{alts} will be used to label the choice
 alternatives. The names specified in \code{atts} will be used to name the
 attributes in the choice sets. The values of \code{lvl.names} will be used to
 create the values in the choice sets. See \code{\link{Decode}} for more
-details.
+details. The number of samples drawn from the posterior preference
+distribution in the importance sampling algorithm used for adaptive sets can
+be specified with \code{m}, where the number is 2^\code{m}.
 
 The text specified in \code{buttons.text} will be displayed above the buttons
 to indicate the preferred choice (for example: "indicate your preferred
@@ -93,6 +96,88 @@ the choice sets. This will generally be a description of the survey and some
 instructions. The text specified in \code{end.text} will be displayed after
 the survey. This will generally be a thanking note and some further
 instructions.
+}
+\examples{
+\donttest{
+#### Present choice design without adaptive sets (n.total = sets in des)
+# example design 
+data("example_design") # pregenerated design
+xdes <- example_design
+### settings of the design 
+code <- c("D", "D", "D")
+n.sets <- 8
+# settings of the survey
+alternatives <- c("Alternative A", "Alternative B")
+attributes <- c("Price", "Time", "Comfort")
+labels <- vector(mode="list", length(attributes))
+labels[[1]] <- c("$10", "$5", "$1")
+labels[[2]] <- c("20 min", "12 min", "3 min")
+labels[[3]] <- c("bad", "average", "good")
+i.text <- "Welcome, here are some instructions ... good luck!"
+b.text <- "Please choose the alternative you prefer"
+e.text <- "Thanks for taking the survey"
+### Display the survey 
+SurveyApp (des = xdes, n.total = n.sets, alts = alternatives, 
+          atts = attributes, lvl.names = labels, coding = code, 
+          buttons.text = b.text, intro.text = i.text, end.text = e.text)
+survey_data
+
+#### Present choice design with adaptive sets (n.total > sets in des)
+# example design 
+data("example_design") # pregenerated design
+xdes <- example_design
+### settings of the design 
+code <- c("D", "D", "D")
+n.sets <- 12
+# settings of the survey
+alternatives <- c("Alternative A", "Alternative B")
+attributes <- c("Price", "Time", "Comfort")
+labels <- vector(mode="list", length(attributes))
+labels[[1]] <- c("$10", "$5", "$1")
+labels[[2]] <- c("20 min", "12 min", "3 min")
+labels[[3]] <- c("bad", "average", "good")
+i.text <- "Welcome, here are some instructions ... good luck!"
+b.text <- "Please choose the alternative you prefer"
+e.text <- "Thanks for taking the survey"
+# setting for adaptive sets 
+levels <- c(3, 3, 3)
+cand <- Profiles(lvls = levels, coding = code)
+p.mean <- c(0.3, 0.7, 0.3, 0.7, 0.3, 0.7)
+p.var <- diag(length(p.mean))
+### Display the survey 
+SurveyApp (des = NULL, n.total = n.sets, alts = alternatives, 
+          atts = attributes, lvl.names = labels, coding = code, 
+          buttons.text = b.text, intro.text = i.text, end.text = e.text, 
+          crit= "KL", prior.mean = p.mean, prior.covar = p.var, cand.set = cand, m = 6)
+# data object
+survey_data
+
+#### Choice design with only adaptive sets (des=NULL)
+# setting for adaptive sets 
+levels <- c(3, 3, 3)
+p.mean <- c(0.3, 0.7, 0.3, 0.7, 0.3, 0.7)
+p.var <- diag(length(p.mean)) 
+code <- c("D", "D", "D")
+cand <- Profiles(lvls = levels, coding = code)
+n.sets <- 12
+# settings of the survey
+alternatives <- c("Alternative A", "Alternative B")
+attributes <- c("Price", "Time", "Comfort")
+labels <- vector(mode="list", length(attributes))
+labels[[1]] <- c("$10", "$5", "$1")
+labels[[2]] <- c("20 min", "12 min", "3 min")
+labels[[3]] <- c("bad", "average", "good")
+i.text <- "Welcome, here are some instructions ... good luck!"
+b.text <- "Please choose the alternative you prefer"
+e.text <- "Thanks for taking the survey"
+### Display the survey 
+SurveyApp (des = NULL, n.total = n.sets, alts = alternatives, 
+          atts = attributes, lvl.names = labels, coding = code, 
+          buttons.text = b.text, intro.text = i.text, end.text = e.text, 
+          crit= "KL", prior.mean = p.mean, prior.covar = p.var, cand.set = cand, m = 6)
+# data object
+survey_data
+}
 }
 \references{
 \insertRef{crabbe}{mnldes}
