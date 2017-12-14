@@ -74,9 +74,12 @@ Modfed <- function(cand.set, n.sets, n.alts,  alt.cte, par.draws, start.des = NU
   if (!(is.matrix(par.draws))) {
     par.draws <- matrix(par.draws, nrow = 1)
   }
-  # Error alternative specific constants. 
+  # Errors alternative specific constants. 
   if (length(alt.cte) != n.alts) {
     stop("n.alts does not match the alt.cte vector")
+  }
+  if (!all(alt.cte %in% c(0,1))){
+    stop("alt.cte should only contain 0s or 1s.")
   }
   # Error identifying model.
   if (n.sets < ncol(par.draws)) {
