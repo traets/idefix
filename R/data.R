@@ -6,8 +6,9 @@
 #' levels, all of which are dummy coded (columns).
 #' 
 #' @docType data
-#'   
-#' @usage data(design)
-#'   
-#' @keywords datasets
-"design"
+#' @usage data(example_design)
+#' @format A matrix with 16 rows and 6 variables
+#' @keywords data
+"example_design"
+
+
