@@ -45,23 +45,28 @@
 #'   survey.
 #' @param end.text A string containing the text presented after the choice 
 #'   survey.
+#' @param data.dir A character string with the directory denoting where the data needs to be written.
 #' @param crit A string containing eihter KL or DB indicating the adaptive criterion to be used.  
 #' @inheritParams Decode
 #' @inheritParams Modfed
 #' @inheritParams Profiles
 #' @inheritParams SeqKL
 #' @inheritParams ImpsampMNL
-#' @references \insertRef{crabbe}{mnldes}
-#' @return A list object named "survey_data" can be found in the global environment.
-#'   \item{bin.responses}{A binary response vector indicating the observed
-#'   responses during the survey.} \item{responses}{A character string
-#'   containing the responses observed during the survey.} \item{design}{The
-#'   coded design matrix containing all presented choice sets during the
-#'   survey.}\item{survey}{All the choice sets (decoded), that were presented on
-#'   screen.}
+#' @importFrom Rdpack reprompt
+#' @references 
+#' \insertRef{crabbe}{mnldes}
+#' @return After completing the survey, two text files can be found in
+#'   \code{data.dir}. The file with "num" in the filename is a matrix with the
+#'   numeric choice data. The coded design matrix ("par"), presented during the
+#'   survey, together with the observed responses ("resp") can be found here.
+#'   Rownames indicate the setnumbers. The file with "char" in the filename is a
+#'   matrix with character choice data. The labeled design matrix ("par"),
+#'   presented during the survey, together with the observed responses ("resp")
+#'   can be found here. See \code{\link{LoadData}} to load the data.
 #' @examples 
 #' \donttest{
 #'#### Present choice design without adaptive sets (n.total = sets in des)
+#'# NOTE that the data will be saved in the current working directory. 
 #'# example design 
 #'data("example_design") # pregenerated design
 #'xdes <- example_design
@@ -78,14 +83,17 @@
 #'i.text <- "Welcome, here are some instructions ... good luck!"
 #'b.text <- "Please choose the alternative you prefer"
 #'e.text <- "Thanks for taking the survey"
-#'### Display the survey 
+#'dataDir <- getwd()
+#'# Display the survey 
 #'SurveyApp (des = xdes, n.total = n.sets, alts = alternatives, 
 #'           atts = attributes, lvl.names = labels, coding = code, 
-#'           buttons.text = b.text, intro.text = i.text, end.text = e.text)
-# data object
-#'survey_data
+#'           buttons.text = b.text, intro.text = i.text, end.text = e.text,
+#'           data.dir = dataDir)
+#'# Data 
+#'data <- LoadData(data.dir = dataDir, type  = "num")
 #'
 #'#### Present choice design with adaptive sets (n.total > sets in des)
+#'# NOTE that the data will be saved in the current working directory. 
 #'# example design 
 #'data("example_design") # pregenerated design
 #'xdes <- example_design
@@ -107,15 +115,17 @@
 #'cand <- Profiles(lvls = levels, coding = code)
 #'p.mean <- c(0.3, 0.7, 0.3, 0.7, 0.3, 0.7)
 #'p.var <- diag(length(p.mean))
-#'### Display the survey 
+#'#'dataDir <- getwd()
+#'# Display the survey 
 #'SurveyApp (des = NULL, n.total = n.sets, alts = alternatives, 
 #'           atts = attributes, lvl.names = labels, coding = code, 
-#'           buttons.text = b.text, intro.text = i.text, end.text = e.text, 
+#'           buttons.text = b.text, intro.text = i.text, end.text = e.text, data.dir = dataDir, 
 #'           crit= "KL", prior.mean = p.mean, prior.covar = p.var, cand.set = cand, m = 6)
-#'# data object
-#'survey_data
+#'# Data 
+#'data <- LoadData(data.dir = dataDir, type = "num")
 #'
 #'#### Choice design with only adaptive sets (des=NULL)
+#'# NOTE that the data will be saved in the current working directory. 
 #'# setting for adaptive sets 
 #'levels <- c(3, 3, 3)
 #'p.mean <- c(0.3, 0.7, 0.3, 0.7, 0.3, 0.7)
@@ -133,26 +143,28 @@
 #'i.text <- "Welcome, here are some instructions ... good luck!"
 #'b.text <- "Please choose the alternative you prefer"
 #'e.text <- "Thanks for taking the survey"
-#'### Display the survey 
+#'dataDir <- getwd()
+#'# Display the survey 
 #'SurveyApp (des = NULL, n.total = n.sets, alts = alternatives, 
 #'           atts = attributes, lvl.names = labels, coding = code, 
-#'           buttons.text = b.text, intro.text = i.text, end.text = e.text, 
+#'           buttons.text = b.text, intro.text = i.text, end.text = e.text, data.dir = dataDir, 
 #'           crit= "KL", prior.mean = p.mean, prior.covar = p.var, cand.set = cand, m = 6)
-#'# data object
-#'survey_data
+#'# Data 
+#'data <- LoadData(data.dir = dataDir, type = "num")
 #'}
 #' @import shiny 
 #' @export
-SurveyApp <- function(des = NULL, n.total, alts, atts, lvl.names, coding, buttons.text, intro.text, end.text, 
-                      c.lvls = NULL, crit = NULL, alt.cte = NULL, prior.mean = NULL, prior.covar = NULL, 
-                      cand.set = NULL, m = NULL) {
+SurveyApp <- function(des = NULL, n.total, alts, atts, lvl.names, coding, 
+                      buttons.text, intro.text, end.text, data.dir,
+                      c.lvls = NULL, crit = NULL, alt.cte = NULL, prior.mean = NULL,
+                      prior.covar = NULL, cand.set = NULL, m = NULL) {
   # Initialize 
   sdata <- vector(mode = "list")
+  surveyData <- vector(mode = "list")
   y.bin <- vector("numeric")
   resp  <- vector("character")
   n.atts <- length(atts)
   n.alts <- length(alts)
-  assign("survey_data", NULL, envir = parent.frame())
   choice.sets <- matrix(data = NA, nrow = n.total * n.alts, ncol = n.atts)
   buttons <- NULL
   sn <- 0
@@ -161,6 +173,7 @@ SurveyApp <- function(des = NULL, n.total, alts, atts, lvl.names, coding, button
     alt.cte <- rep(0, n.alts)
     cte.des <- NULL
   } else {
+    # Error 
     if (!all(alt.cte %in% c(0,1))){
       stop("alt.cte should only contain 0s or 1s.")
     }
@@ -184,6 +197,9 @@ SurveyApp <- function(des = NULL, n.total, alts, atts, lvl.names, coding, button
     }
   }
   # Error handling
+  if (!dir.exists(data.dir)) {
+    stop("Directory data.dir does not exist")
+  }
   if (n.total > n.init) {
       if (any(c(is.null(prior.mean), is.null(prior.covar), is.null(cand.set), is.null(m), is.null(crit)))) {
         stop("When n.total is larger than the number of sets in argument des, arguments crit, prior.mean, prior.covar, cand.set and m should be specified.")
@@ -237,7 +253,6 @@ SurveyApp <- function(des = NULL, n.total, alts, atts, lvl.names, coding, button
       # Set selection function
       Select <- function () {
         if (sn <= n.total) {
-          
           # for initial sets 
           if (sn <= n.init) {
             set <- des[bs[sn] : es[sn], ]
@@ -329,7 +344,7 @@ SurveyApp <- function(des = NULL, n.total, alts, atts, lvl.names, coding, button
           sdata[["responses"]] <- resp
           sdata[["desing"]] <- fulldes
           sdata[["survey"]] <- choice.sets
-          survey_data <<- sdata
+          surveyData <<- sdata 
         } 
         # end phase 
         if (sn > n.total) {
@@ -358,14 +373,16 @@ SurveyApp <- function(des = NULL, n.total, alts, atts, lvl.names, coding, button
       })
       # End of survey
       observeEvent(input$OK, {
-        # display end text 
+        # Display end text 
         if (input$OK > n.total) {
-          # display end text 
+          # Display end text 
           output$end <- renderText(end.text)
         }
         # Quit application 
         if (input$OK > (n.total + 1)) {
-          # End app
+          # Write data to file
+          saveData(data = surveyData, data.dir = data.dir, n.atts = n.atts)
+          # Stop application 
           stopApp()
         }
       })
@@ -654,4 +671,59 @@ SeqDBApp <- function(des, cand.set, n.alts, par.draws, prior.covar, alt.cte, red
   return(list(set = set, db.error = db))
 }
 
+# Function to save the data gathered by shiny app
+saveData <- function(data, data.dir, n.atts) {
+  # Data manipulation 
+  d <- as.data.frame(cbind(data$desing, resp = data$bin.responses))
+  unc_resp <- rep(data$responses, each = n.atts) 
+  unc_d <- cbind(data$survey, resp = unc_resp) 
+  # Create unique file names
+  numname <- sprintf("%s_num_data.txt", as.integer(Sys.time()))
+  charname <- sprintf("%s_char_data.txt", as.integer(Sys.time()))
+  # Write files to data.dir
+  utils::write.table(
+    x = d,
+    file = file.path(data.dir, numname), 
+    row.names = TRUE, quote = FALSE, sep = "\t", col.names = NA
+  )
+  utils::write.table(
+    x = unc_d,
+    file = file.path(data.dir, charname), 
+    row.names = TRUE, quote = FALSE, sep = "\t", col.names = NA
+  )
+}
+
+#' Load numeric choice data from directory
+#' 
+#' Reads all individual choice data files from a directory and concatenates 
+#' those files into a single data file. Files containing either "num" or "char"
+#' will be read, with num indicating numeric data and char indicating character
+#' data. for more information see output of \code{\link{SurveyApp}}.
+#' 
+#' @param data.dir A character string containing the directory to read from.
+#' @param type Character vector containing either num or char. 
+#' @return A data frame containg the full design and all the responses of the 
+#'   combined data files that where found. Different files are indicated by an
+#'   ID variable.
+#' @export
+LoadData <- function(data.dir, type) {
+  # ErrorS
+  if(!type %in% c("num", "char")){
+    stop("type must be either num or char")
+  }
+  if (!dir.exists(data.dir)) {
+    stop("Directory data.dir does not exist")
+  }
+  # Read all files into list
+  files <- list.files(data.dir, full.names = TRUE, pattern = "num")
+  data <- lapply(files, utils::read.table, stringsAsFactors = FALSE) 
+  # matrix
+  id_rows <- sapply(data, nrow)
+  id <- rep(1:length(id_rows), id_rows)
+  data <- lapply(data, as.matrix)
+  # Bind together
+  data <- do.call(rbind, data)
+  data <- cbind("ID" = id, data)
+  return(data)
+}
 
