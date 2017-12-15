@@ -5,8 +5,9 @@
 \title{Shiny application to generate a discrete choice survey.}
 \usage{
 SurveyApp(des = NULL, n.total, alts, atts, lvl.names, coding, buttons.text,
-  intro.text, end.text, c.lvls = NULL, crit = NULL, alt.cte = NULL,
-  prior.mean = NULL, prior.covar = NULL, cand.set = NULL, m = NULL)
+  intro.text, end.text, data.dir, c.lvls = NULL, crit = NULL,
+  alt.cte = NULL, prior.mean = NULL, prior.covar = NULL,
+  cand.set = NULL, m = NULL)
 }
 \arguments{
 \item{des}{A design matrix in which each row is a profile. Can be generated
@@ -33,6 +34,8 @@ survey.}
 \item{end.text}{A string containing the text presented after the choice
 survey.}
 
+\item{data.dir}{A character string with the directory denoting where the data needs to be written.}
+
 \item{c.lvls}{A list containing numeric vectors with the attributelevels for
 each continuous attribute. The default is \code{NULL}.}
 
@@ -52,13 +55,14 @@ normal distribution (prior).}
 \item{m}{Numeric value. Number of samples = \code{base^m}.}
 }
 \value{
-A list object named "survey_data" can be found in the global environment.
-\item{bin.responses}{A binary response vector indicating the observed
-responses during the survey.} \item{responses}{A character string
-containing the responses observed during the survey.} \item{design}{The
-coded design matrix containing all presented choice sets during the
-survey.}\item{survey}{All the choice sets (decoded), that were presented on
-screen.}
+After completing the survey, two text files can be found in
+\code{data.dir}. The file with "num" in the filename is a matrix with the
+numeric choice data. The coded design matrix ("par"), presented during the
+survey, together with the observed responses ("resp") can be found here.
+Rownames indicate the setnumbers. The file with "char" in the filename is a
+matrix with character choice data. The labeled design matrix ("par"),
+presented during the survey, together with the observed responses ("resp")
+can be found here. See \code{\link{LoadData}} to load the data.
 }
 \description{
 This function starts a shiny application which puts choice sets on screen and
@@ -100,6 +104,7 @@ instructions.
 \examples{
 \donttest{
 #### Present choice design without adaptive sets (n.total = sets in des)
+# NOTE that the data will be saved in the current working directory. 
 # example design 
 data("example_design") # pregenerated design
 xdes <- example_design
@@ -116,13 +121,17 @@ labels[[3]] <- c("bad", "average", "good")
 i.text <- "Welcome, here are some instructions ... good luck!"
 b.text <- "Please choose the alternative you prefer"
 e.text <- "Thanks for taking the survey"
-### Display the survey 
+dataDir <- getwd()
+# Display the survey 
 SurveyApp (des = xdes, n.total = n.sets, alts = alternatives, 
           atts = attributes, lvl.names = labels, coding = code, 
-          buttons.text = b.text, intro.text = i.text, end.text = e.text)
-survey_data
+          buttons.text = b.text, intro.text = i.text, end.text = e.text,
+          data.dir = dataDir)
+# Data 
+data <- LoadData(data.dir = dataDir, type  = "num")
 
 #### Present choice design with adaptive sets (n.total > sets in des)
+# NOTE that the data will be saved in the current working directory. 
 # example design 
 data("example_design") # pregenerated design
 xdes <- example_design
@@ -144,15 +153,17 @@ levels <- c(3, 3, 3)
 cand <- Profiles(lvls = levels, coding = code)
 p.mean <- c(0.3, 0.7, 0.3, 0.7, 0.3, 0.7)
 p.var <- diag(length(p.mean))
-### Display the survey 
+#'dataDir <- getwd()
+# Display the survey 
 SurveyApp (des = NULL, n.total = n.sets, alts = alternatives, 
           atts = attributes, lvl.names = labels, coding = code, 
-          buttons.text = b.text, intro.text = i.text, end.text = e.text, 
+          buttons.text = b.text, intro.text = i.text, end.text = e.text, data.dir = dataDir, 
           crit= "KL", prior.mean = p.mean, prior.covar = p.var, cand.set = cand, m = 6)
-# data object
-survey_data
+# Data 
+data <- LoadData(data.dir = dataDir, type = "num")
 
 #### Choice design with only adaptive sets (des=NULL)
+# NOTE that the data will be saved in the current working directory. 
 # setting for adaptive sets 
 levels <- c(3, 3, 3)
 p.mean <- c(0.3, 0.7, 0.3, 0.7, 0.3, 0.7)
@@ -170,13 +181,14 @@ labels[[3]] <- c("bad", "average", "good")
 i.text <- "Welcome, here are some instructions ... good luck!"
 b.text <- "Please choose the alternative you prefer"
 e.text <- "Thanks for taking the survey"
-### Display the survey 
+dataDir <- getwd()
+# Display the survey 
 SurveyApp (des = NULL, n.total = n.sets, alts = alternatives, 
           atts = attributes, lvl.names = labels, coding = code, 
-          buttons.text = b.text, intro.text = i.text, end.text = e.text, 
+          buttons.text = b.text, intro.text = i.text, end.text = e.text, data.dir = dataDir, 
           crit= "KL", prior.mean = p.mean, prior.covar = p.var, cand.set = cand, m = 6)
-# data object
-survey_data
+# Data 
+data <- LoadData(data.dir = dataDir, type = "num")
 }
 }
 \references{
