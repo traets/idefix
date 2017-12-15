@@ -66,6 +66,7 @@
 #' set.seed(123) 
 #' ps <- MASS::mvrnorm(n = 10, mu = m, Sigma = v) # 10 Samples.
 #' Modfed(cand.set = cs, n.sets = 8, n.alts = 2, alt.cte = c(1, 0), par.draws = ps)
+#' @importFrom Rdpack reprompt
 #' @references
 #' \insertRef{federov}{mnldes} 
 #' @export
@@ -255,6 +256,7 @@ Modfed <- function(cand.set, n.sets, n.alts,  alt.cte, par.draws, start.des = NU
 #' des <- Modfed(cand.set = cs, n.sets = 6, n.alts = 2, alt.cte = ac, par.draws = ps)$design
 #' # Efficient choice set to add. 
 #' SeqDB(des = des, cand.set = cs, n.alts = 2, par.draws = ps, prior.covar = pc)
+#' @importFrom Rdpack reprompt
 #' @references
 #' \insertRef{ju}{mnldes} 
 #' @export
@@ -321,7 +323,9 @@ SeqDB <- function(des, cand.set, n.alts, par.draws, prior.covar, reduce = TRUE, 
 #'   reduced or not.
 #' @return \item{set}{Numeric matrix containing the choice set that maximizes the expected KL divergence.}
 #' \item{kl}{Numeric value which is the Kullback leibler divergence.}
-#' @references \insertRef{crabbe}{mnldes}
+#' @importFrom Rdpack reprompt
+#' @references 
+#' \insertRef{crabbe}{mnldes}
 #' @examples 
 #' # KL efficient choice set, given parameter samples. 
 #' # Candidate profiles 
