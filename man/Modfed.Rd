@@ -34,7 +34,7 @@ iterations.}
 \value{
 \item{design}{A numeric matrix wich contains an efficient design.}
 \item{error}{Numeric value indicating the D(B)-error of the design.}
-\item{inf.error}{Numeric value indicating the percentage of samples for which
+\item{inf.error}{Numeric value indicating the percentage of draws for which
 the D-error was \code{Inf}.} \item{prob.diff}{Numeric value indicating the
 difference between the alternative with the highest and the one with the
 lowest probability for each choice set. If a sample matrix was provided this
@@ -61,7 +61,7 @@ be sorted (first \code{alt.cte} parameters).
 
 The DB-error is calculated by taking the mean over D-errors. It could be that
 for some draws the design results in an infinite D-error. The percentage of
-samples for which this was true for the final design can be found in the
+draws for which this was true for the final design can be found in the
 output \code{inf.error}.
 
 Alternative specific constants can be specified in \code{alt.cte}. The lenght
@@ -81,7 +81,7 @@ cs <- Profiles(lvls = c(2, 3, 2), coding = c("E", "E", "E"))
 m <- c(0.8, 0.2, -0.3, -0.2, 0.7) # Prior mean (total = 5 parameters).
 v <- diag(length(m)) # Prior variance.
 set.seed(123) 
-ps <- MASS::mvrnorm(n = 10, mu = m, Sigma = v) # 10 Samples.
+ps <- MASS::mvrnorm(n = 10, mu = m, Sigma = v) # 10 draws.
 Modfed(cand.set = cs, n.sets = 8, n.alts = 2, alt.cte = c(1, 0), par.draws = ps)
 }
 \references{
