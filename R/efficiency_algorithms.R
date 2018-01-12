@@ -21,7 +21,7 @@
 #' 
 #' The DB-error is calculated by taking the mean over D-errors. It could be that
 #' for some draws the design results in an infinite D-error. The percentage of 
-#' samples for which this was true for the final design can be found in the 
+#' draws for which this was true for the final design can be found in the 
 #' output \code{inf.error}.
 #' 
 #' Alternative specific constants can be specified in \code{alt.cte}. The lenght
@@ -46,7 +46,7 @@
 #'   iterations.
 #' @return \item{design}{A numeric matrix wich contains an efficient design.} 
 #' \item{error}{Numeric value indicating the D(B)-error of the design.} 
-#' \item{inf.error}{Numeric value indicating the percentage of samples for which
+#' \item{inf.error}{Numeric value indicating the percentage of draws for which
 #' the D-error was \code{Inf}.} \item{prob.diff}{Numeric value indicating the
 #' difference between the alternative with the highest and the one with the
 #' lowest probability for each choice set. If a sample matrix was provided this
@@ -64,7 +64,7 @@
 #' m <- c(0.8, 0.2, -0.3, -0.2, 0.7) # Prior mean (total = 5 parameters).
 #' v <- diag(length(m)) # Prior variance.
 #' set.seed(123) 
-#' ps <- MASS::mvrnorm(n = 10, mu = m, Sigma = v) # 10 Samples.
+#' ps <- MASS::mvrnorm(n = 10, mu = m, Sigma = v) # 10 draws.
 #' Modfed(cand.set = cs, n.sets = 8, n.alts = 2, alt.cte = c(1, 0), par.draws = ps)
 #' @importFrom Rdpack reprompt
 #' @references
@@ -226,31 +226,31 @@ Modfed <- function(cand.set, n.sets, n.alts,  alt.cte, par.draws, start.des = NU
 #' @param prior.covar Covariance matrix of the prior distribution.
 #' @param reduce Logical value indicating whether the candidate set should be
 #'   reduced or not.
-#' @param weights A vector containing the weights of the samples. Default is
+#' @param weights A vector containing the weights of the draws. Default is
 #'   \code{NULL}, See also \code{\link{ImpsampMNL}}.
 #' @return \item{set}{A matrix representing a DB efficient choice set.} 
 #' \item{db.error}{A numeric value indicating the DB-error of the whole design.}
 #' @examples 
-#' # DB efficient choice set, given a design and parameter samples. 
+#' # DB efficient choice set, given a design and parameter draws. 
 #' # Candidate profiles 
 #' cs <- Profiles(lvls = c(3, 3), coding = c("E", "E"))
 #' m <- c(0.3, 0.2, -0.3, -0.2) # Prior mean (total = 5 parameters).
 #' pc <- diag(length(m)) # Prior variance
 #' set.seed(123)
-#' ps <- MASS::mvrnorm(n = 10, mu = m, Sigma = pc) # 10 Samples.
+#' ps <- MASS::mvrnorm(n = 10, mu = m, Sigma = pc) # 10 draws.
 #' ac <- c(0, 0) # No alternative specific constants. 
 #' # Initial design.
 #' des <- Modfed(cand.set = cs, n.sets = 6, n.alts = 2, alt.cte = ac, par.draws = ps)$design
 #' # Efficient choice set to add. 
 #' SeqDB(des = des, cand.set = cs, n.alts = 2, par.draws = ps, prior.covar = pc)
 #' 
-#' # DB efficient choice set, given a design and parameter samples. 
+#' # DB efficient choice set, given a design and parameter draws. 
 #' # Candidate profiles 
 #' cs <- Profiles(lvls = c(3, 3), coding = c("C", "E"), c.lvls = list(c(5,3,1)))
 #' m <- c(0.7, 0.3, -0.3, -0.2) # Prior mean (4 parameters).
 #' pc <- diag(length(m)) # Prior variance
 #' set.seed(123)
-#' ps <- MASS::mvrnorm(n = 10, mu = m, Sigma = pc) # 10 Samples.
+#' ps <- MASS::mvrnorm(n = 10, mu = m, Sigma = pc) # 10 draws.
 #' ac <- c(1, 0) # Alternative specific constant. 
 #' # Initial design.
 #' des <- Modfed(cand.set = cs, n.sets = 6, n.alts = 2, alt.cte = ac, par.draws = ps)$design
@@ -327,24 +327,24 @@ SeqDB <- function(des, cand.set, n.alts, par.draws, prior.covar, reduce = TRUE, 
 #' @references 
 #' \insertRef{crabbe}{mnldes}
 #' @examples 
-#' # KL efficient choice set, given parameter samples. 
+#' # KL efficient choice set, given parameter draws. 
 #' # Candidate profiles 
 #' cs <- Profiles(lvls = c(3, 3), coding = c("E", "E"))
 #' m <- c(0.3, 0.2, -0.3, -0.2) # Prior mean (4 parameters).
 #' pc <- diag(length(m)) # Prior variance
 #' set.seed(123)
-#' ps <- MASS::mvrnorm(n = 10, mu = m, Sigma = pc) # 10 Samples.
+#' ps <- MASS::mvrnorm(n = 10, mu = m, Sigma = pc) # 10 draws.
 #' ac <- c(0, 0) # No alternative specific constants. 
 #' # Efficient choice set to add. 
 #' SeqKL(cand.set = cs, n.alts = 2, alt.cte = ac, par.draws = ps, weights = NULL)
 #' 
-#' # KL efficient choice set, given parameter samples. 
+#' # KL efficient choice set, given parameter draws. 
 #' # Candidate profiles 
 #' cs <- Profiles(lvls = c(3, 3), coding = c("C", "E"), c.lvls = list(c(5,3,1)))
 #' m <- c(0.7, 0.3, -0.3, -0.2) # Prior mean (4 parameters).
 #' pc <- diag(length(m)) # Prior variance
 #' set.seed(123)
-#' ps <- MASS::mvrnorm(n = 10, mu = m, Sigma = pc) # 10 Samples.
+#' ps <- MASS::mvrnorm(n = 10, mu = m, Sigma = pc) # 10 draws.
 #' ac <- c(1, 0) # Alternative specific constant. 
 #' # Efficient choice set to add. 
 #' SeqKL(cand.set = cs, n.alts = 2, alt.cte = ac, par.draws = ps, weights = NULL)
