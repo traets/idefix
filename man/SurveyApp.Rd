@@ -5,7 +5,7 @@
 \title{Shiny application to generate a discrete choice survey.}
 \usage{
 SurveyApp(des = NULL, n.total, alts, atts, lvl.names, coding, buttons.text,
-  intro.text, end.text, data.dir, c.lvls = NULL, crit = NULL,
+  intro.text, end.text, data.dir = NULL, c.lvls = NULL, crit = NULL,
   alt.cte = NULL, prior.mean = NULL, prior.covar = NULL,
   cand.set = NULL, m = NULL)
 }
@@ -34,12 +34,14 @@ survey.}
 \item{end.text}{A string containing the text presented after the choice
 survey.}
 
-\item{data.dir}{A character string with the directory denoting where the data needs to be written.}
+\item{data.dir}{A character string with the directory denoting where the data
+needs to be written. The default is NULL}
 
 \item{c.lvls}{A list containing numeric vectors with the attributelevels for
 each continuous attribute. The default is \code{NULL}.}
 
-\item{crit}{A string containing eihter KL or DB indicating the adaptive criterion to be used.}
+\item{crit}{A string containing eihter KL or DB indicating the adaptive
+criterion to be used.}
 
 \item{alt.cte}{A binary vector indicating for each alternative if an
 alternative specific constant is present. The default is \code{NULL}.}
@@ -52,7 +54,7 @@ normal distribution (prior).}
 \item{cand.set}{A numeric matrix in which each row is a possible profile. The
 \code{\link{Profiles}} function can be used to generate this.}
 
-\item{m}{Numeric value. Number of samples = \code{base^m}.}
+\item{m}{Numeric value. Number of draws = \code{base^m}.}
 }
 \value{
 After completing the survey, two text files can be found in
@@ -66,21 +68,20 @@ can be found here. See \code{\link{LoadData}} to load the data.
 }
 \description{
 This function starts a shiny application which puts choice sets on screen and
-saves the responses. The complete choice design can be provided in advance,
-or can be generated sequentially adaptively, or can be a combination of both.
+saves the responses. The complete choice design can be provided in advance, or
+can be generated sequentially adaptively, or can be a combination of both.
 }
 \details{
 A pregenerated design can be specified in \code{des}. This should be a matrix
 in which each row is a profile. This can be generated with \code{Modfed}, but
 is not necesarry.
 
-If \code{n.total} = \code{nrow(des)} /
-\code{length(alts)}, the specified design will be put
-on screen, one set after the other, and the responses will be saved. If
-\code{n.total} > (\code{nrow(des)} / \code{length(alts)}), first the
-specified design will be shown and afterwards the remaining sets will be
-generated adaptively. If \code{des} = \code{NULL}, \code{n.total} sets will
-be generated adaptively.
+If \code{n.total} = \code{nrow(des)} / \code{length(alts)}, the specified
+design will be put on screen, one set after the other, and the responses will
+be saved. If \code{n.total} > (\code{nrow(des)} / \code{length(alts)}), first
+the specified design will be shown and afterwards the remaining sets will be
+generated adaptively. If \code{des} = \code{NULL}, \code{n.total} sets will be
+generated adaptively.
 
 Whenever adaptive sets will be generated, \code{crit}, \code{prior.mean},
 \code{prior.covar}, \code{cand.set} and \code{m}, should be specified.
@@ -89,14 +90,14 @@ The names specified in \code{alts} will be used to label the choice
 alternatives. The names specified in \code{atts} will be used to name the
 attributes in the choice sets. The values of \code{lvl.names} will be used to
 create the values in the choice sets. See \code{\link{Decode}} for more
-details. The number of samples drawn from the posterior preference
+details. The number of draws sampeled from the posterior preference
 distribution in the importance sampling algorithm used for adaptive sets can
 be specified with \code{m}, where the number is 2^\code{m}.
 
 The text specified in \code{buttons.text} will be displayed above the buttons
 to indicate the preferred choice (for example: "indicate your preferred
-choice"). The text specified in \code{intro.text} will be displayed before
-the choice sets. This will generally be a description of the survey and some
+choice"). The text specified in \code{intro.text} will be displayed before the
+choice sets. This will generally be a description of the survey and some
 instructions. The text specified in \code{end.text} will be displayed after
 the survey. This will generally be a thanking note and some further
 instructions.
@@ -128,7 +129,8 @@ SurveyApp (des = xdes, n.total = n.sets, alts = alternatives,
           buttons.text = b.text, intro.text = i.text, end.text = e.text,
           data.dir = dataDir)
 # Data 
-data <- LoadData(data.dir = dataDir, type  = "num")
+data_num <- LoadData(data.dir = dataDir, type  = "num")
+data_char <- LoadData(data.dir = dataDir, type = "char")
 
 #### Present choice design with adaptive sets (n.total > sets in des)
 # NOTE that the data will be saved in the current working directory. 
@@ -153,14 +155,15 @@ levels <- c(3, 3, 3)
 cand <- Profiles(lvls = levels, coding = code)
 p.mean <- c(0.3, 0.7, 0.3, 0.7, 0.3, 0.7)
 p.var <- diag(length(p.mean))
-#'dataDir <- getwd()
+dataDir <- getwd()
 # Display the survey 
-SurveyApp (des = NULL, n.total = n.sets, alts = alternatives, 
-          atts = attributes, lvl.names = labels, coding = code, 
-          buttons.text = b.text, intro.text = i.text, end.text = e.text, data.dir = dataDir, 
-          crit= "KL", prior.mean = p.mean, prior.covar = p.var, cand.set = cand, m = 6)
+SurveyApp (des = NULL, n.total = n.sets, alts = alternatives, atts =
+attributes, lvl.names = labels, coding = code, buttons.text = b.text,
+intro.text = i.text, end.text = e.text, data.dir = dataDir, crit= "KL",
+prior.mean = p.mean, prior.covar = p.var, cand.set = cand, m = 6)
 # Data 
-data <- LoadData(data.dir = dataDir, type = "num")
+data_num <- LoadData(data.dir = dataDir, type = "num")
+data_char <- LoadData(data.dir = dataDir, type = "char")
 
 #### Choice design with only adaptive sets (des=NULL)
 # NOTE that the data will be saved in the current working directory. 
@@ -188,7 +191,8 @@ SurveyApp (des = NULL, n.total = n.sets, alts = alternatives,
           buttons.text = b.text, intro.text = i.text, end.text = e.text, data.dir = dataDir, 
           crit= "KL", prior.mean = p.mean, prior.covar = p.var, cand.set = cand, m = 6)
 # Data 
-data <- LoadData(data.dir = dataDir, type = "num")
+data_num <- LoadData(data.dir = dataDir, type = "num")
+data_char <- LoadData(data.dir = dataDir, type = "char")
 }
 }
 \references{
