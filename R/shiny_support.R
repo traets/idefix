@@ -1,68 +1,68 @@
-#' Shiny application to generate a discrete choice survey.
-#' 
-#' This function starts a shiny application which puts choice sets on screen and
-#' saves the responses. The complete choice design can be provided in advance, 
-#' or can be generated sequentially adaptively, or can be a combination of both.
-#' 
-#' A pregenerated design can be specified in \code{des}. This should be a matrix
-#' in which each row is a profile. This can be generated with \code{Modfed}, but
-#' is not necesarry.
-#' 
-#' If \code{n.total} = \code{nrow(des)} / 
-#' \code{length(alts)}, the specified design will be put 
-#' on screen, one set after the other, and the responses will be saved. If
-#' \code{n.total} > (\code{nrow(des)} / \code{length(alts)}), first the
-#' specified design will be shown and afterwards the remaining sets will be
-#' generated adaptively. If \code{des} = \code{NULL}, \code{n.total} sets will
-#' be generated adaptively.
-#' 
-#' Whenever adaptive sets will be generated, \code{crit}, \code{prior.mean}, 
-#' \code{prior.covar}, \code{cand.set} and \code{m}, should be specified.
-#' 
-#' The names specified in \code{alts} will be used to label the choice 
-#' alternatives. The names specified in \code{atts} will be used to name the 
-#' attributes in the choice sets. The values of \code{lvl.names} will be used to
-#' create the values in the choice sets. See \code{\link{Decode}} for more 
-#' details. The number of samples drawn from the posterior preference
-#' distribution in the importance sampling algorithm used for adaptive sets can
-#' be specified with \code{m}, where the number is 2^\code{m}.
-#' 
-#' The text specified in \code{buttons.text} will be displayed above the buttons
-#' to indicate the preferred choice (for example: "indicate your preferred 
-#' choice"). The text specified in \code{intro.text} will be displayed before
-#' the choice sets. This will generally be a description of the survey and some 
-#' instructions. The text specified in \code{end.text} will be displayed after 
-#' the survey. This will generally be a thanking note and some further 
-#' instructions.
-#' 
-#' 
-#' @param alts A character vector containing the names of the alternatives.
-#' @param atts A character vector containing the names of the attributes.
-#' @param n.total A numeric value indicating the total number of choice sets.
-#' @param buttons.text A string containing the text presented together with the 
-#'   option buttons.
-#' @param intro.text A string containing the text presented before the choice 
-#'   survey.
-#' @param end.text A string containing the text presented after the choice 
-#'   survey.
-#' @param data.dir A character string with the directory denoting where the data needs to be written.
-#' @param crit A string containing eihter KL or DB indicating the adaptive criterion to be used.  
-#' @inheritParams Decode
-#' @inheritParams Modfed
-#' @inheritParams Profiles
-#' @inheritParams SeqKL
-#' @inheritParams ImpsampMNL
-#' @importFrom Rdpack reprompt
-#' @references 
-#' \insertRef{crabbe}{mnldes}
-#' @return After completing the survey, two text files can be found in
-#'   \code{data.dir}. The file with "num" in the filename is a matrix with the
-#'   numeric choice data. The coded design matrix ("par"), presented during the
-#'   survey, together with the observed responses ("resp") can be found here.
-#'   Rownames indicate the setnumbers. The file with "char" in the filename is a
-#'   matrix with character choice data. The labeled design matrix ("par"),
-#'   presented during the survey, together with the observed responses ("resp")
-#'   can be found here. See \code{\link{LoadData}} to load the data.
+#'Shiny application to generate a discrete choice survey.
+#'
+#'This function starts a shiny application which puts choice sets on screen and 
+#'saves the responses. The complete choice design can be provided in advance, or
+#'can be generated sequentially adaptively, or can be a combination of both.
+#'
+#'A pregenerated design can be specified in \code{des}. This should be a matrix 
+#'in which each row is a profile. This can be generated with \code{Modfed}, but 
+#'is not necesarry.
+#'
+#'If \code{n.total} = \code{nrow(des)} / \code{length(alts)}, the specified
+#'design will be put on screen, one set after the other, and the responses will
+#'be saved. If \code{n.total} > (\code{nrow(des)} / \code{length(alts)}), first
+#'the specified design will be shown and afterwards the remaining sets will be 
+#'generated adaptively. If \code{des} = \code{NULL}, \code{n.total} sets will be
+#'generated adaptively.
+#'
+#'Whenever adaptive sets will be generated, \code{crit}, \code{prior.mean}, 
+#'\code{prior.covar}, \code{cand.set} and \code{m}, should be specified.
+#'
+#'The names specified in \code{alts} will be used to label the choice 
+#'alternatives. The names specified in \code{atts} will be used to name the 
+#'attributes in the choice sets. The values of \code{lvl.names} will be used to 
+#'create the values in the choice sets. See \code{\link{Decode}} for more 
+#'details. The number of draws sampeled from the posterior preference 
+#'distribution in the importance sampling algorithm used for adaptive sets can 
+#'be specified with \code{m}, where the number is 2^\code{m}.
+#'
+#'The text specified in \code{buttons.text} will be displayed above the buttons 
+#'to indicate the preferred choice (for example: "indicate your preferred 
+#'choice"). The text specified in \code{intro.text} will be displayed before the
+#'choice sets. This will generally be a description of the survey and some 
+#'instructions. The text specified in \code{end.text} will be displayed after 
+#'the survey. This will generally be a thanking note and some further 
+#'instructions.
+#'
+#'
+#'@param alts A character vector containing the names of the alternatives.
+#'@param atts A character vector containing the names of the attributes.
+#'@param n.total A numeric value indicating the total number of choice sets.
+#'@param buttons.text A string containing the text presented together with the 
+#'  option buttons.
+#'@param intro.text A string containing the text presented before the choice 
+#'  survey.
+#'@param end.text A string containing the text presented after the choice 
+#'  survey.
+#'@param data.dir A character string with the directory denoting where the data
+#'  needs to be written. The default is NULL
+#'@param crit A string containing eihter KL or DB indicating the adaptive
+#'  criterion to be used.
+#'@inheritParams Decode
+#'@inheritParams Modfed
+#'@inheritParams Profiles
+#'@inheritParams SeqKL
+#'@inheritParams ImpsampMNL
+#'@importFrom Rdpack reprompt
+#'@references \insertRef{crabbe}{mnldes}
+#'@return After completing the survey, two text files can be found in 
+#'  \code{data.dir}. The file with "num" in the filename is a matrix with the 
+#'  numeric choice data. The coded design matrix ("par"), presented during the 
+#'  survey, together with the observed responses ("resp") can be found here. 
+#'  Rownames indicate the setnumbers. The file with "char" in the filename is a 
+#'  matrix with character choice data. The labeled design matrix ("par"), 
+#'  presented during the survey, together with the observed responses ("resp") 
+#'  can be found here. See \code{\link{LoadData}} to load the data.
 #' @examples 
 #' \donttest{
 #'#### Present choice design without adaptive sets (n.total = sets in des)
@@ -90,7 +90,8 @@
 #'           buttons.text = b.text, intro.text = i.text, end.text = e.text,
 #'           data.dir = dataDir)
 #'# Data 
-#'data <- LoadData(data.dir = dataDir, type  = "num")
+#'data_num <- LoadData(data.dir = dataDir, type  = "num")
+#'data_char <- LoadData(data.dir = dataDir, type = "char")
 #'
 #'#### Present choice design with adaptive sets (n.total > sets in des)
 #'# NOTE that the data will be saved in the current working directory. 
@@ -115,14 +116,15 @@
 #'cand <- Profiles(lvls = levels, coding = code)
 #'p.mean <- c(0.3, 0.7, 0.3, 0.7, 0.3, 0.7)
 #'p.var <- diag(length(p.mean))
-#'#'dataDir <- getwd()
+#'dataDir <- getwd()
 #'# Display the survey 
-#'SurveyApp (des = NULL, n.total = n.sets, alts = alternatives, 
-#'           atts = attributes, lvl.names = labels, coding = code, 
-#'           buttons.text = b.text, intro.text = i.text, end.text = e.text, data.dir = dataDir, 
-#'           crit= "KL", prior.mean = p.mean, prior.covar = p.var, cand.set = cand, m = 6)
+#'SurveyApp (des = NULL, n.total = n.sets, alts = alternatives, atts =
+#'attributes, lvl.names = labels, coding = code, buttons.text = b.text,
+#'intro.text = i.text, end.text = e.text, data.dir = dataDir, crit= "KL",
+#'prior.mean = p.mean, prior.covar = p.var, cand.set = cand, m = 6)
 #'# Data 
-#'data <- LoadData(data.dir = dataDir, type = "num")
+#'data_num <- LoadData(data.dir = dataDir, type = "num")
+#'data_char <- LoadData(data.dir = dataDir, type = "char")
 #'
 #'#### Choice design with only adaptive sets (des=NULL)
 #'# NOTE that the data will be saved in the current working directory. 
@@ -150,12 +152,13 @@
 #'           buttons.text = b.text, intro.text = i.text, end.text = e.text, data.dir = dataDir, 
 #'           crit= "KL", prior.mean = p.mean, prior.covar = p.var, cand.set = cand, m = 6)
 #'# Data 
-#'data <- LoadData(data.dir = dataDir, type = "num")
+#'data_num <- LoadData(data.dir = dataDir, type = "num")
+#'data_char <- LoadData(data.dir = dataDir, type = "char")
 #'}
-#' @import shiny 
-#' @export
+#'@import shiny
+#'@export
 SurveyApp <- function(des = NULL, n.total, alts, atts, lvl.names, coding, 
-                      buttons.text, intro.text, end.text, data.dir,
+                      buttons.text, intro.text, end.text, data.dir = NULL,
                       c.lvls = NULL, crit = NULL, alt.cte = NULL, prior.mean = NULL,
                       prior.covar = NULL, cand.set = NULL, m = NULL) {
   # Initialize 
@@ -197,8 +200,10 @@ SurveyApp <- function(des = NULL, n.total, alts, atts, lvl.names, coding,
     }
   }
   # Error handling
-  if (!dir.exists(data.dir)) {
-    stop("Directory data.dir does not exist")
+  if (!is.null(data.dir)) {
+    if (!dir.exists(data.dir)) {
+      stop("Directory data.dir does not exist")
+    }
   }
   if (n.total > n.init) {
       if (any(c(is.null(prior.mean), is.null(prior.covar), is.null(cand.set), is.null(m), is.null(crit)))) {
@@ -207,23 +212,23 @@ SurveyApp <- function(des = NULL, n.total, alts, atts, lvl.names, coding,
     if (length(prior.mean) != ncol(cand.set) + sum(alt.cte)) {
       stop("Number of parameters in prior.mean does not match with cand.set + alt.cte")
     }
-    } else {
-      if (!is.null(prior.mean)) {
-        warning("prior.mean will be ignored, since there are no adaptive sets.")
-      } 
-      if (!is.null(prior.covar)) {
-        warning("prior.covar will be ignored, since there are no adaptive sets.")
-      }
-      if (!is.null(cand.set)) {
-        warning("cand.set will be ignored, since there are no adaptive sets.")
-      }
-      if (sum(alt.cte) > 0) {
-        warning("alt.cte will be ignored, since there are no adaptive sets.")
-      }
-      if (!is.null(m)) {
-        warning("m will be ignored, since there are no adaptive sets.")
-      }
+  } else {
+    if (!is.null(prior.mean)) {
+      warning("prior.mean will be ignored, since there are no adaptive sets.")
+    } 
+    if (!is.null(prior.covar)) {
+      warning("prior.covar will be ignored, since there are no adaptive sets.")
     }
+    if (!is.null(cand.set)) {
+      warning("cand.set will be ignored, since there are no adaptive sets.")
+    }
+    if (sum(alt.cte) > 0) {
+      warning("alt.cte will be ignored, since there are no adaptive sets.")
+    }
+    if (!is.null(m)) {
+      warning("m will be ignored, since there are no adaptive sets.")
+    }
+  }
   if (crit =="DB" && is.null(des)) {
     stop("In order to use the DB criterion, an initial design has to be provided.")
   }
@@ -260,14 +265,14 @@ SurveyApp <- function(des = NULL, n.total, alts, atts, lvl.names, coding,
             ## sample drawing for adaptive sets
             # if First set
             if (sn == 1) {
-              # Draw samples from prior
+              # sample draws from prior
               s <- MASS::mvrnorm(n = 2 ^ m, mu = prior.mean, Sigma  = prior.covar)
               w <- rep(1, nrow(s)) / nrow(s)
               # From second set
             } else {
-              # Draw samples from updated posterior
+              # Sample draws from updated posterior
               sam <- ImpsampMNL(prior.mean = prior.mean, prior.covar = prior.covar, des = fulldes, n.alts = n.alts, y = y.bin, m = m)
-              s <- sam$samples
+              s <- sam$sample
               w <- sam$weights
             }
             
@@ -381,7 +386,9 @@ SurveyApp <- function(des = NULL, n.total, alts, atts, lvl.names, coding,
         # Quit application 
         if (input$OK > (n.total + 1)) {
           # Write data to file
-          saveData(data = surveyData, data.dir = data.dir, n.atts = n.atts)
+          if (!is.null(data.dir)){
+            saveData(data = surveyData, data.dir = data.dir, n.atts = n.atts)
+          }
           # Stop application 
           stopApp()
         }
@@ -452,7 +459,6 @@ SurveyApp <- function(des = NULL, n.total, alts, atts, lvl.names, coding,
 #' ) 
 #' # Decode
 #' Decode(set = cs, lvl.names = al, coding = c, alt.cte = c(1, 0), c.lvls = cl) 
-#' @export
 Decode <- function(set, lvl.names, coding, alt.cte = NULL, c.lvls = NULL) {
   
   if(!is.null(alt.cte)) {
@@ -528,7 +534,6 @@ Decode <- function(set, lvl.names, coding, alt.cte = NULL, c.lvls = NULL) {
 #' alts <- c("no.choice", "alt1", "alt2", "alt3")
 #' # 3 alternatives + no.choice 
 #' Charbin(resp = resp, alts = alts, n.alts = 3, no.choice = TRUE)
-#' @export
 Charbin <- function (resp, alts, n.alts, no.choice = FALSE) {
   # Error resp not in altsions
   if (!all(resp %in% alts)) {
@@ -676,7 +681,8 @@ saveData <- function(data, data.dir, n.atts) {
   # Data manipulation 
   d <- as.data.frame(cbind(data$desing, resp = data$bin.responses))
   unc_resp <- rep(data$responses, each = n.atts) 
-  unc_d <- cbind(data$survey, resp = unc_resp) 
+  unc_setnr <- rep(1:length(data$responses), each = n.atts)
+  unc_d <- cbind(set = unc_setnr, data$survey, resp = unc_resp) 
   # Create unique file names
   numname <- sprintf("%s_num_data.txt", as.integer(Sys.time()))
   charname <- sprintf("%s_char_data.txt", as.integer(Sys.time()))
@@ -714,13 +720,17 @@ LoadData <- function(data.dir, type) {
   if (!dir.exists(data.dir)) {
     stop("Directory data.dir does not exist")
   }
+  error <- character(0)
+  if(identical(list.files(data.dir, full.names = TRUE, pattern = type), error)){
+    stop('No files of the specified type in data.dir')
+  } 
   # Read all files into list
-  files <- list.files(data.dir, full.names = TRUE, pattern = "num")
-  data <- lapply(files, utils::read.table, stringsAsFactors = FALSE) 
+  files <- list.files(data.dir, full.names = TRUE, pattern = type)
+  data <- lapply(files, utils::read.table, stringsAsFactors = FALSE, sep = '\t', header = T) 
   # matrix
   id_rows <- sapply(data, nrow)
   id <- rep(1:length(id_rows), id_rows)
-  data <- lapply(data, as.matrix)
+  data <- lapply(data, as.data.frame)
   # Bind together
   data <- do.call(rbind, data)
   data <- cbind("ID" = id, data)
