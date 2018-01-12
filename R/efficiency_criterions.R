@@ -107,7 +107,7 @@ KLs <- function(full.comb, par.draws, cte.des, cand.set, weights) {
 # 
 # Calculates the KL-divergence for a choice set given parameter values.
 # @inheritParams DerrS
-# @param weights A vector containing the weights of the samples. Default is
+# @param weights A vector containing the weights of the draws. Default is
 #   \code{NULL}
 KL <- function (set, par.draws, weights){
   # Probabilities.
