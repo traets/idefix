@@ -9,11 +9,11 @@
 #'   normal distribution (prior).
 #' @param y A binary response vector. \code{\link{RespondMNL}} can be used to
 #'   simulate respons data.
-#' @param m Numeric value. Number of samples = \code{base^m}.
+#' @param m Numeric value. Number of draws = \code{base^m}.
 #' @param b Numeric value indicating the base. The default = 2.
-#' @return \item{samples}{Numeric vector with the (unweigthted) samples from the
+#' @return \item{sample}{Numeric vector with the (unweigthted) draws from the
 #' posterior distribution.} \item{weights}{Numeric vector with the associated
-#' weights of the samples.} \item{max}{Numeric vector with the estimated
+#' weights of the draws.} \item{max}{Numeric vector with the estimated
 #' mode of the posterior distribution.} \item{covar}{Matrix representing the
 #' estimated variance covariance matrix.}
 #' @examples 
@@ -21,12 +21,12 @@
 #' pm <- c(0.8, 0.3, 0.2, -0.3, -0.2) # Prior mean (4 parameters).
 #' pc <- diag(length(pm)) # Prior variance
 #' cs <- Profiles(lvls = c(3, 3), coding = c("E", "E"))
-#' ps <- MASS::mvrnorm(n = 10, mu = pm, Sigma = pc) # 10 Samples.
+#' ps <- MASS::mvrnorm(n = 10, mu = pm, Sigma = pc) # 10 draws.
 #' # Efficient design. 
 #' design <- Modfed(cand.set = cs, n.sets = 8, n.alts = 2, alt.cte = c(1,0), par.draws = ps)$design
 #' # Respons.
 #' resp <- RespondMNL(par = c(0.7, 0.6, 0.5, -0.5, -0.7), des = design, n.alts = 2)
-#' # Parameters samples from posterior.
+#' # Parameters draws from posterior.
 #' ImpsampMNL(prior.mean =  pm, prior.covar = pc, des = design, n.alts = 2, y = resp, m = 6)
 #'
 #' # Importance sampling MNL
@@ -34,12 +34,12 @@
 #' pc <- diag(length(pm)) # Prior variance
 #' cs <- Profiles(lvls = c(3, 3, 2), coding = c("D", "C", "D"), c.lvls = list(c(2,4,6)))
 #' ac <- c(0, 0) # No alternative specific constants. 
-#' ps <- MASS::mvrnorm(n = 10, mu = pm, Sigma = pc) # 10 Samples.
+#' ps <- MASS::mvrnorm(n = 10, mu = pm, Sigma = pc) # 10 draws.
 #' # Efficient design. 
 #' design <- Modfed(cand.set = cs, n.sets = 8, n.alts = 2, alt.cte = c(0,0), par.draws = ps)$design
 #' # Respons
 #' resp <- RespondMNL(par = c(0.6, 0.5, -0.5, -0.7), des = design, n.alts = 2)
-#' # Parameters samples from posterior.
+#' # Parameters draws from posterior.
 #' ImpsampMNL(prior.mean =  pm, prior.covar = pc, des = design, n.alts = 2, y = resp, m = 6)
 #' @export
 ImpsampMNL <- function(prior.mean, prior.covar, des, n.alts, y, m, b = 2) {
@@ -74,11 +74,11 @@ ImpsampMNL <- function(prior.mean, prior.covar, des, n.alts, y, m, b = 2) {
     # Density of g.
     dens.g[r] <- Gdens(par = g.draws[r, ], g.mean = maxest, g.covar = g.covar)
   }
-  # Compute the weights of samples.
+  # Compute the weights of the draws.
   w <- likh * prior / dens.g   # posterior / importance density  
   w <- w / sum(w)
   # Return.
-  return(list(samples = g.draws, weights = w, max = maxest, covar = g.covar))
+  return(list(sample = g.draws, weights = w, max = maxest, covar = g.covar))
 }
 
 
