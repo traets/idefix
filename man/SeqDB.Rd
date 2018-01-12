@@ -25,7 +25,7 @@ multivariate parameter distribution. See also \code{\link{ImpsampMNL}}.}
 \item{reduce}{Logical value indicating whether the candidate set should be
 reduced or not.}
 
-\item{weights}{A vector containing the weights of the samples. Default is
+\item{weights}{A vector containing the weights of the draws. Default is
 \code{NULL}, See also \code{\link{ImpsampMNL}}.}
 }
 \value{
@@ -61,26 +61,26 @@ is for example the case when parameter values are updated using
 \code{\link{ImpsampMNL}}.
 }
 \examples{
-# DB efficient choice set, given a design and parameter samples. 
+# DB efficient choice set, given a design and parameter draws. 
 # Candidate profiles 
 cs <- Profiles(lvls = c(3, 3), coding = c("E", "E"))
 m <- c(0.3, 0.2, -0.3, -0.2) # Prior mean (total = 5 parameters).
 pc <- diag(length(m)) # Prior variance
 set.seed(123)
-ps <- MASS::mvrnorm(n = 10, mu = m, Sigma = pc) # 10 Samples.
+ps <- MASS::mvrnorm(n = 10, mu = m, Sigma = pc) # 10 draws.
 ac <- c(0, 0) # No alternative specific constants. 
 # Initial design.
 des <- Modfed(cand.set = cs, n.sets = 6, n.alts = 2, alt.cte = ac, par.draws = ps)$design
 # Efficient choice set to add. 
 SeqDB(des = des, cand.set = cs, n.alts = 2, par.draws = ps, prior.covar = pc)
 
-# DB efficient choice set, given a design and parameter samples. 
+# DB efficient choice set, given a design and parameter draws. 
 # Candidate profiles 
 cs <- Profiles(lvls = c(3, 3), coding = c("C", "E"), c.lvls = list(c(5,3,1)))
 m <- c(0.7, 0.3, -0.3, -0.2) # Prior mean (4 parameters).
 pc <- diag(length(m)) # Prior variance
 set.seed(123)
-ps <- MASS::mvrnorm(n = 10, mu = m, Sigma = pc) # 10 Samples.
+ps <- MASS::mvrnorm(n = 10, mu = m, Sigma = pc) # 10 draws.
 ac <- c(1, 0) # Alternative specific constant. 
 # Initial design.
 des <- Modfed(cand.set = cs, n.sets = 6, n.alts = 2, alt.cte = ac, par.draws = ps)$design
