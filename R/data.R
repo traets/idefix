@@ -12,3 +12,20 @@
 "example_design"
 
 
+#' Discrete choice aggregate design.
+#' 
+#' The dataset contains fictional data for seven participants, who each
+#' responded to eight choice sets with two alternatives. Each alternatives
+#' consists of three attributes who each contain three levels and are dummy
+#' coded.
+#' 
+#' @docType data
+#' @usage data(aggregate_design)
+#' @format A matrix with 112 rows and 9 variables
+#' @keywords data
+"aggregate_design"
+
+
+
+
+
