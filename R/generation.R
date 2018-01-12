@@ -124,9 +124,9 @@ Rcnames <- function(n.sets, n.alts, n.cte, alt.cte) {
 # distribution.
 # @param K Numeric value indicating the dimensionality of the grid.
 # @param b Numeric value indicating the base.
-# @param m Numeric value. Number of samples=b^m.
+# @param m Numeric value. Number of draws = b^m.
 # @return Matrix of lattice points drawn from a multivariate standard normal
-#   distribution. Each row is a sample.
+#   distribution. Each row is a draw.
 Lat <- function(K, b, m) {
   base <- function(num){
     a1 <- c1 <- rep(0, m)
@@ -174,10 +174,10 @@ Lat <- function(K, b, m) {
 # @param cvar A matrix which specifies the covariance matrix.
 # @param df Numeric value indicating the degrees of freedom for the multivariate
 #   t-distribution.
-# @param m Numeric value. Number of samples = b^m.
+# @param m Numeric value. Number of draws = b^m.
 # @param b Numeric value indicating the base (default = 2).
 # @return Matrix of lattice points drawn from a multivariate t-distribution.
-#   Each row is a sample.
+#   Each row is a draw.
 Lattice_mvt <- function (mean, cvar, df, m, b=2) {
   # Dimension
   dim <- length(mean)
@@ -204,10 +204,10 @@ Lattice_mvt <- function (mean, cvar, df, m, b=2) {
 # Generates a grid of points coming from a multivariate normal distribution.
 # @param mean Numeric vector indicating the multivariate mean.
 # @param cvar A matrix which specifies the covariance matrix.
-# @param m Numeric value. Number of samples = b^m.
+# @param m Numeric value. Number of draws = b^m.
 # @param b Numeric value indicating the base (default = 2).
 # @return Matrix of lattice points drawn from a multivariate normal
-#   distribution. Each row is a sample.
+#   distribution. Each row is a draw.
 Lattice_mvn <- function(mean, cvar, m, b=2) {
   dim <- length(mean)
   l <- Lat(K = dim, b, m)
