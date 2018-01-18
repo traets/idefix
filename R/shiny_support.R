@@ -427,6 +427,7 @@ SurveyApp <- function(des = NULL, n.total, alts, atts, lvl.names, coding,
 #' @inheritParams Modfed
 #' @return A character matrix which represents the choice set.
 #' @examples 
+#' \donttest{
 #' # Example without continuous attributes.
 #' l <- c(3, 4, 2) # 3 Attributes.
 #' c <- c("D", "E", "D") # Coding.
@@ -459,6 +460,7 @@ SurveyApp <- function(des = NULL, n.total, alts, atts, lvl.names, coding,
 #' ) 
 #' # Decode
 #' Decode(set = cs, lvl.names = al, coding = c, alt.cte = c(1, 0), c.lvls = cl) 
+#' }
 Decode <- function(set, lvl.names, coding, alt.cte = NULL, c.lvls = NULL) {
   
   if(!is.null(alt.cte)) {
@@ -528,12 +530,14 @@ Decode <- function(set, lvl.names, coding, alt.cte = NULL, c.lvls = NULL) {
 #' @return A binary response vector with length equal to \code{length(resp) *
 #'   length(n.alts)}.
 #' @examples 
+#' \donttest{
 #' # Observed Responses 
 #' resp <- c("alt1", "alt3", "alt2", "no.choice", "alt1") 
 #' # All possible alternatives 
 #' alts <- c("no.choice", "alt1", "alt2", "alt3")
 #' # 3 alternatives + no.choice 
 #' Charbin(resp = resp, alts = alts, n.alts = 3, no.choice = TRUE)
+#' }
 Charbin <- function (resp, alts, n.alts, no.choice = FALSE) {
   # Error resp not in altsions
   if (!all(resp %in% alts)) {
