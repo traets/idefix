@@ -38,10 +38,12 @@ If \code{no.choice} is \code{TRUE} the first alternative specified in
 was chosen all alternatives are zero for that choice set.
 }
 \examples{
+\donttest{
 # Observed Responses 
 resp <- c("alt1", "alt3", "alt2", "no.choice", "alt1") 
 # All possible alternatives 
 alts <- c("no.choice", "alt1", "alt2", "alt3")
 # 3 alternatives + no.choice 
 Charbin(resp = resp, alts = alts, n.alts = 3, no.choice = TRUE)
+}
 }
