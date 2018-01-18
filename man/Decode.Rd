@@ -43,6 +43,7 @@ to that attribute. The first attribute wil be used as reference level.  For
 last attributelevel is used as reference level.
 }
 \examples{
+\donttest{
 # Example without continuous attributes.
 l <- c(3, 4, 2) # 3 Attributes.
 c <- c("D", "E", "D") # Coding.
@@ -75,4 +76,5 @@ al <- list(
 ) 
 # Decode
 Decode(set = cs, lvl.names = al, coding = c, alt.cte = c(1, 0), c.lvls = cl) 
+}
 }
