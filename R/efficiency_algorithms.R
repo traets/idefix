@@ -187,7 +187,7 @@ Modfed <- function(cand.set, n.sets, n.alts,  alt.cte, par.draws, start.des = NU
     colnames(des)[1:n.cte] <- des.names[[2]]
   }
   # Return design, D(B)error, percentage NA's, utility balance. 
-  return(list("design" = des, "error" =  db, "inf.error" = na.percentage, "prob.diff" = ub))
+  return(list("design" = des, "error" =  db.start, "inf.error" = na.percentage, "prob.diff" = ub))
 }
 
 
