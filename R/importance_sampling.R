@@ -3,49 +3,57 @@
 #' Importance sampling MNL
 #' 
 #' This function samples from the posterior distribution using importance 
-#' sampling, assuming a multivariate normal prior distribution and a MNL likelihood.
+#' sampling, assuming a multivariate (truncated) normal prior distribution and a
+#' MNL likelihood.
 #' @inheritParams SeqDB
+#' @param n numeric value. The number of draws. 
 #' @param prior.mean Numeric vector indicating the mean of the multivariate
 #'   normal distribution (prior).
 #' @param y A binary response vector. \code{\link{RespondMNL}} can be used to
 #'   simulate respons data.
-#' @param m Numeric value. Number of draws = \code{base^m}.
-#' @param b Numeric value indicating the base. The default = 2.
+#' @param lower Numeric vector. Vector of lower truncation points, the default
+#'   is \code{rep(-Inf, length(prior.mean))}.
+#' @param upper Numeric vector. Vector of upper truncation points, the default
+#'   is \code{rep(Inf, length(prior.mean))}.
 #' @return \item{sample}{Numeric vector with the (unweigthted) draws from the
 #' posterior distribution.} \item{weights}{Numeric vector with the associated
 #' weights of the draws.} \item{max}{Numeric vector with the estimated
 #' mode of the posterior distribution.} \item{covar}{Matrix representing the
 #' estimated variance covariance matrix.}
 #' @examples 
-#' # Importance sampling MNL 
-#' pm <- c(0.8, 0.3, 0.2, -0.3, -0.2) # Prior mean (4 parameters).
-#' pc <- diag(length(pm)) # Prior variance
-#' cs <- Profiles(lvls = c(3, 3), coding = c("E", "E"))
-#' ps <- MASS::mvrnorm(n = 10, mu = pm, Sigma = pc) # 10 draws.
-#' # Efficient design. 
-#' design <- Modfed(cand.set = cs, n.sets = 8, n.alts = 2, alt.cte = c(1,0), par.draws = ps)$design
+#' ## Example 1: sample from posterior 
+#' # choice design  
+#' design <- example_design 
 #' # Respons.
-#' resp <- RespondMNL(par = c(0.7, 0.6, 0.5, -0.5, -0.7), des = design, n.alts = 2)
-#' # Parameters draws from posterior.
-#' ImpsampMNL(prior.mean =  pm, prior.covar = pc, des = design, n.alts = 2, y = resp, m = 6)
-#'
-#' # Importance sampling MNL
-#' pm <- c(0.3, 0.2, -0.3, -0.2) # Prior mean (4 parameters).
-#' pc <- diag(length(pm)) # Prior variance
-#' cs <- Profiles(lvls = c(3, 3, 2), coding = c("D", "C", "D"), c.lvls = list(c(2,4,6)))
-#' ac <- c(0, 0) # No alternative specific constants. 
-#' ps <- MASS::mvrnorm(n = 10, mu = pm, Sigma = pc) # 10 draws.
-#' # Efficient design. 
-#' design <- Modfed(cand.set = cs, n.sets = 8, n.alts = 2, alt.cte = c(0,0), par.draws = ps)$design
-#' # Respons
-#' resp <- RespondMNL(par = c(0.6, 0.5, -0.5, -0.7), des = design, n.alts = 2)
-#' # Parameters draws from posterior.
-#' ImpsampMNL(prior.mean =  pm, prior.covar = pc, des = design, n.alts = 2, y = resp, m = 6)
+#' truePar <- c(0.7, 0.6, 0.5, -0.5, -0.7, 1.7) # some values
+#' resp <- RespondMNL(par = truePar, des = design, n.alts = 2)
+#' #prior
+#' pm <- rep(0, ncol(design)) # mean vector 
+#' pc <- diag(2, ncol(design)) # covariance matrix 
+#' # draws from posterior.
+#' ImpsampMNL(n = 64, prior.mean =  pm, prior.covar = pc, 
+#'            des = design, n.alts = 2, y = resp)
+
+#' ## example 2:  sample from posterior with truncated prior
+#' # choice design. 
+#' design <- example_design
+#' # Respons.
+#' truePar <- c(0.7, 0.6, 0.5, -0.5, -0.7, 1.7) # some values
+#' resp <- RespondMNL(par = truePar, des = design, n.alts = 2)
+#' # prior
+#' pm <- c(0.5, 0.5, 0.5, -0.5, -0.5, 0.5) # mean vector
+#' pc <- diag(2, ncol(design)) # covariance matrix
+#' low <- rep(-Inf, length(pm)) # lower bound 
+#' up <- c(Inf, Inf, Inf, 0, 0, Inf) # upper bound
+#' # draws from posterior.
+#' ImpsampMNL(n = 64, prior.mean =  pm, prior.covar = pc, des = design,
+#'            n.alts = 2, y = resp, lower = low, upper = up)
 #' @export
-ImpsampMNL <- function(prior.mean, prior.covar, des, n.alts, y, m, b = 2) {
+ImpsampMNL <- function(n, prior.mean, prior.covar, des, n.alts, y,
+                        lower = rep(-Inf, length(prior.mean)), upper = rep(Inf, length(prior.mean))){
   # Error handling.
   if (length(prior.mean) != ncol(prior.covar)) {
-    stop("different number of parameters in prior mean and prior covarance matrix.")
+    stop("different number of parameters in prior mean and prior covarance matrix")
   }
   if (nrow(des) != length(y)) {
     stop("response vector length differs from the expected based on design")
@@ -53,34 +61,35 @@ ImpsampMNL <- function(prior.mean, prior.covar, des, n.alts, y, m, b = 2) {
   if(det(prior.covar) == 0) {
     stop("prior covariance matrix is not invertible")
   }
-  # Prior cte.
-  kPrior <- (2 * pi)^(-length(prior.mean) / 2) * (det(prior.covar))^(-0.5)
-  # Estimate mean importance distribution by finding maximum logposterior.
-  maxest <- maxLik::maxNR(LogPost, start = prior.mean, prior.mean = prior.mean, prior.covar = prior.covar,
-                          des = des, y = y, n.alts = n.alts)$estimate
-  # Draws from importance density.
-  hes <- Hessian(par = maxest, des = des, covar = prior.covar, n.alts = n.alts)
-  g.covar <- -solve(hes)
-  g.draws <- Lattice_mvt(mean = maxest, cvar = g.covar, df = length(maxest), m = m)
-  # Vectors.
-  prior <- likh <- dens.g <- weights <- numeric(nrow(g.draws))
-  # For every sample calculate prior density, likelihood and importance density.
-  spvc <- solve(prior.covar)
-  for (r in 1:nrow(g.draws)) {
-    # Prior.
-    prior[r] <- kPrior * exp(-0.5 * (g.draws[r, ] - prior.mean) %*% spvc %*% as.matrix(g.draws[r, ] - prior.mean))
-    # Likelihood.
-    likh[r] <- Lik(par = g.draws[r, ], des = des, y = y, n.alts = n.alts)
-    # Density of g.
-    dens.g[r] <- Gdens(par = g.draws[r, ], g.mean = maxest, g.covar = g.covar)
+  if(!(all(lower < prior.mean) && all(prior.mean < upper))){
+    stop("prior.mean is not between lower and upper bounds")
   }
-  # Compute the weights of the draws.
-  w <- likh * prior / dens.g   # posterior / importance density  
+  if(length(lower) != length(prior.mean)){
+    stop('length lower and prior.mean does not match')
+  }
+  if(length(upper) != length(prior.mean)){
+    stop('length upper and prior.mean does not match')
+  }
+  # mode imp dens 
+  impdens <- maxLik::maxNR(LogPost, start = prior.mean, prior.mean = prior.mean, prior.covar = prior.covar,
+                           lower = lower, upper = upper, des = des, y = y, n.alts = n.alts)
+  maxest <- impdens$estimate
+  # covar imp dens 
+  g.covar <- -solve(impdens$hessian)
+  # draws from imp dens 
+  g.draws <- tmvtnorm::rtmvt(n = n, mean = maxest, sigma = g.covar, lower = lower, upper = upper, df = length(maxest))
+  # prior dens
+  prior <- tmvtnorm::dtmvnorm(g.draws, mean = prior.mean, sigma = prior.covar, lower = lower, upper = upper)
+  # likelihood
+  likh <-  apply(g.draws, 1, Lik, des = des, y = y, n.alts = n.alts)
+  # imp dens
+  g.dens <- tmvtnorm::dtmvt(g.draws, mean = maxest, sigma = g.covar, df = length(maxest))
+  # weights of draws.
+  w <- likh * prior / g.dens 
   w <- w / sum(w)
   # Return.
   return(list(sample = g.draws, weights = w, max = maxest, covar = g.covar))
 }
-
 
 # log Posterior
 # 
@@ -91,8 +100,12 @@ ImpsampMNL <- function(prior.mean, prior.covar, des, n.alts, y, m, b = 2) {
 # @param n.alts The number of alternatives in each choice set.
 # @param prior.mean vector containing the prior mean.
 # @param prior.covar matrix containing the prior covariance.
+# @param lower Numeric vector. Vector of lower truncation points, the default
+#   is \code{rep(-Inf, length(prior.mean))}.
+# @param upper Numeric vector. Vector of upper truncation points, the default
+#   is \code{rep(Inf, length(prior.mean))}. 
 # @return the logposterior probability
-LogPost <- function(par, prior.mean, prior.covar, des,  n.alts, y) {
+LogPost <- function(par, prior.mean, prior.covar, lower, upper,  des,  n.alts, y) {
   #calcultate utility alternatives
   u <- t(t(des) * par)
   u <- .rowSums(u, m = nrow(des), n = length(par))
@@ -102,10 +115,9 @@ LogPost <- function(par, prior.mean, prior.covar, des,  n.alts, y) {
   #loglikelihood
   ll <- sum(y * log(p))
   #logprior
-  logprior2 <- -0.5 * (par - t(prior.mean)) %*% solve(prior.covar) %*% (as.matrix(par) - prior.mean)
+  lprior <- tmvtnorm::dtmvnorm(par, prior.mean, prior.covar, lower, upper, log = TRUE)
   #logposterior 
-  logpost <- (length(prior.mean) / 2 * log(2 * pi) - 0.5 * log(det(prior.covar))) + logprior2 + ll
-  return(logpost)
+  return(lprior + ll)
 }
 
 
