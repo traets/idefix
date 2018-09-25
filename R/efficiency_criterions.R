@@ -14,6 +14,13 @@ Derr <- function(par, des, n.alts) {
   ifelse((detinfo <= 0), return(NA), return(detinfo^(-1 / length(par))))
 }
 
+#with covariance information
+DerrC <- function(par, des, n.alts, i.cov) {
+  info.des <- InfoDes(par, des, n.alts)
+  detinfo <- det(info.des + i.cov)
+  ifelse((detinfo <= 0), return(NA), return(detinfo^(-1 / length(par))))
+}
+
 # Sequential D-error
 # 
 # Function to calculate D-errors if set would be part of design.
@@ -26,6 +33,19 @@ DerrS <- function(par.draws, set, des, n.alts, i.cov, n.par) {
   des.f <- rbind(des, set) 
   info.d <- InfoDes(par = par.draws, des = des.f, n.alts = n.alts) 
   d.error <- det(info.d + i.cov)^(-1 / n.par)
+  return(d.error)
+}
+
+#for parallel 
+DerrS.P <- function(par, des, n.alts, i.cov) {
+  group <- rep(seq(1, nrow(des) / n.alts, 1), each = n.alts)
+  # probability
+  u <- des %*% diag(par)
+  u <- .rowSums(u, m = nrow(des), n = length(par))
+  p <- exp(u) / rep(rowsum(exp(u), group), each = n.alts)
+  # information matrix
+  info <- crossprod(des * p, des) - crossprod(rowsum(des * p, group))
+  d.error <- det(info + i.cov)^(-1 / length(par))
   return(d.error)
 }
 
@@ -49,6 +69,17 @@ DBerrS <- function(full.comb, cand.set, par.draws, des, n.alts, cte.des, i.cov, 
   }
   # For each draw calculate D-error.
   d.errors <- apply(par.draws, 1, DerrS, set, des, n.alts, i.cov, n.par)
+  w.d.errors <- d.errors * weights
+  # DB-error. 
+  db.error <- mean(w.d.errors, na.rm = TRUE)
+  return(db.error)
+}
+
+#for parallel
+DBerrS.P <- function(des, par.draws, n.alts, i.cov, weights) {
+  # Add alternative specific constants if necessary
+  # For each draw calculate D-error.
+  d.errors <- apply(par.draws, 1, DerrS.P, des, n.alts, i.cov)
   w.d.errors <- d.errors * weights
   # DB-error. 
   db.error <- mean(w.d.errors, na.rm = TRUE)
