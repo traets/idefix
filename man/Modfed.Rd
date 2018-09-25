@@ -4,8 +4,9 @@
 \alias{Modfed}
 \title{Modified Federov algorithm for MNL models.}
 \usage{
-Modfed(cand.set, n.sets, n.alts, alt.cte, par.draws, start.des = NULL,
-  max.iter = Inf)
+Modfed(cand.set, n.sets, n.alts, par.draws, alt.cte = NULL,
+  no.choice = FALSE, start.des = NULL, parallel = TRUE, max.iter = Inf,
+  n.start = 12, best = TRUE)
 }
 \arguments{
 \item{cand.set}{A numeric matrix in which each row is a possible profile. The
@@ -16,34 +17,44 @@ Modfed(cand.set, n.sets, n.alts, alt.cte, par.draws, start.des = NULL,
 \item{n.alts}{Numeric value indicating the number of alternatives per choice
 set.}
 
-\item{alt.cte}{A binary vector indicating for each alternative if an
-alternative specific constant is desired.}
+\item{par.draws}{A matrix or a list, dependend on \code{alt.cte}.}
 
-\item{par.draws}{A numeric vector containing the parameter values, or a
-numeric matrix in which each row is a draw from the multivariate prior
-parameter distribution.}
+\item{alt.cte}{A binary vector indicating for each alternative whether an
+alternative specific constant is desired. The default is \code{NULL}.}
 
-\item{start.des}{A matrix in which each row is a profile. The number of rows
-equals \code{n.sets * n.alts}, and the number of columns equals the number
-of columns of \code{cand.set}. If not specified a random start design will
-be generated.}
+\item{no.choice}{A logical value indicating whether a no choice alternative
+should be added to each choice set.}
+
+\item{start.des}{A list containing one or more matrices. The default is \code{NULL}.}
+
+\item{parallel}{Logical value indicating whether computations should be done
+over multiple cores. The default is \code{TRUE}.}
 
 \item{max.iter}{A numeric value indicating the maximum number allowed
-iterations.}
+iterations. The default is \code{TRUE}.}
+
+\item{n.start}{A numeric value indicating the number of random start designs
+to use. The default is 12.}
+
+\item{best}{A logical value indicating whether only the best design should be
+returned. The default is \code{TRUE}.}
 }
 \value{
+If \code{best = TRUE} the design with the lowest D(B)-error. If \code{best
+  = FALSE}, the result of all (provided) start designs.
 \item{design}{A numeric matrix wich contains an efficient design.}
 \item{error}{Numeric value indicating the D(B)-error of the design.}
 \item{inf.error}{Numeric value indicating the percentage of draws for which
 the D-error was \code{Inf}.} \item{prob.diff}{Numeric value indicating the
 difference between the alternative with the highest and the one with the
-lowest probability for each choice set. If a sample matrix was provided this
-is based on the average over all draws.}
+lowest probability for each choice set. If a sample matrix was provided
+this is based on the average over all draws.}
 }
 \description{
-The algorithm swaps every profile of an initial design with candidate
+The algorithm swaps every profile of an initial start design with candidate
 profiles. By doing this it tries to minimize the D(B)-error, based on a
-multinomial logit model.
+multinomial logit model. This routine is repeated for multiple starting
+designs.
 }
 \details{
 Each iteration will loop through all profiles from the initial design,
@@ -54,35 +65,57 @@ when \code{max.iter} is reached.
 By specifying a numeric vector in \code{par.draws}, the D-error will be
 calculated and the design will be optimised locally. By specifying a matrix,
 in which each row is a draw from a multivariate distribution, the DB-error
-will be calculated, and the design will be optimised globally. The number of
-columns should equal the number of parameter in \code{alt.cte} + the number
-of parameters in \code{cand.set}. This is also the order in which they should
-be sorted (first \code{alt.cte} parameters).
+will be calculated, and the design will be optimised globally. Whenever there
+are alternative specific constants, \code{par.draws} should be a list
+containing two matrices. The first matrix containing the parameter draws for
+the alternative specific constant parameters. The second matrix containing
+the draws for the rest of the parameters.
 
 The DB-error is calculated by taking the mean over D-errors. It could be that
 for some draws the design results in an infinite D-error. The percentage of
-draws for which this was true for the final design can be found in the
-output \code{inf.error}.
+draws for which this was true for the final design can be found in the output
+\code{inf.error}.
 
-Alternative specific constants can be specified in \code{alt.cte}. The lenght
+Alternative specific constants can be specified in \code{alt.cte}. The length
 of this binary vector should equal \code{n.alts}, were \code{0} indicates the
 absence of an alternative specific constant and \code{1} the opposite.
+
+\code{start.des} is a list with one or several matrices. In each matrix each
+row is a profile. The number of rows equals \code{n.sets * n.alts}, and the
+number of columns equals the number of columns of \code{cand.set} + the
+number of non-zero elements in \code{alt.cte}. If the default \code{start.des
+= NULL} is \code{TRUE}, \code{n.start} random start designs will be
+generated. If start designs are provided, \code{n.start} is ignored.
+
+If \code{no.choice} is \code{TRUE}, in each choice set an alternative with
+one alternative specific constant is added. The return value of the
+D(B)-error is however based on the design without the no choice option.
+
+When \code{parallel} is \code{TRUE}, \code{\link[parallel]{detectCores}} will
+be used to decide upon the number of available cores. That number minus 1
+cores will be used to search for efficient designs. The computation time will
+decrease significantly when \code{parallel = TRUE}.
 }
 \examples{
-# D-efficient design
-# 3 Attributes, 2 are dummy coded and 1 continuous (= 3 parameters).
-cs <- Profiles(lvls = c(2, 3, 2), coding = c("D", "C", "D"), c.lvls = list(c(2, 4, 6)))
-ps <- c(0.8, 0.2, -0.3) # Prior parameter vector
-Modfed(cand.set = cs, n.sets = 8, n.alts = 2, alt.cte = c(0, 0), par.draws = ps)
-
-# DB-efficient design. 
-# 3 Attributes with 2, 3 and 2 levels, all effect coded (= 4 parameters).
-cs <- Profiles(lvls = c(2, 3, 2), coding = c("E", "E", "E")) 
-m <- c(0.8, 0.2, -0.3, -0.2, 0.7) # Prior mean (total = 5 parameters).
-v <- diag(length(m)) # Prior variance.
+# DB-efficient designs
+# 3 Attributes, all dummy coded. 1 alternative specific constant. = 7 parameters
+cand.set <- Profiles(lvls = c(3, 3, 3), coding = c("D", "D", "D"))
+mu <- c(0.5, 0.8, 0.2, -0.3, -1.2, 1.6, 2.2) # Prior parameter vector
+v <- diag(length(mu)) # Prior variance.
 set.seed(123) 
-ps <- MASS::mvrnorm(n = 10, mu = m, Sigma = v) # 10 draws.
-Modfed(cand.set = cs, n.sets = 8, n.alts = 2, alt.cte = c(1, 0), par.draws = ps)
+pd <- MASS::mvrnorm(n = 10, mu = mu, Sigma = v) # 10 draws.
+p.d <- list(matrix(pd[,1], ncol = 1), pd[,2:7])
+Modfed(cand.set = cand.set, n.sets = 8, n.alts = 2, alt.cte = c(1, 0), par.draws = p.d, best = FALSE)
+
+# DB-efficient design with start design provided.  
+# 3 Attributes with 3 levels, all dummy coded (= 6 parameters).
+cand.set <- Profiles(lvls = c(3, 3, 3), coding = c("D", "D", "D")) 
+mu <- c(0.8, 0.2, -0.3, -0.2, 0.7, 0.4) # Prior mean (total = 5 parameters).
+v <- diag(length(mu)) # Prior variance.
+sd <- list(example_design)
+set.seed(123)
+ps <- MASS::mvrnorm(n = 10, mu = mu, Sigma = v) # 10 draws.
+Modfed(cand.set = cand.set, n.sets = 8, n.alts = 2, alt.cte = c(0, 0), par.draws = ps, start.des = sd)
 }
 \references{
 \insertRef{federov}{mnldes}
