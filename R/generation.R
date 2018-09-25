@@ -20,16 +20,16 @@
 #' @return A numeric matrix which contains all possible profiles.
 #' @examples 
 #' # Without continuous attributes
-#' at.lvls <- c(3,4,2) # 3 Attributes with respectively 3, 4 and 2 levels. 
+#' at.lvls <- c(3, 4, 2) # 3 Attributes with respectively 3, 4 and 2 levels. 
 #' c.type <- rep("E", length(at.lvls)) # All Effect coded.
 #' Profiles(lvls = at.lvls, coding = c.type) # Generate profiles.
 #' 
 #' # With continuous attributes 
-#' at.lvls <- c(3,4,2) # 3 attributes with respectively 3, 4 and 2 levels. 
+#' at.lvls <- c(3, 4, 2) # 3 attributes with respectively 3, 4 and 2 levels. 
 #' # First attribute is dummy coded, second and third are continuous. 
 #' c.type <- c("D", "C", "C") 
 #' # Levels for continuous attributes, in the same order. 
-#' con.lvls <- list(c(4,6,8,10), c(7,9))
+#' con.lvls <- list(c(4, 6, 8, 10), c(7, 9))
 #' Profiles(lvls = at.lvls, coding = c.type, c.lvls = con.lvls)
 #' @export
 Profiles <- function(lvls, coding, c.lvls = NULL) {
@@ -51,16 +51,16 @@ Profiles <- function(lvls, coding, c.lvls = NULL) {
   }
   # Error continuous specified and NULL.
   if (length(contins) > 0 && is.null(c.lvls)) {
-    stop("there are no levels provided for the continuous attributes")
+    stop("when 'coding' contains C, 'c.lvls' should be specified")
   }
   # Error continuous levels specification. 
   if (!is.null(c.lvls)) {
     if (length(c.lvls) != n.contins) {
-      stop("length of c.lvls does not match number of specified continuous attributes in coding")
+      stop("length of 'c.lvls' does not match number of specified continuous attributes in 'coding'")
     }
     # Error c.lvls same number of levels. 
     if (!isTRUE(all.equal(lvls[contins], lengths(c.lvls)))) {
-      stop("the number of continuous attribute levels provided in c.lvls does not match the expected based on lvls")
+      stop("the number of levels provided in 'c.lvls' does not match the expected based on 'lvls'")
     }
   }
   # Change into correct coding. 
@@ -88,9 +88,11 @@ Profiles <- function(lvls, coding, c.lvls = NULL) {
   return(as.matrix(cgrid))
 }
 
-
 # Create alternative specific coding.
 Altspec <- function(alt.cte, n.sets) {
+  if(!any(alt.cte == 0)){
+    stop("'alt.cte' should at least contain 1 zero")
+  }
   # create matrix
   mat <- diag(length(alt.cte))
   n.zero <- which(alt.cte == 0)
@@ -106,15 +108,20 @@ Altspec <- function(alt.cte, n.sets) {
 }
 
 
+
 # Create row and column names for designs 
-Rcnames <- function(n.sets, n.alts, n.cte, alt.cte) {
+Rcnames <- function(n.sets, n.alts, alt.cte) {
   # rownames
   r.s <- rep(1:n.sets, each = n.alts)
   r.a <- rep(1:n.alts, n.sets)
   r.names <- paste(paste("set", r.s, sep = ""), paste("alt", r.a, sep = ""), sep = ".")
-  # colnames alternative specific constants 
-  cte.names <- paste(paste("alt", which(alt.cte == 1), sep = ""), ".cte", sep = "") 
-  # return
+  # colnames alternative specific constants
+  if(sum(alt.cte) > 0.2){
+    cte.names <- paste(paste("alt", which(alt.cte == 1), sep = ""), ".cte", sep = "") 
+  } else {
+    cte.names <- NULL
+  }
+    # return
   return(list(r.names, cte.names))
 }
 
@@ -222,3 +229,107 @@ Lattice_mvn <- function(mean, cvar, m, b=2) {
   return(X)
 }
 
+#function to get DB error of start designs
+StartDB <- function(des, par.draws, n.alts){
+  apply(par.draws, 1, Derr, des = des,  n.alts = n.alts)
+} 
+
+## generate grid for truncated distribution
+Lattice_trunc <- function (n, mean, cvar, lower, upper, df) {
+  # Dimension
+  dim <- length(mean)
+  # Generate lattice from standard normal
+  left <- n
+  mean <- t(mean)
+  A <- chol(cvar)
+  XX <- NULL
+  while(left > 0.2){
+    m = ceiling(sqrt(left))
+    if(m < 2){m = 2}
+    lattice <- Lat(K = dim, b = 2, m = m)
+    X <- matrix(NA, nrow(lattice), dim)
+    # Transform to multivariate t distribution
+    for (i in 1:nrow(lattice)) {
+      Z <- lattice[i, ]
+      r <- mean + (Z %*% t(A))
+      X[i, ] <- t(r)
+    }
+    XS <- matrix(unlist(apply(X, 1, function(X) {if(all(lower < X) && all(X < upper)) return(X)})), ncol = dim, byrow = TRUE)
+    XX <- rbind(XX, XS)
+    left <- (n - nrow(XX))
+  }
+  return(XX[1:n, ])
+}
+
+##list of all possible choice sets 
+Fullsets <- function(cand.set, n.alts, no.choice, reduce = TRUE){
+  
+  if(!is.null(no.choice)){
+    n.alts <- n.alts - 1
+  }
+  full.comb <- combn(1:nrow(cand.set), n.alts, FUN = function(x)  cand.set[x, ], simplify = FALSE)
+  #reduce
+  if (reduce){
+    m <- rnorm(ncol(cand.set))
+    inf <-list()
+    for(i in 1:length(full.comb)){
+      inf[[i]] <- round(InfoDes(m, full.comb[[i]], n.alts), digits = 3)
+    }
+    t <- array(unlist(inf), dim = c(length(m), length(m), length(inf))) 
+    full.comb <- full.comb[!duplicated(t, MARGIN = 3)]
+  }
+  if(!is.null(no.choice)){
+    full.comb <- lapply(full.comb, Inchoice, no.choice = no.choice)
+  }
+  return(full.comb)
+}
+
+# when opt.out = TRUE in modfed 
+# Optout <- function(des, n.alts, n.sets){
+#   optdes <- cbind(rep(0, n.alts * n.sets), des)
+#   no.choice <- c(1, rep(0, ncol(optdes) - 1))
+#   design.opt <- vector(mode = "list")
+#   for (s in 1: n.sets){
+#     design.opt[[s]] <- rbind(optdes[ (((s-1) * n.alts) + 1) : (s * n.alts) , ], no.choice)
+#   }
+#   optdes <- do.call(rbind, design.opt)
+#   colnames(optdes)[1] <- "no.choice.cte"
+#   return(optdes)
+# }
+
+Optout <- function(des, n.alts, alt.cte, n.sets){
+  
+  n.cte <- sum(alt.cte)
+  names <- colnames(des)
+  names <- append(names, "no.choice.cte", n.cte)
+  
+  if(n.cte > 0.2){
+    stripdes <- des[ , -(1:n.cte)]
+  } else {
+    stripdes <- des 
+  }
+  
+  no.choice <-  rep(0, ncol(stripdes))
+  design.opt <- vector(mode = "list")
+  for (s in 1: n.sets){
+    design.opt[[s]] <- rbind(stripdes[ (((s-1) * n.alts) + 1) : (s * n.alts) , ], no.choice)
+  }
+  optdes <- do.call(rbind, design.opt)
+  cte.des <- Altspec(c(alt.cte, 1), n.sets)
+  optdes <- cbind(cte.des, optdes)
+  optdes
+  colnames(optdes) <- names
+  return(optdes)
+}
+
+## include no.choice
+Inchoice <- function(X , no.choice) {
+  if(no.choice > nrow(X)){
+    X <- rbind(X, rep(0, ncol(X)))
+  } else {
+    X <- rbind(X, rep(0, ncol(X)))
+    X[seq(no.choice + 1, nrow(X)), ] <- X[seq(no.choice, nrow(X) - 1), ]
+    X[no.choice, ] <- rep(0, ncol(X))
+  }
+  return(X)
+}
