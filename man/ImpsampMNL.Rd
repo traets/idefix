@@ -4,16 +4,20 @@
 \alias{ImpsampMNL}
 \title{Importance sampling MNL}
 \usage{
-ImpsampMNL(prior.mean, prior.covar, des, n.alts, y, m, b = 2)
+ImpsampMNL(n.draws, prior.mean, prior.covar, des, n.alts, y, alt.cte = NULL,
+  lower = NULL, upper = NULL)
 }
 \arguments{
+\item{n.draws}{numeric value indicating the number of draws.}
+
 \item{prior.mean}{Numeric vector indicating the mean of the multivariate
 normal distribution (prior).}
 
 \item{prior.covar}{Covariance matrix of the prior distribution.}
 
-\item{des}{A design matrix in which each row is a profile. Can be generated
-with \code{\link{Modfed}}}
+\item{des}{A design matrix in which each row is a profile. If alternative
+specific constants are present, those should be included as the first
+column(s) of the design. Can be generated with \code{\link{Modfed}}}
 
 \item{n.alts}{Numeric value indicating the number of alternatives per choice
 set.}
@@ -21,9 +25,14 @@ set.}
 \item{y}{A binary response vector. \code{\link{RespondMNL}} can be used to
 simulate respons data.}
 
-\item{m}{Numeric value. Number of draws = \code{base^m}.}
+\item{alt.cte}{A binary vector indicating for each alternative whether an
+alternative specific constant is desired. The default is \code{NULL}.}
 
-\item{b}{Numeric value indicating the base. The default = 2.}
+\item{lower}{Numeric vector of lower truncation points, the default
+is \code{NULL}.}
+
+\item{upper}{Numeric vector of upper truncation points, the default
+is \code{NULL}.}
 }
 \value{
 \item{sample}{Numeric vector with the (unweigthted) draws from the
@@ -34,31 +43,54 @@ estimated variance covariance matrix.}
 }
 \description{
 This function samples from the posterior distribution using importance
-sampling, assuming a multivariate normal prior distribution and a MNL likelihood.
+sampling, assuming a multivariate (truncated) normal prior distribution and a
+MNL likelihood.
+}
+\details{
+For the proposal distribution a t-distribution with degrees of freedom equal
+to the number of parameters is used. The mode is estimated using
+\code{\link[stat]{optim}}, and the covariance matrix is calculated as the negative
+inverse of the generalized Fisher information matrix. See reference for more
+information.
+
+From this distribution a lattice grid of draws is generated.
+
+If truncation is present, incorrect draws are rejected and new ones are
+generated untill \code{n} is reached. The covariance matrix is in this case
+still calculated as if no truncation was present.
 }
 \examples{
-# Importance sampling MNL 
-pm <- c(0.8, 0.3, 0.2, -0.3, -0.2) # Prior mean (4 parameters).
-pc <- diag(length(pm)) # Prior variance
-cs <- Profiles(lvls = c(3, 3), coding = c("E", "E"))
-ps <- MASS::mvrnorm(n = 10, mu = pm, Sigma = pc) # 10 draws.
-# Efficient design. 
-design <- Modfed(cand.set = cs, n.sets = 8, n.alts = 2, alt.cte = c(1,0), par.draws = ps)$design
+## Example 1: sample from posterior, no constraints, no alternative specific constants 
+# choice design  
+design <- example_design
 # Respons.
-resp <- RespondMNL(par = c(0.7, 0.6, 0.5, -0.5, -0.7), des = design, n.alts = 2)
-# Parameters draws from posterior.
-ImpsampMNL(prior.mean =  pm, prior.covar = pc, des = design, n.alts = 2, y = resp, m = 6)
+truePar <- c(0.7, 0.6, 0.5, -0.5, -0.7, 1.7) # some values
+set.seed(123)
+resp <- RespondMNL(par = truePar, des = design, n.alts = 2)
+#prior
+pm <- c(1, 1, 1, -1, -1, 1) # mean vector 
+pc <- diag(1, ncol(design)) # covariance matrix 
+# draws from posterior.
+ImpsampMNL(n.draws = 100, prior.mean =  pm, prior.covar = pc,
+           des = design, n.alts = 2, y = resp)
 
-# Importance sampling MNL
-pm <- c(0.3, 0.2, -0.3, -0.2) # Prior mean (4 parameters).
-pc <- diag(length(pm)) # Prior variance
-cs <- Profiles(lvls = c(3, 3, 2), coding = c("D", "C", "D"), c.lvls = list(c(2,4,6)))
-ac <- c(0, 0) # No alternative specific constants. 
-ps <- MASS::mvrnorm(n = 10, mu = pm, Sigma = pc) # 10 draws.
-# Efficient design. 
-design <- Modfed(cand.set = cs, n.sets = 8, n.alts = 2, alt.cte = c(0,0), par.draws = ps)$design
-# Respons
-resp <- RespondMNL(par = c(0.6, 0.5, -0.5, -0.7), des = design, n.alts = 2)
-# Parameters draws from posterior.
-ImpsampMNL(prior.mean =  pm, prior.covar = pc, des = design, n.alts = 2, y = resp, m = 6)
+## example 2:  sample from posterior with constraints 
+# and alternative specific constants
+# choice design. 
+design <- example_design2
+# Respons.
+truePar <- c(0.2, 0.8, 0.7, 0.6, 0.5, -0.5, -0.7, 1.7) # some values
+set.seed(123)
+resp <- RespondMNL(par = truePar, des = design, n.alts = 3)
+# prior
+pm <- c(1, 1, 1, 1, 1, -1, -1, 1) # mean vector 
+pc <- diag(1, ncol(design)) # covariance matrix
+low = c(-Inf, -Inf, 0, 0, 0, -Inf, -Inf, 0)
+up = c(Inf, Inf, Inf, Inf, Inf, 0, 0, Inf)
+# draws from posterior.
+ImpsampMNL(n.draws = 100, prior.mean =  pm, prior.covar = pc, des = design,
+           n.alts = 3, y = resp, lower = low, upper = up, alt.cte = c(1, 1, 0))
+}
+\references{
+\insertRef{ju}{mnldes}
 }
