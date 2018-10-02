@@ -2,12 +2,12 @@
 % Please edit documentation in R/shiny_support.R
 \name{Decode}
 \alias{Decode}
-\title{Coded choice set to character choice set.}
+\title{Coded design to readable design}
 \usage{
-Decode(set, lvl.names, coding, alt.cte = NULL, c.lvls = NULL)
+Decode(des, lvl.names, coding, alt.cte = NULL, c.lvls = NULL)
 }
 \arguments{
-\item{set}{A numeric matrix which represents a choice set. Each row is a
+\item{des}{A numeric matrix which represents the design matrix. Each row is a
 profile.}
 
 \item{lvl.names}{A list containing character vectors with the values of each
@@ -23,58 +23,57 @@ alternative specific constant is present. The default is \code{NULL}.}
 each continuous attribute. The default is \code{NULL}.}
 }
 \value{
-A character matrix which represents the choice set.
+A character matrix which represents the design.
 }
 \description{
-Transforms a coded choice set into a choice set containing character attribute
+Transforms a coded design matrix into a design containing character attribute
 levels, ready to be used in a survey.
 }
 \details{
+\code{des} can also be a single choice set.
+
 In \code{lvl.names}, the number of character vectors in the list should equal
 the number of attributes in de choice set. The number of elements in each
 character vector should equal the number of levels for that attribute.
 
 Valid arguments for \code{coding} are \code{C}, \code{D} and \code{E}. When
 using \code{C} the attribute will be treated as continuous and no coding will
-be applied. All possible levels should then be specified in \code{c.lvls}. If
-\code{D} (dummy coding) is used \code{\link{contr.treatment}} will be applied
-to that attribute. The first attribute wil be used as reference level.  For
-\code{E} (effect coding) \code{\link{contr.sum}} is applied, in this case the
-last attributelevel is used as reference level.
+be applied. All possible levels of that attribute should then be specified in
+\code{c.lvls}. If \code{D} (dummy coding) is used
+\code{\link{contr.treatment}} will be applied to that attribute. The first
+attribute wil be used as reference level.  For \code{E} (effect coding)
+\code{\link{contr.sum}} is applied, in this case the last attributelevel is
+used as reference level.
+
+If \code{des} contains columns for alternative specific constants,
+\code{alt.cte} should be specified. In this case, the first column(s) (equal
+to the number of nonzero elements in \code{alt.cte}) will be removed from
+\code{des} before decoding the alternatives.
 }
 \examples{
 \donttest{
 # Example without continuous attributes.
-l <- c(3, 4, 2) # 3 Attributes.
-c <- c("D", "E", "D") # Coding.
-# All profiles.
-p <- Profiles(lvls = l, coding = c)
-cs <- p[c(4, 8), ] # Choice set 
-# Levels as they should appear in survey. 
-al <- list(
- c("$50", "$75", "$100"), # Levels attribute 1.
- c("2 min", "15 min", "30 min", "50 min"), # Levels attribute 2.
- c("bad", "good") # Levels attribute 3.
-) 
-# Decode
-Decode(set = cs, lvl.names = al, coding = c, alt.cte = c(0, 0)) 
-
-# Example with continuous attribute.
-l <- c(3, 4, 2) # 3 Attributes.
-c <- c("D", "C", "D") # Coding.
-cl <- list(c(50, 75, 80, 100))
-# All profiles.
-p <- Profiles(lvls = l, coding = c, c.lvls = cl)
-cs <- p[c(4, 8), ] # Set. 
-a <- c(1, 0) # Alternative specific constant. 
-cs <- cbind(a, cs) # set with alt.cte
+design <- example_design 
+c <- c("D", "D", "D") # Coding.
 # Levels as they should appear in survey. 
 al <- list(
   c("$50", "$75", "$100"), # Levels attribute 1.
-  c("50 min", "75 min", "80 min", "100 min"), # Levels attribute 2.
-  c("bad", "good") # Levels attribute 3.
+  c("2 min", "15 min", "30 min"), # Levels attribute 2.
+  c("bad", "moderate", "good") # Levels attribute 3.
 ) 
 # Decode
-Decode(set = cs, lvl.names = al, coding = c, alt.cte = c(1, 0), c.lvls = cl) 
+Decode(des = design, lvl.names = al, coding = c) 
+
+# Example with alternative specific constants
+design <- example_design2 
+c <- c("D", "D", "D") # Coding.
+# Levels as they should appear in survey. 
+al <- list(
+  c("$50", "$75", "$100"), # Levels attribute 1.
+  c("2 min", "15 min", "30 min"), # Levels attribute 2.
+  c("bad", "moderate", "good") # Levels attribute 3.
+) 
+# Decode
+Decode(des = design, lvl.names = al, coding = c, alt.cte = c(1, 1, 0)) 
 }
 }

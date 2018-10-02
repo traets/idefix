@@ -9,8 +9,9 @@ RespondMNL(par, des, n.alts, bin = TRUE)
 \arguments{
 \item{par}{Numeric vector containing parameter values.}
 
-\item{des}{A design matrix in which each row is a profile. Can be generated
-with \code{\link{Modfed}}}
+\item{des}{A design matrix in which each row is a profile. If alternative
+specific constants are present, those should be included as the first
+column(s) of the design. Can be generated with \code{\link{Modfed}}}
 
 \item{n.alts}{Numeric value indicating the number of alternatives per choice
 set.}

@@ -4,12 +4,13 @@
 \alias{SeqDB}
 \title{Sequential modified federov algorithm for MNL model.}
 \usage{
-SeqDB(des, cand.set, n.alts, par.draws, prior.covar, reduce = TRUE,
-  weights = NULL)
+SeqDB(des = NULL, cand.set, n.alts, par.draws, prior.covar, alt.cte = NULL,
+  no.choice = NULL, weights = NULL, parallel = TRUE, reduce = TRUE)
 }
 \arguments{
-\item{des}{A design matrix in which each row is a profile. Can be generated
-with \code{\link{Modfed}}}
+\item{des}{A design matrix in which each row is a profile. If alternative
+specific constants are present, those should be included as the first
+column(s) of the design. Can be generated with \code{\link{Modfed}}}
 
 \item{cand.set}{A numeric matrix in which each row is a possible profile. The
 \code{\link{Profiles}} function can be used to generate this.}
@@ -17,20 +18,29 @@ with \code{\link{Modfed}}}
 \item{n.alts}{Numeric value indicating the number of alternatives per choice
 set.}
 
-\item{par.draws}{A matrix in which each row is a sample from the
-multivariate parameter distribution. See also \code{\link{ImpsampMNL}}.}
+\item{par.draws}{A matrix or a list, dependend on \code{alt.cte}.}
 
 \item{prior.covar}{Covariance matrix of the prior distribution.}
 
-\item{reduce}{Logical value indicating whether the candidate set should be
-reduced or not.}
+\item{alt.cte}{A binary vector indicating for each alternative whether an
+alternative specific constant is desired. The default is \code{NULL}.}
+
+\item{no.choice}{A logical value indicating whether a no choice alternative
+should be added to each choice set.}
 
 \item{weights}{A vector containing the weights of the draws. Default is
 \code{NULL}, See also \code{\link{ImpsampMNL}}.}
+
+\item{parallel}{Logical value indicating whether computations should be done
+over multiple cores.}
+
+\item{reduce}{Logical value indicating whether the candidate set should be
+reduced or not.}
 }
 \value{
 \item{set}{A matrix representing a DB efficient choice set.}
-\item{db.error}{A numeric value indicating the DB-error of the whole design.}
+\item{db.error}{A numeric value indicating the DB-error of the whole
+design.}
 }
 \description{
 Selects the choice set that minimizes the DB-error when added to an initial
@@ -38,54 +48,66 @@ design, given (updated) parameter values.
 }
 \details{
 This algorithm is ideally used in an adaptive context. The algorithm will
-select the next DB-efficient choice set given parameter values and an initial
-design. In an adaptive context these parameter values are updated after each
-observed response.
+select the next DB-efficient choice set given parameter values and possible
+previously generated choice sets. In an adaptive context these parameter
+values are updated after each observed response.
 
-The initial design \code{des} can be generated with \code{\link{Modfed}}. If
-alternative specific constants are included in the initial design, the
-algorithm will use the same for selecting the new choice set. Columns of
-\code{des} which contain ".cte" in their name are recognized as alternative
-specific columns.
+Previously generated choice sets, which together form an initial design, can
+be provided in \code{des}. When no design is provided, the algorithm will
+select te most efficient choice set based on the fisher information of the
+prior covariance matrix \code{prior.covar}.
+
+If \code{alt.cte = NULL}, \code{par.draws} should be a matrix in which each
+row is a sample from the multivariate parameter distribution. In case that
+\code{alt.cte} is not \code{NULL}, a list containing two matrices should be
+provided. The first matrix containing the parameter draws for the
+alternative specific parameters. The second matrix containing the draws for
+the rest of the parameters.
 
 The list of potential choice sets are created using
 \code{\link[gtools]{combinations}}. If \code{reduce} is \code{TRUE},
-\code{repeats.allowed = FALSE} and vice versa. If no alternative constants
-are used \code{reduce} should always be \code{TRUE}. When alternative
-specific constants are used \code{reduce} can be \code{TRUE} so that the
-algorithm will be faster, but the combinations of constants and profiles will
-not be evaluated exhaustively.
+\code{repeats.allowed = FALSE} and vice versa. Furthermore, the list of
+potential choice sets will be screaned in order to select only those choice
+sets with a unique information matrix. If no alternative specific constants are used,
+\code{reduce} should always be \code{TRUE}. When alternative specific
+constants are used \code{reduce} can be \code{TRUE} so that the algorithm
+will be faster, but the combinations of constants and profiles will not be
+evaluated exhaustively.
 
-The \code{weights} can be used when the \code{par.draws} have weights. This
-is for example the case when parameter values are updated using
+The \code{weights} argument can be used when the \code{par.draws} have
+weights. This is for example the case when parameter values are updated using
 \code{\link{ImpsampMNL}}.
+
+When \code{parallel} is \code{TRUE}, \code{\link[parallel]{detectCores}} will
+be used to decide upon the number of available cores. That number minus 1
+cores will be used to search for the optimal choice set. For small problems
+(6 parameters), \code{parallel = TRUE} can be slower. For larger problems the
+computation time will decrease significantly.
 }
 \examples{
 # DB efficient choice set, given a design and parameter draws. 
 # Candidate profiles 
-cs <- Profiles(lvls = c(3, 3), coding = c("E", "E"))
-m <- c(0.3, 0.2, -0.3, -0.2) # Prior mean (total = 5 parameters).
+cs <- Profiles(lvls = c(3, 3, 3), coding = c("E", "E", "E"))
+m <- c(0.3, 0.2, -0.3, -0.2, 1.1, 2.4) # Prior mean (total = 6 parameters).
 pc <- diag(length(m)) # Prior variance
 set.seed(123)
 ps <- MASS::mvrnorm(n = 10, mu = m, Sigma = pc) # 10 draws.
-ac <- c(0, 0) # No alternative specific constants. 
 # Initial design.
-des <- Modfed(cand.set = cs, n.sets = 6, n.alts = 2, alt.cte = ac, par.draws = ps)$design
+des <- Modfed(cand.set = cs, n.sets = 6, n.alts = 2, alt.cte = c(0, 0), par.draws = ps)$design
 # Efficient choice set to add. 
 SeqDB(des = des, cand.set = cs, n.alts = 2, par.draws = ps, prior.covar = pc)
 
-# DB efficient choice set, given a design and parameter draws. 
-# Candidate profiles 
-cs <- Profiles(lvls = c(3, 3), coding = c("C", "E"), c.lvls = list(c(5,3,1)))
-m <- c(0.7, 0.3, -0.3, -0.2) # Prior mean (4 parameters).
+# DB efficient choice set, given parameter draws. 
+# with alternative specific constants 
+cs <- Profiles(lvls = c(3, 3), coding = c("E", "E"))
+m <- c(0.7, 0.3, 0.8, -0.2, -1.2) # Prior mean (5 parameters).
 pc <- diag(length(m)) # Prior variance
 set.seed(123)
 ps <- MASS::mvrnorm(n = 10, mu = m, Sigma = pc) # 10 draws.
+ps <- list(ps[ , 1], ps[ , 2:5])
 ac <- c(1, 0) # Alternative specific constant. 
-# Initial design.
-des <- Modfed(cand.set = cs, n.sets = 6, n.alts = 2, alt.cte = ac, par.draws = ps)$design
-# Efficient choice set to add. 
-SeqDB(des = des, cand.set = cs, n.alts = 2, par.draws = ps, prior.covar = pc)
+# Efficient choice set. 
+SeqDB(cand.set = cs, n.alts = 2, par.draws = ps, alt.cte = ac, prior.covar = pc)
 }
 \references{
 \insertRef{ju}{mnldes}
