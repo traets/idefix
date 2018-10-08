@@ -2,26 +2,10 @@
 # Generator token: 10BE3573-1514-4C36-9D1C-5A225CD40393
 
 det_cpp <- function(set) {
-    .Call(`_optidefix_det_cpp`, set)
+    .Call(`_idefix_det_cpp`, set)
 }
 
 InfoDes_cpp <- function(par, des, n_alts) {
-    .Call(`_optidefix_InfoDes_cpp`, par, des, n_alts)
-}
-
-rcpparma_hello_world <- function() {
-    .Call(`_optidefix_rcpparma_hello_world`)
-}
-
-rcpparma_outerproduct <- function(x) {
-    .Call(`_optidefix_rcpparma_outerproduct`, x)
-}
-
-rcpparma_innerproduct <- function(x) {
-    .Call(`_optidefix_rcpparma_innerproduct`, x)
-}
-
-rcpparma_bothproducts <- function(x) {
-    .Call(`_optidefix_rcpparma_bothproducts`, x)
+    .Call(`_idefix_InfoDes_cpp`, par, des, n_alts)
 }
 
