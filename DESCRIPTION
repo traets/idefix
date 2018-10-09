@@ -18,12 +18,19 @@ Imports:
     maxLik,
     mlogit,
     parallel,
+    Rcpp (>= 0.12.18),
     Rdpack,
     stats,
     scales,
     tmvtnorm,
+<<<<<<< HEAD
     utils 
 RoxygenNote: 6.1.0
 Encoding: UTF-8
+=======
+    utils
+LinkingTo: Rcpp, RcppArmadillo
+RoxygenNote: 6.0.1
+>>>>>>> 67f1feda823832993a6f829ffad1469cb88db58c
 RdMacros: Rdpack
 URL: https://github.com/traets/idefix
