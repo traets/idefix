@@ -8,7 +8,7 @@
 #' 
 #' For the proposal distribution a t-distribution with degrees of freedom equal 
 #' to the number of parameters is used. The mode is estimated using 
-#' \code{\link[stat]{optim}}, and the covariance matrix is calculated as the negative 
+#' \code{\link[stats]{optim}}, and the covariance matrix is calculated as the negative 
 #' inverse of the generalized Fisher information matrix. See reference for more
 #' information.
 #' 
@@ -33,7 +33,7 @@
 #' weights of the draws.} \item{max}{Numeric vector with the estimated
 #' mode of the posterior distribution.} \item{covar}{Matrix representing the
 #' estimated variance covariance matrix.}
-#' @references \insertRef{ju}{mnldes}
+#' @references \insertRef{ju}{idefix}
 #' @examples 
 #' ## Example 1: sample from posterior, no constraints, no alternative specific constants 
 #' # choice design  
@@ -137,7 +137,7 @@ ImpsampMNL <- function(n.draws, prior.mean, prior.covar, des, n.alts, y,
     n.cte <- 0
   }
   # mode imp dens 
-  maxest <- optim(par = prior.mean, LogPost, lower2 = lower, upper2 = upper, prior.mean = prior.mean, prior.covar = prior.covar, 
+  maxest <- stats::optim(par = prior.mean, LogPost, lower2 = lower, upper2 = upper, prior.mean = prior.mean, prior.covar = prior.covar, 
                   des = des, y = y, n.alts = n.alts, lower = lower, upper = upper, 
                   method = "L-BFGS-B", hessian = FALSE)$par
   # covar imp dens 
