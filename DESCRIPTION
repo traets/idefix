@@ -16,12 +16,14 @@ Imports:
     gtools,
     MASS,
     maxLik,
+    mlogit,
     parallel,
     Rdpack,
     stats,
     scales,
     tmvtnorm,
     utils 
-RoxygenNote: 6.0.1
+RoxygenNote: 6.1.0
+Encoding: UTF-8
 RdMacros: Rdpack
 URL: https://github.com/traets/idefix
