@@ -5,8 +5,8 @@
 \title{Modified Federov algorithm for MNL models.}
 \usage{
 Modfed(cand.set, n.sets, n.alts, par.draws, alt.cte = NULL,
-  no.choice = FALSE, start.des = NULL, parallel = TRUE, max.iter = Inf,
-  n.start = 12, best = TRUE)
+  no.choice = FALSE, start.des = NULL, parallel = TRUE,
+  max.iter = Inf, n.start = 12, best = TRUE)
 }
 \arguments{
 \item{cand.set}{A numeric matrix in which each row is a possible profile. The
@@ -105,7 +105,8 @@ v <- diag(length(mu)) # Prior variance.
 set.seed(123) 
 pd <- MASS::mvrnorm(n = 10, mu = mu, Sigma = v) # 10 draws.
 p.d <- list(matrix(pd[,1], ncol = 1), pd[,2:7])
-Modfed(cand.set = cand.set, n.sets = 8, n.alts = 2, alt.cte = c(1, 0), par.draws = p.d, best = FALSE)
+Modfed(cand.set = cand.set, n.sets = 8, n.alts = 2, 
+       alt.cte = c(1, 0), parallel = FALSE, par.draws = p.d, best = FALSE)
 
 # DB-efficient design with start design provided.  
 # 3 Attributes with 3 levels, all dummy coded (= 6 parameters).
@@ -115,8 +116,9 @@ v <- diag(length(mu)) # Prior variance.
 sd <- list(example_design)
 set.seed(123)
 ps <- MASS::mvrnorm(n = 10, mu = mu, Sigma = v) # 10 draws.
-Modfed(cand.set = cand.set, n.sets = 8, n.alts = 2, alt.cte = c(0, 0), par.draws = ps, start.des = sd)
+Modfed(cand.set = cand.set, n.sets = 8, n.alts = 2, 
+       alt.cte = c(0, 0), parallel = FALSE, par.draws = ps, start.des = sd)
 }
 \references{
-\insertRef{federov}{mnldes}
+\insertRef{federov}{idefix}
 }
