@@ -17,11 +17,13 @@ Imports:
     MASS,
     maxLik,
     parallel,
+    Rcpp (>= 0.12.18),
     Rdpack,
     stats,
     scales,
     tmvtnorm,
-    utils 
+    utils
+LinkingTo: Rcpp, RcppArmadillo
 RoxygenNote: 6.0.1
 RdMacros: Rdpack
 URL: https://github.com/traets/idefix
