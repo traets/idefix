@@ -4,8 +4,9 @@
 \alias{SeqDB}
 \title{Sequential modified federov algorithm for MNL model.}
 \usage{
-SeqDB(des = NULL, cand.set, n.alts, par.draws, prior.covar, alt.cte = NULL,
-  no.choice = NULL, weights = NULL, parallel = TRUE, reduce = TRUE)
+SeqDB(des = NULL, cand.set, n.alts, par.draws, prior.covar,
+  alt.cte = NULL, no.choice = NULL, weights = NULL,
+  parallel = TRUE, reduce = TRUE)
 }
 \arguments{
 \item{des}{A design matrix in which each row is a profile. If alternative
@@ -88,27 +89,28 @@ computation time will decrease significantly.
 # DB efficient choice set, given a design and parameter draws. 
 # Candidate profiles 
 cs <- Profiles(lvls = c(3, 3, 3), coding = c("E", "E", "E"))
-m <- c(0.3, 0.2, -0.3, -0.2, 1.1, 2.4) # Prior mean (total = 6 parameters).
-pc <- diag(length(m)) # Prior variance
+m <- c(0.3, 0.2, -0.3, -0.2, 1.1, 2.4) # mean (total = 6 parameters).
+pc <- diag(length(m)) # covariance matrix
 set.seed(123)
-ps <- MASS::mvrnorm(n = 10, mu = m, Sigma = pc) # 10 draws.
+post.sample <- MASS::mvrnorm(n = 10, mu = m, Sigma = pc)
 # Initial design.
-des <- Modfed(cand.set = cs, n.sets = 6, n.alts = 2, alt.cte = c(0, 0), par.draws = ps)$design
+des <- example_design 
 # Efficient choice set to add. 
-SeqDB(des = des, cand.set = cs, n.alts = 2, par.draws = ps, prior.covar = pc)
+SeqDB(des = des, cand.set = cs, n.alts = 2, par.draws = post.sample, 
+prior.covar = pc, parallel = FALSE)
 
 # DB efficient choice set, given parameter draws. 
 # with alternative specific constants 
-cs <- Profiles(lvls = c(3, 3), coding = c("E", "E"))
-m <- c(0.7, 0.3, 0.8, -0.2, -1.2) # Prior mean (5 parameters).
-pc <- diag(length(m)) # Prior variance
-set.seed(123)
-ps <- MASS::mvrnorm(n = 10, mu = m, Sigma = pc) # 10 draws.
-ps <- list(ps[ , 1], ps[ , 2:5])
-ac <- c(1, 0) # Alternative specific constant. 
+des <- example_design2 
+ac <- c(1, 1, 0) # Alternative specific constants. 
+m <- c(0.3, 0.2, -0.3, -0.2, 1.1, 2.4, 1.8, 1.2) # mean 
+pc <- diag(length(m)) # covariance matrix
+pos <- MASS::mvrnorm(n = 10, mu = m, Sigma = pc)
+post.sample <- list(pos[ , 1:2], pos[ , 3:8])
 # Efficient choice set. 
-SeqDB(cand.set = cs, n.alts = 2, par.draws = ps, alt.cte = ac, prior.covar = pc)
+SeqDB(des = des, cand.set = cs, n.alts = 3, par.draws = post.sample, alt.cte = ac, 
+prior.covar = pc, parallel = FALSE)
 }
 \references{
-\insertRef{ju}{mnldes}
+\insertRef{ju}{idefix}
 }
