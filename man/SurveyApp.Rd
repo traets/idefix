@@ -6,9 +6,9 @@
 \usage{
 SurveyApp(des = NULL, n.total, alts, atts, lvl.names, coding,
   alt.cte = NULL, no.choice = NULL, buttons.text, intro.text, end.text,
-  data.dir = NULL, c.lvls = NULL, prior.mean = NULL, prior.covar = NULL,
-  cand.set = NULL, n.draws = NULL, lower = NULL, upper = NULL,
-  parallel = TRUE, reduce = TRUE)
+  data.dir = NULL, c.lvls = NULL, prior.mean = NULL,
+  prior.covar = NULL, cand.set = NULL, n.draws = NULL,
+  lower = NULL, upper = NULL, parallel = TRUE, reduce = TRUE)
 }
 \arguments{
 \item{des}{A numeric matrix which represents the design matrix. Each row is a
@@ -65,6 +65,9 @@ is \code{NULL}.}
 
 \item{parallel}{Logical value indicating whether computations should be done
 over multiple cores. The default is \code{TRUE}.}
+
+\item{reduce}{Logical value indicating whether the candidate set should be
+reduced or not.}
 }
 \value{
 After completing the survey, two text files can be found in
@@ -235,5 +238,5 @@ data_char <- LoadData(data.dir = dataDir, type = "char")
 }
 }
 \references{
-\insertRef{ju}{mnldes}
+\insertRef{ju}{idefix}
 }
