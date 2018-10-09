@@ -84,7 +84,8 @@
 #' set.seed(123) 
 #' pd <- MASS::mvrnorm(n = 10, mu = mu, Sigma = v) # 10 draws.
 #' p.d <- list(matrix(pd[,1], ncol = 1), pd[,2:7])
-#' Modfed(cand.set = cand.set, n.sets = 8, n.alts = 2, alt.cte = c(1, 0), par.draws = p.d, best = FALSE)
+#' Modfed(cand.set = cand.set, n.sets = 8, n.alts = 2, 
+#'        alt.cte = c(1, 0), parallel = FALSE, par.draws = p.d, best = FALSE)
 #' 
 #' # DB-efficient design with start design provided.  
 #' # 3 Attributes with 3 levels, all dummy coded (= 6 parameters).
@@ -94,9 +95,10 @@
 #' sd <- list(example_design)
 #' set.seed(123)
 #' ps <- MASS::mvrnorm(n = 10, mu = mu, Sigma = v) # 10 draws.
-#' Modfed(cand.set = cand.set, n.sets = 8, n.alts = 2, alt.cte = c(0, 0), par.draws = ps, start.des = sd)
+#' Modfed(cand.set = cand.set, n.sets = 8, n.alts = 2, 
+#'        alt.cte = c(0, 0), parallel = FALSE, par.draws = ps, start.des = sd)
 #' @importFrom Rdpack reprompt
-#' @references \insertRef{federov}{mnldes}
+#' @references \insertRef{federov}{idefix}
 #' @export
 Modfed <- function(cand.set, n.sets, n.alts, par.draws, alt.cte = NULL, no.choice = FALSE, 
                    start.des = NULL, parallel = TRUE, max.iter = Inf, n.start = 12,
@@ -230,11 +232,11 @@ Modfed <- function(cand.set, n.sets, n.alts, par.draws, alt.cte = NULL, no.choic
     no_cores <- parallel::detectCores() - 1
     cl <- parallel::makeCluster(no_cores)
     parallel::clusterExport(cl, c("n.sets", "par.draws", "cand.set", "n.alts", "n.cte", "alt.cte", "no.choice", "max.iter"), envir = environment())
-    deslist <- parallel::parLapply(cl, start.des, Modfedje, par.draws, cand.set, n.alts, n.cte, alt.cte, no.choice, max.iter)
+    deslist <- parallel::parLapply(cl, start.des, Modfedje, par.draws, cand.set, n.alts, n.sets, n.cte, alt.cte, no.choice, max.iter)
     parallel::stopCluster(cl)
     ########
   } else {
-    deslist <- lapply(start.des, Modfedje, par.draws, cand.set, n.alts, n.cte, alt.cte, no.choice, max.iter = max.iter)
+    deslist <- lapply(start.des, Modfedje, par.draws, cand.set, n.alts, n.sets, n.cte, alt.cte, no.choice, max.iter = max.iter)
   }                                 
   bestdes <- deslist[[which.min(unlist(lapply(deslist, function(x) (x$error))))]]
   
@@ -242,7 +244,7 @@ Modfed <- function(cand.set, n.sets, n.alts, par.draws, alt.cte = NULL, no.choic
 }
 
 # Core of the Modfed algorithm
-Modfedje <- function(desje, par.draws, cand.set, n.alts, n.cte, alt.cte,
+Modfedje <- function(desje, par.draws, cand.set, n.alts, n.sets, n.cte, alt.cte,
                      no.choice, max.iter){
   converge <- FALSE
   change <- FALSE
@@ -369,31 +371,32 @@ Modfedje <- function(desje, par.draws, cand.set, n.alts, n.cte, alt.cte,
 #'   \item{db.error}{A numeric value indicating the DB-error of the whole 
 #'   design.}
 #' @importFrom Rdpack reprompt
-#' @references \insertRef{ju}{mnldes}
+#' @references \insertRef{ju}{idefix}
 #' @examples 
 #' # DB efficient choice set, given a design and parameter draws. 
 #' # Candidate profiles 
 #' cs <- Profiles(lvls = c(3, 3, 3), coding = c("E", "E", "E"))
-#' m <- c(0.3, 0.2, -0.3, -0.2, 1.1, 2.4) # Prior mean (total = 6 parameters).
-#' pc <- diag(length(m)) # Prior variance
+#' m <- c(0.3, 0.2, -0.3, -0.2, 1.1, 2.4) # mean (total = 6 parameters).
+#' pc <- diag(length(m)) # covariance matrix
 #' set.seed(123)
-#' ps <- MASS::mvrnorm(n = 10, mu = m, Sigma = pc) # 10 draws.
+#' post.sample <- MASS::mvrnorm(n = 10, mu = m, Sigma = pc)
 #' # Initial design.
-#' des <- Modfed(cand.set = cs, n.sets = 6, n.alts = 2, alt.cte = c(0, 0), par.draws = ps)$design
+#' des <- example_design 
 #' # Efficient choice set to add. 
-#' SeqDB(des = des, cand.set = cs, n.alts = 2, par.draws = ps, prior.covar = pc)
-#' 
+#' SeqDB(des = des, cand.set = cs, n.alts = 2, par.draws = post.sample, 
+#' prior.covar = pc, parallel = FALSE)
+#'
 #' # DB efficient choice set, given parameter draws. 
 #' # with alternative specific constants 
-#' cs <- Profiles(lvls = c(3, 3), coding = c("E", "E"))
-#' m <- c(0.7, 0.3, 0.8, -0.2, -1.2) # Prior mean (5 parameters).
-#' pc <- diag(length(m)) # Prior variance
-#' set.seed(123)
-#' ps <- MASS::mvrnorm(n = 10, mu = m, Sigma = pc) # 10 draws.
-#' ps <- list(ps[ , 1], ps[ , 2:5])
-#' ac <- c(1, 0) # Alternative specific constant. 
+#' des <- example_design2 
+#' ac <- c(1, 1, 0) # Alternative specific constants. 
+#' m <- c(0.3, 0.2, -0.3, -0.2, 1.1, 2.4, 1.8, 1.2) # mean 
+#' pc <- diag(length(m)) # covariance matrix
+#' pos <- MASS::mvrnorm(n = 10, mu = m, Sigma = pc)
+#' post.sample <- list(pos[ , 1:2], pos[ , 3:8])
 #' # Efficient choice set. 
-#' SeqDB(cand.set = cs, n.alts = 2, par.draws = ps, alt.cte = ac, prior.covar = pc)
+#' SeqDB(des = des, cand.set = cs, n.alts = 3, par.draws = post.sample, alt.cte = ac, 
+#' prior.covar = pc, parallel = FALSE)
 #' @export
 SeqDB <- function(des = NULL, cand.set, n.alts, par.draws, prior.covar, alt.cte = NULL, no.choice = NULL, weights = NULL, parallel = TRUE, reduce = TRUE) {
   #init
@@ -520,11 +523,10 @@ SeqDB <- function(des = NULL, cand.set, n.alts, par.draws, prior.covar, alt.cte 
     # For each potential set, select best.
     ##### parallel #####
     if (parallel) {
-      library(parallel)
-      no_cores <- detectCores() - 1L
-      cl <- makeCluster(no_cores)
-      db.errors <- parLapply(cl, full.des, DBerrS.P, par.draws, n.alts, i.cov, weights)
-      stopCluster(cl)
+      no_cores <- parallel::detectCores() - 1L
+      cl <- parallel::makeCluster(no_cores)
+      db.errors <- parallel::parLapply(cl, full.des, DBerrS.P, par.draws, n.alts, i.cov, weights)
+      parallel::stopCluster(cl)
       ##### parallel #####
     } else {
       # For each potential set, select best. 
@@ -555,11 +557,10 @@ SeqDB <- function(des = NULL, cand.set, n.alts, par.draws, prior.covar, alt.cte 
     
     ##### parallel #####
     if (parallel) {
-      library(parallel)
-      no_cores <- detectCores() - 1L
-      cl <- makeCluster(no_cores)
-      db.errors <- parLapply(cl, full.comb, DBerrS.P, par.draws, n.alts, i.cov, weights)
-      stopCluster(cl)
+      no_cores <- parallel::detectCores() - 1L
+      cl <- parallel::makeCluster(no_cores)
+      db.errors <- parallel::parLapply(cl, full.comb, DBerrS.P, par.draws, n.alts, i.cov, weights)
+      parallel::stopCluster(cl)
       ##### parallel #####
     } else {
       # For each potential set, select best. 
@@ -576,48 +577,48 @@ SeqDB <- function(des = NULL, cand.set, n.alts, par.draws, prior.covar, alt.cte 
 
 
 ### UNDER EVALUATION ###
-##' Sequential Kullback-Leibler based algorithm for the MNL model.
-##' 
-##' Selects the choice set that maximizes the Kullback-Leibler divergence between
-##' prior parameter values and the expected posterior, assuming an MNL model.
-##' 
-##' The algorithm selects the choice set that maximizes the Kullback-Leibler 
-##' divergence between prior and expected posterior. Otherwisely framed the 
-##' algorithm selects the choice set that maximizes the expected information 
-##' gain.
-##' @inheritParams SeqDB
-##' @param alt.cte A binary vector indicating for each alternative if an
-##'   alternative specific constant is desired.
-##' @param reduce Logical value indicating whether the candidate set should be 
-##'   reduced or not.
-##' @return \item{set}{Numeric matrix containing the choice set that maximizes the expected KL divergence.}
-##' \item{kl}{Numeric value which is the Kullback leibler divergence.}
-##' @importFrom Rdpack reprompt
-##' @references 
-##' \insertRef{crabbe}{mnldes}
-##' @examples 
-##' # KL efficient choice set, given parameter draws. 
-##' # Candidate profiles 
-##' cs <- Profiles(lvls = c(3, 3), coding = c("E", "E"))
-##' m <- c(0.3, 0.2, -0.3, -0.2) # Prior mean (4 parameters).
-##' pc <- diag(length(m)) # Prior variance
-##' set.seed(123)
-##' ps <- MASS::mvrnorm(n = 10, mu = m, Sigma = pc) # 10 draws.
-##' ac <- c(0, 0) # No alternative specific constants. 
-##' # Efficient choice set to add. 
-##' SeqKL(cand.set = cs, n.alts = 2, alt.cte = ac, par.draws = ps, weights = NULL)
-##' 
-##' # KL efficient choice set, given parameter draws. 
-##' # Candidate profiles 
-##' cs <- Profiles(lvls = c(3, 3), coding = c("C", "E"), c.lvls = list(c(5,3,1)))
-##' m <- c(0.7, 0.3, -0.3, -0.2) # Prior mean (4 parameters).
-##' pc <- diag(length(m)) # Prior variance
-##' set.seed(123)
-##' ps <- MASS::mvrnorm(n = 10, mu = m, Sigma = pc) # 10 draws.
-##' ac <- c(1, 0) # Alternative specific constant. 
-##' # Efficient choice set to add. 
-##' SeqKL(cand.set = cs, n.alts = 2, alt.cte = ac, par.draws = ps, weights = NULL)
-##' @export
+## Sequential Kullback-Leibler based algorithm for the MNL model.
+## 
+## Selects the choice set that maximizes the Kullback-Leibler divergence between
+## prior parameter values and the expected posterior, assuming an MNL model.
+## 
+## The algorithm selects the choice set that maximizes the Kullback-Leibler 
+## divergence between prior and expected posterior. Otherwisely framed the 
+## algorithm selects the choice set that maximizes the expected information 
+## gain.
+## @inheritParams SeqDB
+## @param alt.cte A binary vector indicating for each alternative if an
+##   alternative specific constant is desired.
+## @param reduce Logical value indicating whether the candidate set should be 
+##   reduced or not.
+## @return \item{set}{Numeric matrix containing the choice set that maximizes the expected KL divergence.}
+## \item{kl}{Numeric value which is the Kullback leibler divergence.}
+## @importFrom Rdpack reprompt
+## @references 
+## \insertRef{crabbe}{idefix}
+## @examples 
+## # KL efficient choice set, given parameter draws. 
+## # Candidate profiles 
+## cs <- Profiles(lvls = c(3, 3), coding = c("E", "E"))
+## m <- c(0.3, 0.2, -0.3, -0.2) # Prior mean (4 parameters).
+## pc <- diag(length(m)) # Prior variance
+## set.seed(123)
+## ps <- MASS::mvrnorm(n = 10, mu = m, Sigma = pc) # 10 draws.
+## ac <- c(0, 0) # No alternative specific constants. 
+## # Efficient choice set to add. 
+## SeqKL(cand.set = cs, n.alts = 2, alt.cte = ac, par.draws = ps, weights = NULL)
+## 
+## # KL efficient choice set, given parameter draws. 
+## # Candidate profiles 
+## cs <- Profiles(lvls = c(3, 3), coding = c("C", "E"), c.lvls = list(c(5,3,1)))
+## m <- c(0.7, 0.3, -0.3, -0.2) # Prior mean (4 parameters).
+## pc <- diag(length(m)) # Prior variance
+## set.seed(123)
+## ps <- MASS::mvrnorm(n = 10, mu = m, Sigma = pc) # 10 draws.
+## ac <- c(1, 0) # Alternative specific constant. 
+## # Efficient choice set to add. 
+## SeqKL(cand.set = cs, n.alts = 2, alt.cte = ac, par.draws = ps, weights = NULL)
+## @export
 # SeqKL <- function(cand.set, n.alts, alt.cte, par.draws, weights, reduce = TRUE) {
 #   # Handling par.draws.
 #   if (!(is.matrix(par.draws))) {
@@ -655,7 +656,7 @@ SeqDB <- function(des = NULL, cand.set, n.alts, par.draws, prior.covar, alt.cte 
 
 
 
-
+#roxygen2::roxygenise()
 
 
 
