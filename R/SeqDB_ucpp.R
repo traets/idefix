@@ -54,32 +54,34 @@
 #' @return \item{set}{A matrix representing a DB efficient choice set.} 
 #'   \item{db.error}{A numeric value indicating the DB-error of the whole 
 #'   design.}
-#' @importFrom Rdpack reprompt
-#' @references \insertRef{ju}{mnldes}
+#' @importFrom Rdpack reprompt 
+#' @references \insertRef{ju}{idefix}
 #' @examples 
 #' # DB efficient choice set, given a design and parameter draws. 
 #' # Candidate profiles 
 #' cs <- Profiles(lvls = c(3, 3, 3), coding = c("E", "E", "E"))
-#' m <- c(0.3, 0.2, -0.3, -0.2, 1.1, 2.4) # Prior mean (total = 6 parameters).
-#' pc <- diag(length(m)) # Prior variance
+#' m <- c(0.3, 0.2, -0.3, -0.2, 1.1, 2.4) # mean (total = 6 parameters).
+#' pc <- diag(length(m)) # covariance matrix
 #' set.seed(123)
-#' ps <- MASS::mvrnorm(n = 10, mu = m, Sigma = pc) # 10 draws.
+#' sample <- MASS::mvrnorm(n = 10, mu = m, Sigma = pc)
 #' # Initial design.
-#' des <- Modfed(cand.set = cs, n.sets = 6, n.alts = 2, alt.cte = c(0, 0), par.draws = ps)$design
+#' des <- example_design 
 #' # Efficient choice set to add. 
-#' SeqDB(des = des, cand.set = cs, n.alts = 2, par.draws = ps, prior.covar = pc)
+#' SeqDB_ucpp(des = des, cand.set = cs, n.alts = 2, par.draws = sample, 
+#'            prior.covar = pc, parallel = FALSE)
 #' 
 #' # DB efficient choice set, given parameter draws. 
 #' # with alternative specific constants 
-#' cs <- Profiles(lvls = c(3, 3), coding = c("E", "E"))
-#' m <- c(0.7, 0.3, 0.8, -0.2, -1.2) # Prior mean (5 parameters).
-#' pc <- diag(length(m)) # Prior variance
-#' set.seed(123)
-#' ps <- MASS::mvrnorm(n = 10, mu = m, Sigma = pc) # 10 draws.
-#' ps <- list(ps[ , 1], ps[ , 2:5])
-#' ac <- c(1, 0) # Alternative specific constant. 
+#' des <- example_design2 
+#' cs <- Profiles(lvls = c(3, 3, 3), coding = c("E", "E", "E"))
+#' ac <- c(1, 1, 0) # Alternative specific constants. 
+#' m <- c(0.3, 0.2, -0.3, -0.2, 1.1, 2.4, 1.8, 1.2) # mean 
+#' pc <- diag(length(m)) # covariance matrix
+#' pos <- MASS::mvrnorm(n = 10, mu = m, Sigma = pc)
+#' sample <- list(pos[ , 1:2], pos[ , 3:8])
 #' # Efficient choice set. 
-#' SeqDB(cand.set = cs, n.alts = 2, par.draws = ps, alt.cte = ac, prior.covar = pc)
+#' SeqDB_ucpp(des = des, cand.set = cs, n.alts = 3, par.draws = sample, alt.cte = ac, 
+#'            prior.covar = pc, parallel = FALSE)
 #' @export
 SeqDB_ucpp <- function(des = NULL, cand.set, n.alts, par.draws, prior.covar, alt.cte = NULL, no.choice = NULL, weights = NULL, parallel = TRUE, reduce = TRUE) {
   #init
@@ -206,15 +208,14 @@ SeqDB_ucpp <- function(des = NULL, cand.set, n.alts, par.draws, prior.covar, alt
     # For each potential set, select best.
     ##### parallel #####
     if (parallel) {
-      library(parallel) # This should not be here pag 42,59 r_pack wickham
-      no_cores <- detectCores() - 1L
-      cl <- makeCluster(no_cores)
+      no_cores <- parallel::detectCores() - 1L
+      cl <- parallel::makeCluster(no_cores)
       # New line to copy DerrS.P from .GlobalEnv to the cluster
       # https://stackoverflow.com/questions/12023403/using-parlapply-and-clusterexport-inside-a-function
       #clusterExport(cl=cl,varlist=c("DerrS.P_ucpp"))
-      db.errors <- parLapply(cl, full.des, DBerrS.P_ucpp, par.draws, 
+      db.errors <- parallel::parLapply(cl, full.des, DBerrS.P_ucpp, par.draws, 
                              n.alts, i.cov, weights)
-      stopCluster(cl)
+      parallel::stopCluster(cl)
       ##### parallel #####
     } else {
       # For each potential set, select best. 
@@ -245,18 +246,17 @@ SeqDB_ucpp <- function(des = NULL, cand.set, n.alts, par.draws, prior.covar, alt
     
     ##### parallel #####
     if (parallel) {
-      library(parallel)
-      no_cores <- detectCores() - 1L
-      cl <- makeCluster(no_cores)
+      no_cores <- parallel::detectCores() - 1L
+      cl <- parallel::makeCluster(no_cores)
       # New line to copy DerrS.P from .GlobalEnv to the cluster
       # https://stackoverflow.com/questions/12023403/using-parlapply-and-clusterexport-inside-a-function
       # Becareful with cpp functions in cluster export
       # Check https://stackoverflow.com/questions/38518387/using-rcpp-functions-inside-of-rs-parapply-functions-from-the-parallel-package
       # https://stackoverflow.com/questions/25606733/using-rcpp-function-in-parlapply-on-windows/25606950
       #clusterExport(cl=cl,varlist=c("DerrS.P_ucpp"))
-      db.errors <- parLapply(cl, full.comb, DBerrS.P_ucpp, par.draws, 
+      db.errors <- parallel::parLapply(cl, full.comb, DBerrS.P_ucpp, par.draws, 
                              n.alts, i.cov, weights)
-      stopCluster(cl)
+      parallel::stopCluster(cl)
       ##### parallel #####
     } else {
       # For each potential set, select best. 
@@ -269,4 +269,11 @@ SeqDB_ucpp <- function(des = NULL, cand.set, n.alts, par.draws, prior.covar, alt
     #return best set and db error design.
     return(list(set = set, db.error = db))
   }
-    }
+}
+
+
+#' @useDynLib idefix
+#' @importFrom Rcpp sourceCpp
+NULL
+
+
