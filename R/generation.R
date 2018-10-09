@@ -107,8 +107,6 @@ Altspec <- function(alt.cte, n.sets) {
   return(cte.mat)
 }
 
-
-
 # Create row and column names for designs 
 Rcnames <- function(n.sets, n.alts, alt.cte) {
   # rownames
@@ -173,7 +171,6 @@ Lat <- function(K, b, m) {
   return(latt)
 }
 
-
 # Lattice multivariate t-distribution.
 # 
 # Generates a grid of points coming from a multivariate t-distribution.
@@ -204,7 +201,6 @@ Lattice_mvt <- function (mean, cvar, df, m, b=2) {
   }
   return (X)
 }
-
 
 # Lattice multivariate normal distribution.
 # 
@@ -267,10 +263,10 @@ Fullsets <- function(cand.set, n.alts, no.choice, reduce = TRUE){
   if(!is.null(no.choice)){
     n.alts <- n.alts - 1
   }
-  full.comb <- combn(1:nrow(cand.set), n.alts, FUN = function(x)  cand.set[x, ], simplify = FALSE)
+  full.comb <- utils::combn(1:nrow(cand.set), n.alts, FUN = function(x)  cand.set[x, ], simplify = FALSE)
   #reduce
   if (reduce){
-    m <- rnorm(ncol(cand.set))
+    m <- stats::rnorm(ncol(cand.set))
     inf <-list()
     for(i in 1:length(full.comb)){
       inf[[i]] <- round(InfoDes(m, full.comb[[i]], n.alts), digits = 3)
