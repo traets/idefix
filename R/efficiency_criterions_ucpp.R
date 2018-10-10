@@ -1,3 +1,10 @@
+# Derr_ucpp using InfoDes_cpp and det_cpp (for Modfed) 
+Derr_ucpp <- function(par, des, n.alts) {
+  info.des <- InfoDes_cpp(par, des, n.alts)
+  detinfo <- det_cpp(info.des)
+  ifelse((detinfo <= 0), return(NA), return(detinfo^(-1 / length(par))))
+}
+
 # DerrS_P using InfoDes_cpp and det_cpp
 DerrS.P_ucpp <- function(par, des, n.alts, i.cov) {
   info <- InfoDes_cpp(par = par, des = des, n_alts = n.alts)
