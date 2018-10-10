@@ -101,8 +101,8 @@
 #' @references \insertRef{federov}{idefix}
 #' @export
 Modfed <- function(cand.set, n.sets, n.alts, par.draws, alt.cte = NULL, no.choice = FALSE, 
-                   start.des = NULL, parallel = TRUE, max.iter = Inf, n.start = 12,
-                   best = TRUE) {
+                        start.des = NULL, parallel = TRUE, max.iter = Inf, n.start = 12,
+                        best = TRUE) {
   if(is.null(alt.cte)){
     alt.cte <- rep(0L, n.alts)
   }
@@ -135,7 +135,7 @@ Modfed <- function(cand.set, n.sets, n.alts, par.draws, alt.cte = NULL, no.choic
     }
     if(!isTRUE(all.equal(ncol(par.draws[[1]]), n.cte))){
       stop("the first component of 'par.draws' should contain the same number 
-             of columns as there are non zero elements in 'alt.cte'")
+           of columns as there are non zero elements in 'alt.cte'")
     }
     dims <-  as.data.frame(lapply(par.draws, dim))
     if(!isTRUE(all.equal(dims[1, 1], dims[1, 2]))){ 
@@ -146,7 +146,7 @@ Modfed <- function(cand.set, n.sets, n.alts, par.draws, alt.cte = NULL, no.choic
            should equal the number of columns of 'cand.set' + the number of non-zero elements in 'alt.cte'")
     }
     par.draws  <- do.call("cbind", par.draws)
-  }
+    }
   if(n.cte > 1.2){
     if(!(is.list(par.draws))){stop("par.draws should be a list")} 
     if (!isTRUE(all.equal(length(par.draws), 2))){
@@ -157,7 +157,7 @@ Modfed <- function(cand.set, n.sets, n.alts, par.draws, alt.cte = NULL, no.choic
     }
     if(!isTRUE(all.equal(ncol(par.draws[[1]]), n.cte))){
       stop("the first component of 'par.draws' should contain the same number 
-             of columns as there are non zero elements in 'alt.cte'")
+           of columns as there are non zero elements in 'alt.cte'")
     }
     dims <-  as.data.frame(lapply(par.draws, dim))
     if(!isTRUE(all.equal(dims[1, 1], dims[1, 2]))){ 
@@ -168,7 +168,7 @@ Modfed <- function(cand.set, n.sets, n.alts, par.draws, alt.cte = NULL, no.choic
            should equal the number of columns of 'cand.set' + the number of non-zero elements in 'alt.cte'")
     }
     par.draws  <- do.call("cbind", par.draws)
-  }
+    }
   # Create alternative specific design.
   cte.des <- Altspec(alt.cte = alt.cte, n.sets = n.sets)
   # Error identifying model.
@@ -232,20 +232,20 @@ Modfed <- function(cand.set, n.sets, n.alts, par.draws, alt.cte = NULL, no.choic
     no_cores <- parallel::detectCores() - 1
     cl <- parallel::makeCluster(no_cores)
     parallel::clusterExport(cl, c("n.sets", "par.draws", "cand.set", "n.alts", "n.cte", "alt.cte", "no.choice", "max.iter"), envir = environment())
-    deslist <- parallel::parLapply(cl, start.des, Modfedje, par.draws, cand.set, n.alts, n.sets, n.cte, alt.cte, no.choice, max.iter)
+    deslist <- parallel::parLapply(cl, start.des, Modfedje_ucpp, par.draws, cand.set, n.alts, n.sets, n.cte, alt.cte, no.choice, max.iter)
     parallel::stopCluster(cl)
     ########
   } else {
-    deslist <- lapply(start.des, Modfedje, par.draws, cand.set, n.alts, n.sets, n.cte, alt.cte, no.choice, max.iter = max.iter)
+    deslist <- lapply(start.des, Modfedje_ucpp, par.draws, cand.set, n.alts, n.sets, n.cte, alt.cte, no.choice, max.iter = max.iter)
   }                                 
   bestdes <- deslist[[which.min(unlist(lapply(deslist, function(x) (x$error))))]]
   
   ifelse(best, return(bestdes), return(deslist))
-}
+  }
 
 # Core of the Modfed algorithm
-Modfedje <- function(desje, par.draws, cand.set, n.alts, n.sets, n.cte, alt.cte,
-                     no.choice, max.iter){
+Modfedje_ucpp <- function(desje, par.draws, cand.set, n.alts, n.sets, n.cte, alt.cte,
+                          no.choice, max.iter){
   converge <- FALSE
   change <- FALSE
   it <- 1
@@ -253,7 +253,7 @@ Modfedje <- function(desje, par.draws, cand.set, n.alts, n.sets, n.cte, alt.cte,
   n.par <- ncol(desje)
   ###
   while (!converge & it <= max.iter) {
-    db.start <- mean(apply(par.draws, 1, Derr, des = desje,  n.alts = n.alts), na.rm = TRUE)
+    db.start <- mean(apply(par.draws, 1, Derr_ucpp, des = desje,  n.alts = n.alts), na.rm = TRUE)
     it <- it + 1
     # save design before iteration.
     iter.des <- desje
@@ -264,7 +264,7 @@ Modfedje <- function(desje, par.draws, cand.set, n.alts, n.sets, n.cte, alt.cte,
       for (c in 1:nrow(cand.set)) {
         desje[r, (n.cte + 1) : n.par ] <- cand.set[c, ]
         # Calculate D-errors.
-        d.errors <- apply(par.draws, 1, Derr, des = desje,  n.alts = n.alts)
+        d.errors <- apply(par.draws, 1, Derr_ucpp, des = desje,  n.alts = n.alts)
         # DB-error. 
         db[c] <- mean(d.errors, na.rm = TRUE)
       }
@@ -291,7 +291,7 @@ Modfedje <- function(desje, par.draws, cand.set, n.alts, n.sets, n.cte, alt.cte,
     converge <- isTRUE(all.equal(desje, iter.des)) # Convergence if no profile is swapped this iteration.
   }
   # calculate percentage NA values.
-  d.errors <- apply(par.draws, 1, Derr, des = desje,  n.alts = n.alts)
+  d.errors <- apply(par.draws, 1, Derr_ucpp, des = desje,  n.alts = n.alts)
   if (any(is.na(d.errors))) {
     na.percentage <- scales::percent(sum(is.na(d.errors)) / n.samples)
   } 
@@ -312,6 +312,8 @@ Modfedje <- function(desje, par.draws, cand.set, n.alts, n.sets, n.cte, alt.cte,
   # Return design, D(B)error, percentage NA's, utility balance. 
   return(list("design" = desje, "error" =  db.start, "inf.error" = na.percentage, "prob.diff" = ub))
 }
+
+
 
 
 #' Sequential modified federov algorithm for MNL model.
@@ -379,31 +381,32 @@ Modfedje <- function(desje, par.draws, cand.set, n.alts, n.sets, n.cte, alt.cte,
 #' m <- c(0.3, 0.2, -0.3, -0.2, 1.1, 2.4) # mean (total = 6 parameters).
 #' pc <- diag(length(m)) # covariance matrix
 #' set.seed(123)
-#' post.sample <- MASS::mvrnorm(n = 10, mu = m, Sigma = pc)
+#' sample <- MASS::mvrnorm(n = 10, mu = m, Sigma = pc)
 #' # Initial design.
 #' des <- example_design 
 #' # Efficient choice set to add. 
-#' SeqDB(des = des, cand.set = cs, n.alts = 2, par.draws = post.sample, 
-#' prior.covar = pc, parallel = FALSE)
-#'
+#' SeqDB(des = des, cand.set = cs, n.alts = 2, par.draws = sample, 
+#'            prior.covar = pc, parallel = FALSE)
+#' 
 #' # DB efficient choice set, given parameter draws. 
 #' # with alternative specific constants 
 #' des <- example_design2 
+#' cs <- Profiles(lvls = c(3, 3, 3), coding = c("E", "E", "E"))
 #' ac <- c(1, 1, 0) # Alternative specific constants. 
 #' m <- c(0.3, 0.2, -0.3, -0.2, 1.1, 2.4, 1.8, 1.2) # mean 
 #' pc <- diag(length(m)) # covariance matrix
 #' pos <- MASS::mvrnorm(n = 10, mu = m, Sigma = pc)
-#' post.sample <- list(pos[ , 1:2], pos[ , 3:8])
+#' sample <- list(pos[ , 1:2], pos[ , 3:8])
 #' # Efficient choice set. 
-#' SeqDB(des = des, cand.set = cs, n.alts = 3, par.draws = post.sample, alt.cte = ac, 
-#' prior.covar = pc, parallel = FALSE)
+#' SeqDB(des = des, cand.set = cs, n.alts = 3, par.draws = sample, alt.cte = ac, 
+#'            prior.covar = pc, parallel = FALSE)
 #' @export
 SeqDB <- function(des = NULL, cand.set, n.alts, par.draws, prior.covar, alt.cte = NULL, no.choice = NULL, weights = NULL, parallel = TRUE, reduce = TRUE) {
   #init
-  if(is.null(des)){
+  if (is.null(des)) {
     n.sets <- 1L
   } else { 
-    if(!isTRUE(nrow(des) %% n.alts == 0)){
+    if (!isTRUE(nrow(des) %% n.alts == 0)) {
       stop("'n.alts' does not seem to match with the number of rows in 'des'")
     }
     n.sets <- nrow(des) / n.alts
@@ -462,7 +465,7 @@ SeqDB <- function(des = NULL, cand.set, n.alts, par.draws, prior.covar, alt.cte 
              should equal the number of columns of 'cand.set' + the number of non-zero elements in 'alt.cte'")
       }
       par.draws  <- do.call("cbind", par.draws)
-    }
+      }
     if(n.cte > 1.2){
       if(!(is.list(par.draws))){stop("'par.draws' should be a list when 'alt.cte' is not NULL")} 
       if (!isTRUE(all.equal(length(par.draws), 2))){
@@ -484,11 +487,11 @@ SeqDB <- function(des = NULL, cand.set, n.alts, par.draws, prior.covar, alt.cte 
              should equal the number of columns of 'cand.set' + the number of non-zero elements in 'alt.cte'")
       }
       par.draws  <- do.call("cbind", par.draws)
-    }
+      }
     # Create alternative specific design.
     cte.des <- Altspec(alt.cte = alt.cte, n.sets = n.sets)
     cte.set <- matrix(cte.des[1:n.alts, ], ncol = n.cte, byrow = FALSE)
-  } else {cte.des = NULL}
+    } else {cte.des = NULL}
   # if no alternative constants 
   if(!is.matrix(par.draws)){
     stop("'par.draws'should be a matrix when 'alt.cte' = NULL")
@@ -512,9 +515,9 @@ SeqDB <- function(des = NULL, cand.set, n.alts, par.draws, prior.covar, alt.cte 
     }
     # Starting and initializing values.
     i.cov <- solve(prior.covar)
-    d.start <- apply(par.draws, 1, DerrC, des = des,  n.alts = n.alts, i.cov = i.cov)
+    d.start <- apply(par.draws, 1, DerrC_ucpp, des = des,  n.alts = n.alts, i.cov = i.cov)
     db.start <- mean(d.start, na.rm = TRUE)
-    full.comb <- Fullsets(cand.set = cand.set, n.alts = n.alts, no.choice = no.choice, reduce = reduce)
+    full.comb <- Fullsets_ucpp(cand.set = cand.set, n.alts = n.alts, no.choice = no.choice, reduce = reduce)
     #if alt.cte
     if(!is.null(cte.des)){
       full.comb <- lapply(full.comb, function(x) cbind(cte.set, x))
@@ -525,12 +528,16 @@ SeqDB <- function(des = NULL, cand.set, n.alts, par.draws, prior.covar, alt.cte 
     if (parallel) {
       no_cores <- parallel::detectCores() - 1L
       cl <- parallel::makeCluster(no_cores)
-      db.errors <- parallel::parLapply(cl, full.des, DBerrS.P, par.draws, n.alts, i.cov, weights)
+      # New line to copy DerrS.P from .GlobalEnv to the cluster
+      # https://stackoverflow.com/questions/12023403/using-parlapply-and-clusterexport-inside-a-function
+      #clusterExport(cl=cl,varlist=c("DerrS.P_ucpp"))
+      db.errors <- parallel::parLapply(cl, full.des, DBerrS.P_ucpp, par.draws, 
+                                       n.alts, i.cov, weights)
       parallel::stopCluster(cl)
       ##### parallel #####
     } else {
       # For each potential set, select best. 
-      db.errors <- lapply(full.des, DBerrS.P, par.draws, n.alts, i.cov, weights)
+      db.errors <- lapply(full.des, DBerrS.P_ucpp, par.draws, n.alts, i.cov, weights)
     }
     dbs <- unlist(db.errors, use.names = FALSE)
     set <- full.comb[[which.min(dbs)]]
@@ -544,7 +551,7 @@ SeqDB <- function(des = NULL, cand.set, n.alts, par.draws, prior.covar, alt.cte 
     
     # Starting and initializing values.
     i.cov <- solve(prior.covar)
-    full.comb <- Fullsets(cand.set = cand.set, n.alts = n.alts, no.choice = no.choice, reduce = reduce)
+    full.comb <- Fullsets_ucpp(cand.set = cand.set, n.alts = n.alts, no.choice = no.choice, reduce = reduce)
     #if alt.cte
     if(!is.null(cte.des)){
       full.comb <- lapply(full.comb, function(x) cbind(cte.set, x))
@@ -559,12 +566,19 @@ SeqDB <- function(des = NULL, cand.set, n.alts, par.draws, prior.covar, alt.cte 
     if (parallel) {
       no_cores <- parallel::detectCores() - 1L
       cl <- parallel::makeCluster(no_cores)
-      db.errors <- parallel::parLapply(cl, full.comb, DBerrS.P, par.draws, n.alts, i.cov, weights)
+      # New line to copy DerrS.P from .GlobalEnv to the cluster
+      # https://stackoverflow.com/questions/12023403/using-parlapply-and-clusterexport-inside-a-function
+      # Becareful with cpp functions in cluster export
+      # Check https://stackoverflow.com/questions/38518387/using-rcpp-functions-inside-of-rs-parapply-functions-from-the-parallel-package
+      # https://stackoverflow.com/questions/25606733/using-rcpp-function-in-parlapply-on-windows/25606950
+      #clusterExport(cl=cl,varlist=c("DerrS.P_ucpp"))
+      db.errors <- parallel::parLapply(cl, full.comb, DBerrS.P_ucpp, par.draws, 
+                                       n.alts, i.cov, weights)
       parallel::stopCluster(cl)
       ##### parallel #####
     } else {
       # For each potential set, select best. 
-      db.errors <- lapply(full.comb, DBerrS.P, par.draws, n.alts, i.cov, weights)
+      db.errors <- lapply(full.comb, DBerrS.P_ucpp, par.draws, n.alts, i.cov, weights)
     }
     dbs <- unlist(db.errors, use.names = FALSE)
     set <- full.comb[[which.min(dbs)]]
@@ -573,8 +587,7 @@ SeqDB <- function(des = NULL, cand.set, n.alts, par.draws, prior.covar, alt.cte 
     #return best set and db error design.
     return(list(set = set, db.error = db))
   }
-}
-
+    }
 
 ### UNDER EVALUATION ###
 ## Sequential Kullback-Leibler based algorithm for the MNL model.
@@ -659,4 +672,6 @@ SeqDB <- function(des = NULL, cand.set, n.alts, par.draws, prior.covar, alt.cte 
 #roxygen2::roxygenise()
 
 
-
+#' @useDynLib idefix
+#' @importFrom Rcpp sourceCpp
+NULL
