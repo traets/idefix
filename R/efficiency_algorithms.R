@@ -60,7 +60,7 @@
 #' @param parallel Logical value indicating whether computations should be done 
 #'   over multiple cores. The default is \code{TRUE}.
 #' @param max.iter A numeric value indicating the maximum number allowed 
-#'   iterations. The default is \code{TRUE}.
+#'   iterations. The default is \code{Inf}.
 #' @param n.start A numeric value indicating the number of random start designs
 #'   to use. The default is 12.
 #' @param best A logical value indicating whether only the best design should be
