@@ -108,11 +108,15 @@ Altspec <- function(alt.cte, n.sets) {
 }
 
 # Create row and column names for designs 
-Rcnames <- function(n.sets, n.alts, alt.cte) {
+Rcnames <- function(n.sets, n.alts, alt.cte, no.choice) {
   # rownames
   r.s <- rep(1:n.sets, each = n.alts)
   r.a <- rep(1:n.alts, n.sets)
   r.names <- paste(paste("set", r.s, sep = ""), paste("alt", r.a, sep = ""), sep = ".")
+  if(no.choice){
+    ncsek <- seq(n.alts, (n.sets * n.alts), n.alts)  
+    r.names[ncsek] <- "no.choice"
+  }
   # colnames alternative specific constants
   if(sum(alt.cte) > 0.2){
     cte.names <- paste(paste("alt", which(alt.cte == 1), sep = ""), ".cte", sep = "") 
@@ -225,10 +229,6 @@ Lattice_mvn <- function(mean, cvar, m, b=2) {
   return(X)
 }
 
-#function to get DB error of start designs
-StartDB <- function(des, par.draws, n.alts){
-  apply(par.draws, 1, Derr, des = des,  n.alts = n.alts)
-} 
 
 ## generate grid for truncated distribution
 Lattice_trunc <- function (n, mean, cvar, lower, upper, df) {
