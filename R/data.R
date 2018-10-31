@@ -41,6 +41,19 @@
 "aggregate_design"
 
 
-
+#' Discrete choice design with no choice option.
+#' 
+#' This discrete choice design is generated using the \code{\link{Modfed}} 
+#' function. There are 8 choice sets, each containig 3 alternatives (rows), of
+#' which one is a no choice option. The no choice option consist of an
+#' alternative specific constant and zero's for all other attributelevels. There
+#' are three attributes (time, price, comfort) with each 3 levels, all of which
+#' are dummy coded (columns).
+#' 
+#' @docType data
+#' @usage data(nochoice_design)
+#' @format A matrix with 24 rows and 7 variables
+#' @keywords data
+"nochoice_design"
 
 
