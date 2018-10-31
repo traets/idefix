@@ -23,7 +23,7 @@ set.}
 alternative specific constant is desired. The default is \code{NULL}.}
 
 \item{no.choice}{A logical value indicating whether a no choice alternative
-should be added to each choice set.}
+should be added to each choice set. The default is \code{NULL}.}
 
 \item{start.des}{A list containing one or more matrices. The default is \code{NULL}.}
 
@@ -40,15 +40,14 @@ to use. The default is 12.}
 returned. The default is \code{TRUE}.}
 }
 \value{
-If \code{best = TRUE} the design with the lowest D(B)-error. If \code{best
-  = FALSE}, the result of all (provided) start designs.
-\item{design}{A numeric matrix wich contains an efficient design.}
-\item{error}{Numeric value indicating the D(B)-error of the design.}
-\item{inf.error}{Numeric value indicating the percentage of draws for which
-the D-error was \code{Inf}.} \item{prob.diff}{Numeric value indicating the
-difference between the alternative with the highest and the one with the
-lowest probability for each choice set. If a sample matrix was provided
-this is based on the average over all draws.}
+If \code{best = TRUE} the design with the lowest D(B)-error. If \code{best 
+  = FALSE}, the result of all (provided) start designs. \item{design}{A
+numeric matrix wich contains an efficient design.} \item{error}{Numeric
+value indicating the D(B)-error of the design.} \item{inf.error}{Numeric
+value indicating the percentage of draws for which the D-error was
+\code{Inf}.} \item{probs}{Numeric matrix containing the probabilities of
+each alternative in each choice set. If a sample matrix was provided in
+\code{par.draws}, this is the average over all draws.}
 }
 \description{
 The algorithm swaps every profile of an initial start design with candidate
@@ -83,8 +82,8 @@ absence of an alternative specific constant and \code{1} the opposite.
 \code{start.des} is a list with one or several matrices. In each matrix each
 row is a profile. The number of rows equals \code{n.sets * n.alts}, and the
 number of columns equals the number of columns of \code{cand.set} + the
-number of non-zero elements in \code{alt.cte}. If the default \code{start.des
-= NULL} is \code{TRUE}, \code{n.start} random start designs will be
+number of non-zero elements in \code{alt.cte}. If \code{start.des
+= NULL}, \code{n.start} random start designs will be
 generated. If start designs are provided, \code{n.start} is ignored.
 
 If \code{no.choice} is \code{TRUE}, in each choice set an alternative with
@@ -97,6 +96,7 @@ cores will be used to search for efficient designs. The computation time will
 decrease significantly when \code{parallel = TRUE}.
 }
 \examples{
+\donttest{
 # DB-efficient designs
 # 3 Attributes, all dummy coded. 1 alternative specific constant. = 7 parameters
 cand.set <- Profiles(lvls = c(3, 3, 3), coding = c("D", "D", "D"))
@@ -118,6 +118,7 @@ set.seed(123)
 ps <- MASS::mvrnorm(n = 10, mu = mu, Sigma = v) # 10 draws.
 Modfed(cand.set = cand.set, n.sets = 8, n.alts = 2, 
        alt.cte = c(0, 0), parallel = FALSE, par.draws = ps, start.des = sd)
+}
 }
 \references{
 \insertRef{federov}{idefix}
