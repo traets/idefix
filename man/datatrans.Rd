@@ -7,7 +7,7 @@
 Datatrans(pkg, des, y, n.alts, n.sets, n.resp, bin, alt.names = NULL)
 }
 \arguments{
-\item{pkg}{Indicates the data format of the desired package. Options are
+\item{pkg}{Indicates the desired estimation package. Options are
 \code{bayesm = \link[bayesm]{rhierMnlRwMixture}}, \code{ChoiceModelR = 
   \link[ChoiceModelR]{choicemodelr}}, \code{RSGHB = \link[RSGHB]{doHB}},
 \code{Mixed.Probit = \link[bayesm]{rbprobitGibbs}}, \code{mlogit = 
@@ -15,7 +15,7 @@ Datatrans(pkg, des, y, n.alts, n.sets, n.resp, bin, alt.names = NULL)
 
 \item{des}{A design matrix in which each row is a profile.}
 
-\item{y}{A numeric binary or discrete vector.}
+\item{y}{A numeric vector containing binary or discrete responses. See \code{bin}.}
 
 \item{n.alts}{Numeric value indicating the number of alternatives per choice
 set.}
@@ -24,7 +24,7 @@ set.}
 
 \item{n.resp}{Numeric value indicating the number of respondents.}
 
-\item{bin}{Logical value indicating whether the reponse matrix contains
+\item{bin}{Logical value indicating whether the reponse vector contains
 binary data (\code{TRUE}) or discrete data (\code{FALSE}). See \code{y}.}
 
 \item{alt.names}{A character vector containing the names of the alternatives.
