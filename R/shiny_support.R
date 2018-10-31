@@ -91,7 +91,6 @@
 #' @examples 
 #' \donttest{
 #'#### Present choice design without adaptive sets (n.total = sets in des)
-#'# NOTE that the data will be saved in the current working directory. 
 #'# example design 
 #'data("example_design") # pregenerated design
 #'xdes <- example_design
@@ -112,14 +111,9 @@
 #'# Display the survey 
 #'SurveyApp (des = xdes, n.total = n.sets, alts = alternatives, 
 #'           atts = attributes, lvl.names = labels, coding = code, 
-#'           buttons.text = b.text, intro.text = i.text, end.text = e.text,
-#'           data.dir = dataDir)
-#'# Data 
-#'data_num <- LoadData(data.dir = dataDir, type  = "num")
-#'data_char <- LoadData(data.dir = dataDir, type = "char")
+#'           buttons.text = b.text, intro.text = i.text, end.text = e.text)
 #'
-#' #### Present choice design with adaptive sets (n.total > sets in des)
-#' # NOTE that the data will be saved in the current working directory. 
+#' #### Present choice design with partly adaptive sets (n.total > sets in des)
 #' # example design 
 #' data("example_design") # pregenerated design
 #' xdes <- example_design
@@ -143,16 +137,12 @@
 #' p.var <- diag(length(p.mean))
 #' dataDir <- getwd()
 #' # Display the survey 
-#' SurveyApp(des = xdes, n.total = n.sets, alts = alternatives, atts =
-#'               attributes, lvl.names = labels, coding = code, buttons.text = b.text,
-#'             intro.text = i.text, end.text = e.text, data.dir = dataDir, crit= "DB",
-#'             prior.mean = p.mean, prior.covar = p.var, cand.set = cand, n = 50)
-#' # Data 
-#' data_num <- LoadData(data.dir = dataDir, type = "num")
-#' data_char <- LoadData(data.dir = dataDir, type = "char")
+#' SurveyApp(des = xdes, n.total = n.sets, alts = alternatives, atts = 
+#' attributes, lvl.names = labels, coding = code, buttons.text = b.text, 
+#' intro.text = i.text, end.text = e.text, crit= "DB", prior.mean = p.mean,
+#' prior.covar = p.var, cand.set = cand, n = 50)
 #'
 #'#### Choice design with only adaptive sets (des=NULL)
-#'# NOTE that the data will be saved in the current working directory. 
 #'# setting for adaptive sets 
 #'levels <- c(3, 3, 3)
 #'p.mean <- c(0.3, 0.7, 0.3, 0.7, 0.3, 0.7)
@@ -174,14 +164,35 @@
 #'e.text <- "Thanks for taking the survey"
 #'dataDir <- getwd()
 #'# Display the survey 
-#'SurveyApp (des = NULL, n.total = n.sets, alts = alternatives, 
+#'SurveyApp (des = NULL, n.total = n.sets, alts = alternatives, atts =
+#'attributes, lvl.names = labels, coding = code, buttons.text = b.text,
+#'intro.text = i.text, end.text = e.text, crit= "KL", prior.mean = p.mean,
+#'prior.covar = p.var, cand.set = cand, lower = low, upper = up, n = 50) 
+#'
+#'
+#'#### Present choice design with a no choice alternative.
+#'# example design 
+#'data("nochoice_design") # pregenerated design
+#'xdes <- nochoice_design
+#'### settings of the design 
+#'code <- c("D", "D", "D")
+#'n.sets <- 8
+#'# settings of the survey
+#'alternatives <- c("Alternative A", "Alternative B", "None")
+#'attributes <- c("Price", "Time", "Comfort")
+#'labels <- vector(mode = "list", length(attributes))
+#'labels[[1]] <- c("$10", "$5", "$1")
+#'labels[[2]] <- c("20 min", "12 min", "3 min")
+#'labels[[3]] <- c("bad", "average", "good")
+#'i.text <- "Welcome, here are some instructions ... good luck!"
+#'b.text <- "Please choose the alternative you prefer"
+#'e.text <- "Thanks for taking the survey"
+#'
+# Display the survey 
+#'SurveyApp (des = xdes, n.total = n.sets, alts = alternatives, 
 #'           atts = attributes, lvl.names = labels, coding = code, 
-#'           buttons.text = b.text, intro.text = i.text, end.text = e.text, data.dir = dataDir, 
-#'           crit= "KL", prior.mean = p.mean, prior.covar = p.var, cand.set = cand, lower = low, 
-#'           upper = up, n = 50)
-#'# Data 
-#'data_num <- LoadData(data.dir = dataDir, type = "num")
-#'data_char <- LoadData(data.dir = dataDir, type = "char")
+#'           buttons.text = b.text, intro.text = i.text, end.text = e.text,
+#'           no.choice = 3, alt.cte = c(0 , 0, 1))
 #'}
 #'@import shiny
 #'@export
@@ -216,7 +227,7 @@ SurveyApp <- function(des = NULL, n.total, alts, atts, lvl.names, coding,
   } else {
     # Error 
     if (length(alt.cte) != n.alts) {
-      stop("'n.alts' does not match the 'alt.cte' vector")
+      stop("length(alts) does not match length(alt.cte)")
     }
     if (!all(alt.cte %in% c(0, 1))){
       stop("'alt.cte' should only contain 0's or 1's.")
@@ -234,15 +245,18 @@ SurveyApp <- function(des = NULL, n.total, alts, atts, lvl.names, coding,
   }
   # Error handling
   if(!is.null(no.choice)){
-    if(!no.choice %% 1 == 0){
-      stop("'no.choice' should be an integer")
+    if(!is.numeric(no.choice)){
+      stop("'no.choice' should be an integer indicating the no choice alternative.")
     }
-    if(any(isTRUE(no.choice > (n.alts + 0.2)), isTRUE(no.choice < 0.2))){
-      stop("'no.choice' does not indicate one of the alternatives")
-    }
-    if(!isTRUE(all.equal(alt.cte[no.choice], 1))){
-      stop("the location of the 'no.choice' option in the 'alt.cte' vector should correspond with 1")
-    }
+      if(!no.choice %% 1 == 0){
+        stop("'no.choice' should be an integer")
+      }
+      if(any(isTRUE(no.choice > (n.alts + 0.2)), isTRUE(no.choice < 0.2))){
+        stop("'no.choice' does not indicate one of the alternatives")
+      }
+      if(!isTRUE(all.equal(alt.cte[no.choice], 1))){
+        stop("the location of the 'no.choice' option in the 'alt.cte' vector should correspond with 1")
+      }
   }
   if (!is.null(data.dir)) {
     if (!dir.exists(data.dir)) {
@@ -292,7 +306,7 @@ SurveyApp <- function(des = NULL, n.total, alts, atts, lvl.names, coding,
   } else {
     bs <- seq(1, (nrow(des) - n.alts + 1), n.alts)
     es <- c((bs - 1), nrow(des))[-1] 
-    rowcol <- Rcnames(n.sets = n.init, n.alts = n.alts, alt.cte = alt.cte)
+    rowcol <- Rcnames(n.sets = n.init, n.alts = n.alts, alt.cte = alt.cte, no.choice = FALSE)
     rownames(des) <- rowcol[[1]]
     if (is.null(colnames(des))){
       colnames(des) <- c(rowcol[[2]], paste("par", 1:(ncol(des) - n.cte), sep = "."))
@@ -377,7 +391,8 @@ SurveyApp <- function(des = NULL, n.total, alts, atts, lvl.names, coding,
             }
           }
           # Transform coded set to attribute level character set.
-          choice.set <- Decode(des = set, lvl.names = lvl.names, coding = coding, alt.cte = alt.cte, c.lvls = c.lvls)
+          choice.set <- Decode(des = set, n.alts = n.alts, lvl.names = lvl.names, coding = coding, 
+                               alt.cte = alt.cte, c.lvls = c.lvls, no.choice = no.choice)[[1]]
           choice.set <- t(choice.set[ , 1:n.atts])
           # Fill in attribute names and alternatives names
           colnames(choice.set) <- alts
@@ -462,12 +477,14 @@ SurveyApp <- function(des = NULL, n.total, alts, atts, lvl.names, coding,
 
 
 
-#' Coded design to readable design
+#' Coded design to readable design.
 #' 
 #' Transforms a coded design matrix into a design containing character attribute
-#' levels, ready to be used in a survey.
+#' levels, ready to be used in a survey. The frequency of each attribute level 
+#' in the design is also included in the output.
 #' 
-#' \code{des} can also be a single choice set.
+#' \code{des} A design matrix, this can also be a single choice set. See for
+#' example the output of \link[idefix]{Modfed}.
 #' 
 #' In \code{lvl.names}, the number of character vectors in the list should equal
 #' the number of attributes in de choice set. The number of elements in each 
@@ -476,28 +493,32 @@ SurveyApp <- function(des = NULL, n.total, alts, atts, lvl.names, coding,
 #' Valid arguments for \code{coding} are \code{C}, \code{D} and \code{E}. When 
 #' using \code{C} the attribute will be treated as continuous and no coding will
 #' be applied. All possible levels of that attribute should then be specified in
-#' \code{c.lvls}. If \code{D} (dummy coding) is used
-#' \code{\link{contr.treatment}} will be applied to that attribute. The first
-#' attribute wil be used as reference level.  For \code{E} (effect coding)
-#' \code{\link{contr.sum}} is applied, in this case the last attributelevel is
+#' \code{c.lvls}. If \code{D} (dummy coding) is used 
+#' \code{\link{contr.treatment}} will be applied to that attribute. The first 
+#' attribute wil be used as reference level.  For \code{E} (effect coding) 
+#' \code{\link{contr.sum}} is applied, in this case the last attribute level is 
 #' used as reference level.
 #' 
 #' If \code{des} contains columns for alternative specific constants, 
-#' \code{alt.cte} should be specified. In this case, the first column(s) (equal
-#' to the number of nonzero elements in \code{alt.cte}) will be removed from
+#' \code{alt.cte} should be specified. In this case, the first column(s) (equal 
+#' to the number of nonzero elements in \code{alt.cte}) will be removed from 
 #' \code{des} before decoding the alternatives.
-#' 
+#'
 #' @param des A numeric matrix which represents the design matrix. Each row is a
 #'   profile.
-#' @param lvl.names A list containing character vectors with the values of each
+#' @param lvl.names A list containing character vectors with the values of each 
 #'   level of each attribute.
-#' @param coding A character vector denoting the type of coding used for each
+#' @param coding A character vector denoting the type of coding used for each 
 #'   attribute. See also \code{\link{Profiles}}.
 #' @param alt.cte A binary vector indicating for each alternative if an 
-#'   alternative specific constant is present. The default is \code{NULL}. 
+#'   alternative specific constant is present. The default is \code{NULL}.
+#' @param no.choice An integer indicating the no choice alternative. The default
+#'   is \code{NULL}.
 #' @inheritParams Profiles
 #' @inheritParams Modfed
-#' @return A character matrix which represents the design.
+#' @return \item{design}{A character matrix which represents the design.} 
+#'   \item{lvl.balance}{A list containing the frequency of appearance of each 
+#'   attribute level in the design.}
 #' @examples 
 #' \donttest{
 #' # Example without continuous attributes.
@@ -525,13 +546,44 @@ SurveyApp <- function(des = NULL, n.total, alts, atts, lvl.names, coding,
 #' Decode(des = design, lvl.names = al, coding = c, alt.cte = c(1, 1, 0)) 
 #' }
 #' @export
-Decode <- function(des, lvl.names, coding, alt.cte = NULL, c.lvls = NULL) {
-  
+Decode <- function(des, n.alts, lvl.names, coding, alt.cte = NULL, c.lvls = NULL, no.choice = NULL) {
+  n.sets <- nrow(des) / n.alts
+  if(!isTRUE(all.equal(n.sets %% 1, 0))){
+    stop("'n.alts' does not seem correct based on nrow(des)")
+  }
+  if(!is.list(lvl.names)){
+    stop("'lvl.names' should be a list")
+  }
+  if(!is.matrix(des)){
+    stop("'des' should be a matrix")
+  }
   if(!is.null(alt.cte)) {
+    if(!isTRUE(all.equal(length(alt.cte), n.alts))){
+      stop("the length of 'alt.cte' does not match 'n.alts'")
+    }
     contins <- which(alt.cte == 1)
     if( !length(contins) == 0) {
       des <- des[, -(1:length(contins))]
     }
+  }
+  if(!is.null(no.choice)){
+    if(!is.numeric(no.choice)){
+      stop("'no.choice' should be an integer indicating the no choice alternative.")
+    }
+    if(!no.choice %% 1 == 0){
+      stop("'no.choice' should be an integer")
+    }
+    if(any(isTRUE(no.choice > (n.alts + 0.2)), isTRUE(no.choice < 0.2))){
+      stop("'no.choice' does not indicate one of the alternatives")
+    }
+    if(!isTRUE(all.equal(alt.cte[no.choice], 1))){
+      stop("the location of the 'no.choice' option in the 'alt.cte' vector should correspond with 1")
+    }
+    ncsek <- 1:nrow(des)
+    ncsek <- ncsek[-seq(no.choice, (n.sets * no.choice), no.choice)] 
+    #des <- des[-ncsek, ]
+  } else {
+    ncsek <- 1:nrow(des)
   }
   N.alts <- nrow(des) # Number of total alternatives.
   n.att <- length(lvl.names) # Number of attributes.
@@ -549,61 +601,63 @@ Decode <- function(des, lvl.names, coding, alt.cte = NULL, c.lvls = NULL) {
   m <- matrix(data = NA, nrow = N.alts, ncol = n.att)
   # Error handling
   if (ncol(des) != ncol(dc)) {
-    stop("Number of columns of 'des' does not equal the expected number based on the other arguments.")
+    stop("ncol(des) does not equal the expected number based on 'lvl.names' and 'alt.cte'.")
   }
   # For each alternative look for matching profile  
-  for (i in 1:N.alts) {
+  for (i in ncsek) {
     # if coded choice des, look for match in coded version first, then take uncoded equivalent.
     lev.num <- d[as.numeric(which(apply(dc, 1, function(x) all(x == des[i, ])))), ]
     lev.num <- as.numeric(lev.num)
     # Error handling
     if (any(is.na(lev.num))) { 
-      stop("The 'des' does not match with the type of 'coding' provided")
+      stop("alternatives detected that do not match with the type of 'coding' provided. 
+           Make sure 'no.choice' is specified if applicable.")
     }
     # For each attribute fill in the attribute level name
-    for (c in 1:n.att) {
-      m[i, c] <- lvl.names[[c]][lev.num[c]]
-    }
+    for (c in 1:n.att) {m[i, c] <- lvl.names[[c]][lev.num[c]]}
   }
+  #frequency levels 
+  ml <- list()
+  ml <- split(m, rep(1:ncol(m), each = nrow(m)))
+  lvl.balance <- lapply(ml, table)
+  names(lvl.balance) <- paste("attribute", 1:length(coding), "")
   #col row names names 
   rownames(m) <- rownames(des)
-  return(as.data.frame(m))
+  return(list("design" = as.data.frame(m), "lvl.balance" = lvl.balance))
 }
 
-
-
-#' Character vector to binary vector.
-#' 
-#' Transforms a character vector with responses into a binary vector. Each
-#' alternative in each choice set wil be either 0 or 1. If the
-#' alternative was not chosen 0, and 1 if it was. The function can be used for example in a
-#' shiny application to transform the response vector received from
-#' \code{\link[shiny]{radioButtons}} into a numeric vector that can be used for
-#' estimation.
-#' 
-#' The \code{n.alts} denotes the number of alternatives a respondent could
-#' choose from, without counting a possible no choice option.
-#' 
-#' If \code{no.choice} is \code{TRUE} the first alternative specified in 
-#' \code{alts} will be treated as a no choice option. If the no choice option 
-#' was chosen all alternatives are zero for that choice set.
-#' @param resp String vector containing input responses
-#' @param alts String vector containing all possible alternatives. The order
-#'   should be the same as the order of the design matrix.
-#' @param n.alts The number of alternatives per choice set.
-#' @param no.choice Logical value indicating whether a no.choice option is 
-#'   provided or not. The default = \code{FALSE}.
-#' @return A binary response vector with length equal to \code{length(resp) *
-#'   length(n.alts)}.
-#' @examples 
-#' \donttest{
-#' # Observed Responses 
-#' resp <- c("alt1", "alt3", "alt2", "no.choice", "alt1") 
-#' # All possible alternatives 
-#' alts <- c("no.choice", "alt1", "alt2", "alt3")
-#' # 3 alternatives + no.choice 
-#' Charbin(resp = resp, alts = alts, n.alts = 3, no.choice = TRUE)
-#' }
+# Character vector to binary vector.
+# 
+# Transforms a character vector with responses into a binary vector. Each
+# alternative in each choice set wil be either 0 or 1. If the
+# alternative was not chosen 0, and 1 if it was. The function can be used for example in a
+# shiny application to transform the response vector received from
+# \code{\link[shiny]{radioButtons}} into a numeric vector that can be used for
+# estimation.
+# 
+# The \code{n.alts} denotes the number of alternatives a respondent could
+# choose from, without counting a possible no choice option.
+# 
+# If \code{no.choice} is \code{TRUE} the first alternative specified in 
+# \code{alts} will be treated as a no choice option. If the no choice option 
+# was chosen all alternatives are zero for that choice set.
+# @param resp String vector containing input responses
+# @param alts String vector containing all possible alternatives. The order
+#   should be the same as the order of the design matrix.
+# @param n.alts The number of alternatives per choice set.
+# @param no.choice Logical value indicating whether a no.choice option is 
+#   provided or not. The default = \code{FALSE}.
+# @return A binary response vector with length equal to \code{length(resp) *
+#   length(n.alts)}.
+# @examples 
+# \donttest{
+# # Observed Responses 
+# resp <- c("alt1", "alt3", "alt2", "no.choice", "alt1") 
+# # All possible alternatives 
+# alts <- c("no.choice", "alt1", "alt2", "alt3")
+# # 3 alternatives + no.choice 
+# Charbin(resp = resp, alts = alts, n.alts = 3, no.choice = TRUE)
+# }
 Charbin <- function (resp, alts, n.alts, no.choice = FALSE) {
   # Error resp not in altsions
   if (!all(resp %in% alts)) {
@@ -627,61 +681,6 @@ Charbin <- function (resp, alts, n.alts, no.choice = FALSE) {
   return(v)
 }
 
-
-
-# Sequential DB function for shiny
-# 
-# Small changes in alt.cte argument in comparison with the \code{SeqDB}
-# function. This way the function can be easily used in the SurveyApp function
-SeqDBApp <- function(des, cand.set, n.alts, par.draws, prior.covar, alt.cte, reduce = TRUE, w = NULL) {
-  # Initialize.
-  n.sets <- nrow(des) / n.alts
-  # If no w, equal w.
-  if (is.null(w)) {
-    w <- rep(1, nrow(par.draws))
-  }
-  # Create alternative specific design if necessay.
-  if (!all(alt.cte == 0)) {
-    cte.set <- Altspec(alt.cte = alt.cte, n.sets = 1)
-    cte.des <- Altspec(alt.cte = alt.cte, n.sets = n.sets)
-    kcte <- ncol(cte.des)
-    fdes <- cbind(cte.des, des)
-  } else {
-    cte.set <- NULL
-    kcte <- 0
-    fdes <- des
-  }
-  # Error handling cte.des
-  if (ncol(cand.set) + kcte != ncol(par.draws)) {
-    stop("dimension of par.draws does not match the dimension of alt.cte + cand.set.")
-  }
-  # Handling par.draws.
-  if (!(is.matrix(par.draws))) {
-    par.draws <- matrix(par.draws, nrow = 1)
-  }
-  # Error identifying model.
-  if (n.sets < ncol(par.draws)) {
-    stop("Model is unidentified. Increase the number of choice sets or decrease parameters to estimate.")
-  }
-  # Error par.draws
-  if (ncol(fdes) != ncol(par.draws)) {
-    stop("Numbers of parameters in par.draws does not match the number of parameters in the design.")
-  }
-  # Starting and initializing values.
-  i.cov <- solve(prior.covar)
-  d.start <- apply(par.draws, 1, Derr, des = fdes,  n.alts = n.alts)
-  db.start <- mean(d.start, na.rm = TRUE)
-  full.comb <- gtools::combinations(n = nrow(cand.set), r = n.alts, repeats.allowed = !reduce)
-  n.par <- ncol(par.draws)
-  # For each potential set, select best. 
-  db.errors <- apply(full.comb, 1, DBerrS, cand.set, par.draws, fdes, n.alts, cte.set, i.cov, n.par, w)
-  comb.nr <- as.numeric(full.comb[which.min(db.errors), ])
-  set <- cand.set[comb.nr, ]
-  row.names(set) <- NULL
-  db <- min(db.errors)
-  #return best set and db error design.
-  return(list(set = set, db.error = db))
-}
 
 # Function to save the data gathered by shiny app
 saveData <- function(data, data.dir, n.atts) {
