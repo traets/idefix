@@ -19,16 +19,16 @@
 #' \code{n.sets} indicates the number of sets each repondent responded to. It is
 #' assumed that every responded responded to the same number of choice sets.
 #' 
-#' @param pkg Indicates the data format of the desired package. Options are 
+#' @param pkg Indicates the desired estimation package. Options are 
 #'   \code{bayesm = \link[bayesm]{rhierMnlRwMixture}}, \code{ChoiceModelR = 
 #'   \link[ChoiceModelR]{choicemodelr}}, \code{RSGHB = \link[RSGHB]{doHB}}, 
 #'   \code{Mixed.Probit = \link[bayesm]{rbprobitGibbs}}, \code{mlogit = 
 #'   \link[mlogit]{mlogit}}, and \code{Rchoice = \link[Rchoice]{Rchoice}}).
 #' @param des A design matrix in which each row is a profile.
 #' @inheritParams Modfed
-#' @param y A numeric binary or discrete vector.
+#' @param y A numeric vector containing binary or discrete responses. See \code{bin}.
 #' @param n.resp Numeric value indicating the number of respondents.
-#' @param bin Logical value indicating whether the reponse matrix contains 
+#' @param bin Logical value indicating whether the reponse vector contains 
 #'   binary data (\code{TRUE}) or discrete data (\code{FALSE}). See \code{y}.
 #' @param alt.names A character vector containing the names of the alternatives.
 #'   The default = \code{NULL}
@@ -235,17 +235,20 @@ Datatrans <- function(pkg, des, y, n.alts, n.sets, n.resp, bin, alt.names = NULL
 #' RespondMNL(par=true_par, des = des, n.alts = 2)
 #' @export
 RespondMNL <- function(par, des, n.alts, bin = TRUE) {
+  if (!is.matrix(des)){
+    stop("'des' should be a matrix")
+  }
   # Error par is not vector
   if (!is.vector(par)) {
-    stop('par should be a vector.')
+    stop("'par' should be a vector")
   }
   # Error n.alts 
   if ((nrow(des) %% n.alts) != 0) {
-    stop('number of rows in des is not a multiple of n.alts.')
+    stop("number of rows in 'des' is not a multiple of 'n.alts'")
   }
   # Error par
   if (ncol(des) != length(par)) {
-    stop("length of par vector does not match the number of parameters in the design.")
+    stop("length of 'par' does not match the number of columns in 'des'")
   }
   # Probability
   group <- rep(seq(1, nrow(des) / n.alts, 1), each = n.alts)
