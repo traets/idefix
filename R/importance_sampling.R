@@ -15,7 +15,7 @@
 #' From this distribution a lattice grid of draws is generated.
 #' 
 #' If truncation is present, incorrect draws are rejected and new ones are
-#' generated untill \code{n} is reached. The covariance matrix is in this case
+#' generated untill \code{n.draws} is reached. The covariance matrix is in this case
 #' still calculated as if no truncation was present.
 #' 
 #' @inheritParams SeqDB
@@ -156,7 +156,7 @@ ImpsampMNL <- function(n.draws, prior.mean, prior.covar, des, n.alts, y,
   w <- w / sum(w)
   #colnames draws 
   if(!is.null(cte.des)){
-    des.names <- Rcnames(n.sets = n.sets, n.alts = n.alts, alt.cte = alt.cte)
+    des.names <- Rcnames(n.sets = n.sets, n.alts = n.alts, alt.cte = alt.cte, no.choice = FALSE)
     g.draws <- list(as.matrix(g.draws[ ,1:n.cte], ncol = n.cte), 
                     as.matrix(g.draws[ ,(n.cte + 1) : ncol(des)], ncol = (ncol(des) - n.cte)))
     colnames(g.draws[[1]]) <- des.names[[2]]
