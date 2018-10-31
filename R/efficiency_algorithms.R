@@ -297,7 +297,9 @@ Modfedje_ucpp <- function(desje, par.draws, cand.set, n.alts, n.sets, n.cte, alt
   } 
   # Utility balance.
   ub <- apply(par.draws, 1, Utbal, des = desje,  n.alts = n.alts)
-  ub <- .rowMeans(ub, m = n.sets, n = n.samples, na.rm = FALSE)
+  pmat <- matrix(rowMeans(ub), ncol = n.alts, byrow = TRUE)
+  rownames(pmat) <- paste("set", 1:n.sets, sep = "")
+  colnames(pmat) <- paste(paste("Pr(", paste("alt", 1:n.alts, sep = ""), sep = ""), ")", sep= "")
   # Rownames design. 
   des.names <- Rcnames(n.sets = n.sets, n.alts = n.alts, alt.cte = alt.cte)
   rownames(desje) <- des.names[[1]]
@@ -310,7 +312,7 @@ Modfedje_ucpp <- function(desje, par.draws, cand.set, n.alts, n.sets, n.cte, alt
     desje <- Optout(des = desje, n.alts = n.alts, alt.cte = alt.cte, n.sets = n.sets)
   }
   # Return design, D(B)error, percentage NA's, utility balance. 
-  return(list("design" = desje, "error" =  db.start, "inf.error" = na.percentage, "prob.diff" = ub))
+  return(list("design" = desje, "error" =  db.start, "inf.error" = na.percentage, "probs" = pmat))
 }
 
 
@@ -667,11 +669,3 @@ SeqDB <- function(des = NULL, cand.set, n.alts, par.draws, prior.covar, alt.cte 
 #   return(list(set = set, kl = max(kl.infos)))
 # }
 
-
-
-#roxygen2::roxygenise()
-
-
-#' @useDynLib idefix
-#' @importFrom Rcpp sourceCpp
-NULL
