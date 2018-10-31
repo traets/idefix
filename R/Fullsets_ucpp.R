@@ -21,3 +21,7 @@ Fullsets_ucpp <- function(cand.set, n.alts, no.choice, reduce = TRUE){
   return(full.comb)
 }
 
+
+
+
+
