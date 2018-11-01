@@ -33,8 +33,8 @@
 #' \code{start.des} is a list with one or several matrices. In each matrix each
 #' row is a profile. The number of rows equals \code{n.sets * n.alts}, and the
 #' number of columns equals the number of columns of \code{cand.set} + the
-#' number of non-zero elements in \code{alt.cte}. If the default \code{start.des
-#' = NULL} is \code{TRUE}, \code{n.start} random start designs will be
+#' number of non-zero elements in \code{alt.cte}. If \code{start.des
+#' = NULL}, \code{n.start} random start designs will be
 #' generated. If start designs are provided, \code{n.start} is ignored.
 #' 
 #' If \code{no.choice} is \code{TRUE}, in each choice set an alternative with
@@ -55,7 +55,7 @@
 #'   alternative specific constant is desired. The default is \code{NULL}.
 #' @param par.draws A matrix or a list, dependend on \code{alt.cte}.
 #' @param no.choice A logical value indicating whether a no choice alternative 
-#'   should be added to each choice set.
+#'   should be added to each choice set. The default is \code{NULL}.
 #' @param start.des A list containing one or more matrices. The default is \code{NULL}.
 #' @param parallel Logical value indicating whether computations should be done 
 #'   over multiple cores. The default is \code{TRUE}.
@@ -66,16 +66,16 @@
 #' @param best A logical value indicating whether only the best design should be
 #'   returned. The default is \code{TRUE}.
 #' @return 
-#'   If \code{best = TRUE} the design with the lowest D(B)-error. If \code{best
-#'   = FALSE}, the result of all (provided) start designs.
-#'   \item{design}{A numeric matrix wich contains an efficient design.} 
-#'   \item{error}{Numeric value indicating the D(B)-error of the design.} 
-#'   \item{inf.error}{Numeric value indicating the percentage of draws for which
-#'   the D-error was \code{Inf}.} \item{prob.diff}{Numeric value indicating the 
-#'   difference between the alternative with the highest and the one with the 
-#'   lowest probability for each choice set. If a sample matrix was provided
-#'   this is based on the average over all draws.}
+#'   If \code{best = TRUE} the design with the lowest D(B)-error. If \code{best 
+#'   = FALSE}, the result of all (provided) start designs. \item{design}{A
+#'   numeric matrix wich contains an efficient design.} \item{error}{Numeric
+#'   value indicating the D(B)-error of the design.} \item{inf.error}{Numeric
+#'   value indicating the percentage of draws for which the D-error was
+#'   \code{Inf}.} \item{probs}{Numeric matrix containing the probabilities of
+#'   each alternative in each choice set. If a sample matrix was provided in
+#'   \code{par.draws}, this is the average over all draws.}
 #' @examples
+#' \donttest{
 #' # DB-efficient designs
 #' # 3 Attributes, all dummy coded. 1 alternative specific constant. = 7 parameters
 #' cand.set <- Profiles(lvls = c(3, 3, 3), coding = c("D", "D", "D"))
@@ -84,7 +84,8 @@
 #' set.seed(123) 
 #' pd <- MASS::mvrnorm(n = 10, mu = mu, Sigma = v) # 10 draws.
 #' p.d <- list(matrix(pd[,1], ncol = 1), pd[,2:7])
-#' Modfed(cand.set = cand.set, n.sets = 8, n.alts = 2, alt.cte = c(1, 0), par.draws = p.d, best = FALSE)
+#' Modfed(cand.set = cand.set, n.sets = 8, n.alts = 2, 
+#'        alt.cte = c(1, 0), parallel = FALSE, par.draws = p.d, best = FALSE)
 #' 
 #' # DB-efficient design with start design provided.  
 #' # 3 Attributes with 3 levels, all dummy coded (= 6 parameters).
@@ -94,13 +95,15 @@
 #' sd <- list(example_design)
 #' set.seed(123)
 #' ps <- MASS::mvrnorm(n = 10, mu = mu, Sigma = v) # 10 draws.
-#' Modfed(cand.set = cand.set, n.sets = 8, n.alts = 2, alt.cte = c(0, 0), par.draws = ps, start.des = sd)
+#' Modfed(cand.set = cand.set, n.sets = 8, n.alts = 2, 
+#'        alt.cte = c(0, 0), parallel = FALSE, par.draws = ps, start.des = sd)
+#'}
 #' @importFrom Rdpack reprompt
-#' @references \insertRef{federov}{mnldes}
+#' @references \insertRef{federov}{idefix}
 #' @export
 Modfed <- function(cand.set, n.sets, n.alts, par.draws, alt.cte = NULL, no.choice = FALSE, 
-                   start.des = NULL, parallel = TRUE, max.iter = Inf, n.start = 12,
-                   best = TRUE) {
+                        start.des = NULL, parallel = TRUE, max.iter = Inf, n.start = 12,
+                        best = TRUE) {
   if(is.null(alt.cte)){
     alt.cte <- rep(0L, n.alts)
   }
@@ -119,6 +122,18 @@ Modfed <- function(cand.set, n.sets, n.alts, par.draws, alt.cte = NULL, no.choic
   if (!all(alt.cte %in% c(0, 1))){
     stop("'alt.cte' should only contain zero or ones.")
   }
+  #if no.choice
+  if(!is.logical(no.choice)){
+    stop("'no.choice' should be TRUE or FALSE")
+  }
+  if(no.choice){
+   if(!isTRUE(all.equal(alt.cte[n.alts], 1))){
+     stop("if 'no.choice' is TRUE, alt.cte[n.alts] should equal 1.")
+   }
+    ncsek <- seq(n.alts, (n.sets * n.alts), n.alts) 
+  } else {
+    ncsek = NULL
+  }
   # Handling par.draws with alternative specific contstants.
   if(isTRUE(all.equal(n.cte, 1))){
     if(!(is.list(par.draws))){stop("par.draws should be a list")}
@@ -133,7 +148,7 @@ Modfed <- function(cand.set, n.sets, n.alts, par.draws, alt.cte = NULL, no.choic
     }
     if(!isTRUE(all.equal(ncol(par.draws[[1]]), n.cte))){
       stop("the first component of 'par.draws' should contain the same number 
-             of columns as there are non zero elements in 'alt.cte'")
+           of columns as there are non zero elements in 'alt.cte'")
     }
     dims <-  as.data.frame(lapply(par.draws, dim))
     if(!isTRUE(all.equal(dims[1, 1], dims[1, 2]))){ 
@@ -144,7 +159,7 @@ Modfed <- function(cand.set, n.sets, n.alts, par.draws, alt.cte = NULL, no.choic
            should equal the number of columns of 'cand.set' + the number of non-zero elements in 'alt.cte'")
     }
     par.draws  <- do.call("cbind", par.draws)
-  }
+    }
   if(n.cte > 1.2){
     if(!(is.list(par.draws))){stop("par.draws should be a list")} 
     if (!isTRUE(all.equal(length(par.draws), 2))){
@@ -155,7 +170,7 @@ Modfed <- function(cand.set, n.sets, n.alts, par.draws, alt.cte = NULL, no.choic
     }
     if(!isTRUE(all.equal(ncol(par.draws[[1]]), n.cte))){
       stop("the first component of 'par.draws' should contain the same number 
-             of columns as there are non zero elements in 'alt.cte'")
+           of columns as there are non zero elements in 'alt.cte'")
     }
     dims <-  as.data.frame(lapply(par.draws, dim))
     if(!isTRUE(all.equal(dims[1, 1], dims[1, 2]))){ 
@@ -166,7 +181,7 @@ Modfed <- function(cand.set, n.sets, n.alts, par.draws, alt.cte = NULL, no.choic
            should equal the number of columns of 'cand.set' + the number of non-zero elements in 'alt.cte'")
     }
     par.draws  <- do.call("cbind", par.draws)
-  }
+    }
   # Create alternative specific design.
   cte.des <- Altspec(alt.cte = alt.cte, n.sets = n.sets)
   # Error identifying model.
@@ -218,6 +233,9 @@ Modfed <- function(cand.set, n.sets, n.alts, par.draws, alt.cte = NULL, no.choic
       for (i in 1:nr.starts){
         r <- round(stats::runif((n.sets * n.alts), 1, nrow(cand.set)))
         start.des[[i]] <- cbind(cte.des, data.matrix(cand.set[r, ]))
+        if(no.choice){
+          start.des[[i]][ncsek, (ncol(cte.des) + 1) : (ncol(cte.des) + ncol(cand.set))] <- c(rep(0, ncol(cand.set)))
+        }
       }
       d.start <- lapply(start.des, StartDB, par.draws, n.alts)
       if(any(is.finite(unlist(lapply(d.start, mean, na.rm = TRUE))))){
@@ -229,21 +247,21 @@ Modfed <- function(cand.set, n.sets, n.alts, par.draws, alt.cte = NULL, no.choic
     ########
     no_cores <- parallel::detectCores() - 1
     cl <- parallel::makeCluster(no_cores)
-    parallel::clusterExport(cl, c("n.sets", "par.draws", "cand.set", "n.alts", "n.cte", "alt.cte", "no.choice", "max.iter"), envir = environment())
-    deslist <- parallel::parLapply(cl, start.des, Modfedje, par.draws, cand.set, n.alts, n.cte, alt.cte, no.choice, max.iter)
+    parallel::clusterExport(cl, c("n.sets", "par.draws", "cand.set", "n.alts", "n.cte", "alt.cte", "no.choice", "max.iter","ncsek"), envir = environment())
+    deslist <- parallel::parLapply(cl, start.des, Modfedje_ucpp, par.draws, cand.set, n.alts, n.sets, n.cte, alt.cte, no.choice, max.iter)
     parallel::stopCluster(cl)
     ########
   } else {
-    deslist <- lapply(start.des, Modfedje, par.draws, cand.set, n.alts, n.cte, alt.cte, no.choice, max.iter = max.iter)
+    deslist <- lapply(start.des, Modfedje_ucpp, par.draws, cand.set, n.alts, n.sets, n.cte, alt.cte, no.choice, max.iter = max.iter)
   }                                 
   bestdes <- deslist[[which.min(unlist(lapply(deslist, function(x) (x$error))))]]
   
   ifelse(best, return(bestdes), return(deslist))
-}
+  }
 
 # Core of the Modfed algorithm
-Modfedje <- function(desje, par.draws, cand.set, n.alts, n.cte, alt.cte,
-                     no.choice, max.iter){
+Modfedje_ucpp <- function(desje, par.draws, cand.set, n.alts, n.sets, n.cte, alt.cte,
+                          no.choice, max.iter){
   converge <- FALSE
   change <- FALSE
   it <- 1
@@ -251,18 +269,22 @@ Modfedje <- function(desje, par.draws, cand.set, n.alts, n.cte, alt.cte,
   n.par <- ncol(desje)
   ###
   while (!converge & it <= max.iter) {
-    db.start <- mean(apply(par.draws, 1, Derr, des = desje,  n.alts = n.alts), na.rm = TRUE)
+    db.start <- mean(apply(par.draws, 1, Derr_ucpp, des = desje,  n.alts = n.alts), na.rm = TRUE)
     it <- it + 1
     # save design before iteration.
     iter.des <- desje
     # For every row in the design.
-    for (r in 1:nrow(desje)) {
+    sek <- 1 : nrow(desje)
+    if (no.choice){
+      sek <- sek[-ncsek]
+    }
+    for (r in sek) {
       # Switch with everey row in candidate set. 
       db <- numeric(nrow(cand.set))
       for (c in 1:nrow(cand.set)) {
         desje[r, (n.cte + 1) : n.par ] <- cand.set[c, ]
         # Calculate D-errors.
-        d.errors <- apply(par.draws, 1, Derr, des = desje,  n.alts = n.alts)
+        d.errors <- apply(par.draws, 1, Derr_ucpp, des = desje,  n.alts = n.alts)
         # DB-error. 
         db[c] <- mean(d.errors, na.rm = TRUE)
       }
@@ -289,27 +311,30 @@ Modfedje <- function(desje, par.draws, cand.set, n.alts, n.cte, alt.cte,
     converge <- isTRUE(all.equal(desje, iter.des)) # Convergence if no profile is swapped this iteration.
   }
   # calculate percentage NA values.
-  d.errors <- apply(par.draws, 1, Derr, des = desje,  n.alts = n.alts)
+  d.errors <- apply(par.draws, 1, Derr_ucpp, des = desje,  n.alts = n.alts)
   if (any(is.na(d.errors))) {
     na.percentage <- scales::percent(sum(is.na(d.errors)) / n.samples)
   } 
   # Utility balance.
   ub <- apply(par.draws, 1, Utbal, des = desje,  n.alts = n.alts)
-  ub <- .rowMeans(ub, m = n.sets, n = n.samples, na.rm = FALSE)
+  pmat <- matrix(rowMeans(ub), ncol = n.alts, byrow = TRUE)
+  rownames(pmat) <- paste("set", 1:n.sets, sep = "")
+  colnames(pmat) <- paste(paste("Pr(", paste("alt", 1:n.alts, sep = ""), sep = ""), ")", sep= "")
+  if(no.choice){
+    colnames(pmat)[n.alts] <- "Pr(no choice)"
+  }
   # Rownames design. 
-  des.names <- Rcnames(n.sets = n.sets, n.alts = n.alts, alt.cte = alt.cte)
+  des.names <- Rcnames(n.sets = n.sets, n.alts = n.alts, alt.cte = alt.cte, no.choice = no.choice)
   rownames(desje) <- des.names[[1]]
   # Colnames alternative specific constants. 
   if (n.cte != 0 && !is.null(colnames(desje))) {
     colnames(desje)[1:n.cte] <- des.names[[2]]
   }
-  #opt out 
-  if(no.choice){
-    desje <- Optout(des = desje, n.alts = n.alts, alt.cte = alt.cte, n.sets = n.sets)
-  }
   # Return design, D(B)error, percentage NA's, utility balance. 
-  return(list("design" = desje, "error" =  db.start, "inf.error" = na.percentage, "prob.diff" = ub))
+  return(list("design" = desje, "error" =  db.start, "inf.error" = na.percentage, "probs" = pmat))
 }
+
+
 
 
 #' Sequential modified federov algorithm for MNL model.
@@ -329,10 +354,10 @@ Modfedje <- function(desje, par.draws, cand.set, n.alts, n.cte, alt.cte,
 #' 
 #' If \code{alt.cte = NULL}, \code{par.draws} should be a matrix in which each 
 #' row is a sample from the multivariate parameter distribution. In case that 
-#' \code{alt.cte} is not \code{NULL}, a list containing two matrices should be
-#' provided. The first matrix containing the parameter draws for the 
-#' alternative specific parameters. The second matrix containing the draws for
-#' the rest of the parameters.
+#' \code{alt.cte} is not \code{NULL}, a list containing two matrices should be 
+#' provided to \code{par.draws}. The first matrix containing the parameter draws
+#' for the alternative specific parameters. The second matrix containing the
+#' draws for the rest of the parameters.
 #' 
 #' The list of potential choice sets are created using 
 #' \code{\link[gtools]{combinations}}. If \code{reduce} is \code{TRUE}, 
@@ -363,44 +388,51 @@ Modfedje <- function(desje, par.draws, cand.set, n.alts, n.cte, alt.cte,
 #'   \code{NULL}, See also \code{\link{ImpsampMNL}}.
 #' @param parallel Logical value indicating whether computations should be done 
 #'   over multiple cores.
+#' @param no.choice An integer indicating the no choice alternative. The default
+#'   is \code{NULL}.
 #' @param reduce Logical value indicating whether the candidate set should be 
 #'   reduced or not.
 #' @return \item{set}{A matrix representing a DB efficient choice set.} 
-#'   \item{db.error}{A numeric value indicating the DB-error of the whole 
+#'   \item{error}{A numeric value indicating the DB-error of the whole 
 #'   design.}
 #' @importFrom Rdpack reprompt
-#' @references \insertRef{ju}{mnldes}
+#' @references \insertRef{ju}{idefix}
 #' @examples 
 #' # DB efficient choice set, given a design and parameter draws. 
 #' # Candidate profiles 
 #' cs <- Profiles(lvls = c(3, 3, 3), coding = c("E", "E", "E"))
-#' m <- c(0.3, 0.2, -0.3, -0.2, 1.1, 2.4) # Prior mean (total = 6 parameters).
-#' pc <- diag(length(m)) # Prior variance
+#' m <- c(0.3, 0.2, -0.3, -0.2, 1.1, 2.4) # mean (total = 6 parameters).
+#' pc <- diag(length(m)) # covariance matrix
 #' set.seed(123)
-#' ps <- MASS::mvrnorm(n = 10, mu = m, Sigma = pc) # 10 draws.
+#' sample <- MASS::mvrnorm(n = 10, mu = m, Sigma = pc)
 #' # Initial design.
-#' des <- Modfed(cand.set = cs, n.sets = 6, n.alts = 2, alt.cte = c(0, 0), par.draws = ps)$design
+#' des <- example_design 
 #' # Efficient choice set to add. 
-#' SeqDB(des = des, cand.set = cs, n.alts = 2, par.draws = ps, prior.covar = pc)
+#' SeqDB(des = des, cand.set = cs, n.alts = 2, par.draws = sample, 
+#'            prior.covar = pc, parallel = FALSE)
 #' 
 #' # DB efficient choice set, given parameter draws. 
 #' # with alternative specific constants 
-#' cs <- Profiles(lvls = c(3, 3), coding = c("E", "E"))
-#' m <- c(0.7, 0.3, 0.8, -0.2, -1.2) # Prior mean (5 parameters).
-#' pc <- diag(length(m)) # Prior variance
-#' set.seed(123)
-#' ps <- MASS::mvrnorm(n = 10, mu = m, Sigma = pc) # 10 draws.
-#' ps <- list(ps[ , 1], ps[ , 2:5])
-#' ac <- c(1, 0) # Alternative specific constant. 
+#' des <- example_design2 
+#' cs <- Profiles(lvls = c(3, 3, 3), coding = c("E", "E", "E"))
+#' ac <- c(1, 1, 0) # Alternative specific constants. 
+#' m <- c(0.3, 0.2, -0.3, -0.2, 1.1, 2.4, 1.8, 1.2) # mean 
+#' pc <- diag(length(m)) # covariance matrix
+#' pos <- MASS::mvrnorm(n = 10, mu = m, Sigma = pc)
+#' sample <- list(pos[ , 1:2], pos[ , 3:8])
 #' # Efficient choice set. 
-#' SeqDB(cand.set = cs, n.alts = 2, par.draws = ps, alt.cte = ac, prior.covar = pc)
+#' SeqDB(des = des, cand.set = cs, n.alts = 3, par.draws = sample, alt.cte = ac, 
+#'            prior.covar = pc, parallel = FALSE)
 #' @export
 SeqDB <- function(des = NULL, cand.set, n.alts, par.draws, prior.covar, alt.cte = NULL, no.choice = NULL, weights = NULL, parallel = TRUE, reduce = TRUE) {
   #init
-  if(is.null(des)){
+  if (is.null(des)) {
     n.sets <- 1L
   } else { 
-    if(!isTRUE(nrow(des) %% n.alts == 0)){
+    if(!is.matrix(des)){
+      stop("'des' should be a matrix or NULL")
+    }
+    if (!isTRUE(nrow(des) %% n.alts == 0)) {
       stop("'n.alts' does not seem to match with the number of rows in 'des'")
     }
     n.sets <- nrow(des) / n.alts
@@ -422,18 +454,24 @@ SeqDB <- function(des = NULL, cand.set, n.alts, par.draws, prior.covar, alt.cte 
   }
   #if no.choice
   if(!is.null(no.choice)){
-    if(!no.choice %% 1 == 0){
-      stop("'no.choice' should be an integer")
+    if(!is.wholenumber(no.choice)){
+      stop("'no.choice' should be an integer or NULL")
     }
     if(any(isTRUE(no.choice > (n.alts + 0.2)), isTRUE(no.choice < 0.2))){
       stop("'no.choice' does not indicate one of the alternatives")
+    }
+    if(is.null(alt.cte)){
+      stop("if there is a no choice alternative, 'alt.cte' should be specified")
+    }
+    if(!isTRUE(all.equal(alt.cte[no.choice], 1))){
+      stop("the no choice alternative should correspond with a 1 in 'alt.cte'")
     }
   }
   if(!is.null(alt.cte)){
     #prior.covar
     if(!isTRUE(all.equal(ncol(prior.covar), (ncol(cand.set) + n.cte)))){
       stop("number of columns of 'prior.covar' does not equal 
-           the total number of parameters (including 'alt.cte')")
+           the number of columns in 'cand.set' + nonzero elements in 'alt.cte'")
     }
     if(isTRUE(all.equal(n.cte, 1))){
       if(!is.list(par.draws)){stop("'par.draws' should be a list when 'alt.cte' is not NULL")}
@@ -459,7 +497,7 @@ SeqDB <- function(des = NULL, cand.set, n.alts, par.draws, prior.covar, alt.cte 
              should equal the number of columns of 'cand.set' + the number of non-zero elements in 'alt.cte'")
       }
       par.draws  <- do.call("cbind", par.draws)
-    }
+      }
     if(n.cte > 1.2){
       if(!(is.list(par.draws))){stop("'par.draws' should be a list when 'alt.cte' is not NULL")} 
       if (!isTRUE(all.equal(length(par.draws), 2))){
@@ -481,11 +519,11 @@ SeqDB <- function(des = NULL, cand.set, n.alts, par.draws, prior.covar, alt.cte 
              should equal the number of columns of 'cand.set' + the number of non-zero elements in 'alt.cte'")
       }
       par.draws  <- do.call("cbind", par.draws)
-    }
+      }
     # Create alternative specific design.
     cte.des <- Altspec(alt.cte = alt.cte, n.sets = n.sets)
     cte.set <- matrix(cte.des[1:n.alts, ], ncol = n.cte, byrow = FALSE)
-  } else {cte.des = NULL}
+    } else {cte.des = NULL}
   # if no alternative constants 
   if(!is.matrix(par.draws)){
     stop("'par.draws'should be a matrix when 'alt.cte' = NULL")
@@ -509,9 +547,9 @@ SeqDB <- function(des = NULL, cand.set, n.alts, par.draws, prior.covar, alt.cte 
     }
     # Starting and initializing values.
     i.cov <- solve(prior.covar)
-    d.start <- apply(par.draws, 1, DerrC, des = des,  n.alts = n.alts, i.cov = i.cov)
+    d.start <- apply(par.draws, 1, DerrC_ucpp, des = des,  n.alts = n.alts, i.cov = i.cov)
     db.start <- mean(d.start, na.rm = TRUE)
-    full.comb <- Fullsets(cand.set = cand.set, n.alts = n.alts, no.choice = no.choice, reduce = reduce)
+    full.comb <- Fullsets_ucpp(cand.set = cand.set, n.alts = n.alts, no.choice = no.choice, reduce = reduce)
     #if alt.cte
     if(!is.null(cte.des)){
       full.comb <- lapply(full.comb, function(x) cbind(cte.set, x))
@@ -520,29 +558,32 @@ SeqDB <- function(des = NULL, cand.set, n.alts, par.draws, prior.covar, alt.cte 
     # For each potential set, select best.
     ##### parallel #####
     if (parallel) {
-      library(parallel)
-      no_cores <- detectCores() - 1L
-      cl <- makeCluster(no_cores)
-      db.errors <- parLapply(cl, full.des, DBerrS.P, par.draws, n.alts, i.cov, weights)
-      stopCluster(cl)
+      no_cores <- parallel::detectCores() - 1L
+      cl <- parallel::makeCluster(no_cores)
+      # New line to copy DerrS.P from .GlobalEnv to the cluster
+      # https://stackoverflow.com/questions/12023403/using-parlapply-and-clusterexport-inside-a-function
+      #clusterExport(cl=cl,varlist=c("DerrS.P_ucpp"))
+      db.errors <- parallel::parLapply(cl, full.des, DBerrS.P_ucpp, par.draws, 
+                                       n.alts, i.cov, weights)
+      parallel::stopCluster(cl)
       ##### parallel #####
     } else {
       # For each potential set, select best. 
-      db.errors <- lapply(full.des, DBerrS.P, par.draws, n.alts, i.cov, weights)
+      db.errors <- lapply(full.des, DBerrS.P_ucpp, par.draws, n.alts, i.cov, weights)
     }
     dbs <- unlist(db.errors, use.names = FALSE)
     set <- full.comb[[which.min(dbs)]]
     row.names(set) <- NULL
     db <- min(dbs)
     #return best set and db error design.
-    return(list(set = set, db.error = db))
+    return(list("set" = set, "error" = db))
   }
   
   if(is.null(des)){
     
     # Starting and initializing values.
     i.cov <- solve(prior.covar)
-    full.comb <- Fullsets(cand.set = cand.set, n.alts = n.alts, no.choice = no.choice, reduce = reduce)
+    full.comb <- Fullsets_ucpp(cand.set = cand.set, n.alts = n.alts, no.choice = no.choice, reduce = reduce)
     #if alt.cte
     if(!is.null(cte.des)){
       full.comb <- lapply(full.comb, function(x) cbind(cte.set, x))
@@ -555,69 +596,74 @@ SeqDB <- function(des = NULL, cand.set, n.alts, par.draws, prior.covar, alt.cte 
     
     ##### parallel #####
     if (parallel) {
-      library(parallel)
-      no_cores <- detectCores() - 1L
-      cl <- makeCluster(no_cores)
-      db.errors <- parLapply(cl, full.comb, DBerrS.P, par.draws, n.alts, i.cov, weights)
-      stopCluster(cl)
+      no_cores <- parallel::detectCores() - 1L
+      cl <- parallel::makeCluster(no_cores)
+      # New line to copy DerrS.P from .GlobalEnv to the cluster
+      # https://stackoverflow.com/questions/12023403/using-parlapply-and-clusterexport-inside-a-function
+      # Becareful with cpp functions in cluster export
+      # Check https://stackoverflow.com/questions/38518387/using-rcpp-functions-inside-of-rs-parapply-functions-from-the-parallel-package
+      # https://stackoverflow.com/questions/25606733/using-rcpp-function-in-parlapply-on-windows/25606950
+      #clusterExport(cl=cl,varlist=c("DerrS.P_ucpp"))
+      db.errors <- parallel::parLapply(cl, full.comb, DBerrS.P_ucpp, par.draws, 
+                                       n.alts, i.cov, weights)
+      parallel::stopCluster(cl)
       ##### parallel #####
     } else {
       # For each potential set, select best. 
-      db.errors <- lapply(full.comb, DBerrS.P, par.draws, n.alts, i.cov, weights)
+      db.errors <- lapply(full.comb, DBerrS.P_ucpp, par.draws, n.alts, i.cov, weights)
     }
     dbs <- unlist(db.errors, use.names = FALSE)
     set <- full.comb[[which.min(dbs)]]
     row.names(set) <- NULL
     db <- min(dbs)
     #return best set and db error design.
-    return(list(set = set, db.error = db))
+    return(list("set" = set, "error" = db))
   }
-}
-
+    }
 
 ### UNDER EVALUATION ###
-##' Sequential Kullback-Leibler based algorithm for the MNL model.
-##' 
-##' Selects the choice set that maximizes the Kullback-Leibler divergence between
-##' prior parameter values and the expected posterior, assuming an MNL model.
-##' 
-##' The algorithm selects the choice set that maximizes the Kullback-Leibler 
-##' divergence between prior and expected posterior. Otherwisely framed the 
-##' algorithm selects the choice set that maximizes the expected information 
-##' gain.
-##' @inheritParams SeqDB
-##' @param alt.cte A binary vector indicating for each alternative if an
-##'   alternative specific constant is desired.
-##' @param reduce Logical value indicating whether the candidate set should be 
-##'   reduced or not.
-##' @return \item{set}{Numeric matrix containing the choice set that maximizes the expected KL divergence.}
-##' \item{kl}{Numeric value which is the Kullback leibler divergence.}
-##' @importFrom Rdpack reprompt
-##' @references 
-##' \insertRef{crabbe}{mnldes}
-##' @examples 
-##' # KL efficient choice set, given parameter draws. 
-##' # Candidate profiles 
-##' cs <- Profiles(lvls = c(3, 3), coding = c("E", "E"))
-##' m <- c(0.3, 0.2, -0.3, -0.2) # Prior mean (4 parameters).
-##' pc <- diag(length(m)) # Prior variance
-##' set.seed(123)
-##' ps <- MASS::mvrnorm(n = 10, mu = m, Sigma = pc) # 10 draws.
-##' ac <- c(0, 0) # No alternative specific constants. 
-##' # Efficient choice set to add. 
-##' SeqKL(cand.set = cs, n.alts = 2, alt.cte = ac, par.draws = ps, weights = NULL)
-##' 
-##' # KL efficient choice set, given parameter draws. 
-##' # Candidate profiles 
-##' cs <- Profiles(lvls = c(3, 3), coding = c("C", "E"), c.lvls = list(c(5,3,1)))
-##' m <- c(0.7, 0.3, -0.3, -0.2) # Prior mean (4 parameters).
-##' pc <- diag(length(m)) # Prior variance
-##' set.seed(123)
-##' ps <- MASS::mvrnorm(n = 10, mu = m, Sigma = pc) # 10 draws.
-##' ac <- c(1, 0) # Alternative specific constant. 
-##' # Efficient choice set to add. 
-##' SeqKL(cand.set = cs, n.alts = 2, alt.cte = ac, par.draws = ps, weights = NULL)
-##' @export
+## Sequential Kullback-Leibler based algorithm for the MNL model.
+## 
+## Selects the choice set that maximizes the Kullback-Leibler divergence between
+## prior parameter values and the expected posterior, assuming an MNL model.
+## 
+## The algorithm selects the choice set that maximizes the Kullback-Leibler 
+## divergence between prior and expected posterior. Otherwisely framed the 
+## algorithm selects the choice set that maximizes the expected information 
+## gain.
+## @inheritParams SeqDB
+## @param alt.cte A binary vector indicating for each alternative if an
+##   alternative specific constant is desired.
+## @param reduce Logical value indicating whether the candidate set should be 
+##   reduced or not.
+## @return \item{set}{Numeric matrix containing the choice set that maximizes the expected KL divergence.}
+## \item{kl}{Numeric value which is the Kullback leibler divergence.}
+## @importFrom Rdpack reprompt
+## @references 
+## \insertRef{crabbe}{idefix}
+## @examples 
+## # KL efficient choice set, given parameter draws. 
+## # Candidate profiles 
+## cs <- Profiles(lvls = c(3, 3), coding = c("E", "E"))
+## m <- c(0.3, 0.2, -0.3, -0.2) # Prior mean (4 parameters).
+## pc <- diag(length(m)) # Prior variance
+## set.seed(123)
+## ps <- MASS::mvrnorm(n = 10, mu = m, Sigma = pc) # 10 draws.
+## ac <- c(0, 0) # No alternative specific constants. 
+## # Efficient choice set to add. 
+## SeqKL(cand.set = cs, n.alts = 2, alt.cte = ac, par.draws = ps, weights = NULL)
+## 
+## # KL efficient choice set, given parameter draws. 
+## # Candidate profiles 
+## cs <- Profiles(lvls = c(3, 3), coding = c("C", "E"), c.lvls = list(c(5,3,1)))
+## m <- c(0.7, 0.3, -0.3, -0.2) # Prior mean (4 parameters).
+## pc <- diag(length(m)) # Prior variance
+## set.seed(123)
+## ps <- MASS::mvrnorm(n = 10, mu = m, Sigma = pc) # 10 draws.
+## ac <- c(1, 0) # Alternative specific constant. 
+## # Efficient choice set to add. 
+## SeqKL(cand.set = cs, n.alts = 2, alt.cte = ac, par.draws = ps, weights = NULL)
+## @export
 # SeqKL <- function(cand.set, n.alts, alt.cte, par.draws, weights, reduce = TRUE) {
 #   # Handling par.draws.
 #   if (!(is.matrix(par.draws))) {
@@ -652,10 +698,6 @@ SeqDB <- function(des = NULL, cand.set, n.alts, par.draws, prior.covar, alt.cte 
 #   # return.
 #   return(list(set = set, kl = max(kl.infos)))
 # }
-
-
-
-
 
 
 

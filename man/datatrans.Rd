@@ -4,22 +4,18 @@
 \alias{Datatrans}
 \title{Data transformation.}
 \usage{
-Datatrans(pkg, des, y, n.alts, n.sets, n.resp, n.par, no.choice, bin)
+Datatrans(pkg, des, y, n.alts, n.sets, n.resp, bin, alt.names = NULL)
 }
 \arguments{
-\item{pkg}{Indicates the required package for estimation (\code{1 = 
-  \link[bayesm]{rhierMnlRwMixture}}, \code{2 = 
-  \link[ChoiceModelR]{choicemodelr}}, \code{3 = \link[RSGHB]{doHB}} and
-\code{4 = \link[bayesm]{rbprobitGibbs}}).}
+\item{pkg}{Indicates the desired estimation package. Options are
+\code{bayesm = \link[bayesm]{rhierMnlRwMixture}}, \code{ChoiceModelR = 
+  \link[ChoiceModelR]{choicemodelr}}, \code{RSGHB = \link[RSGHB]{doHB}},
+\code{Mixed.Probit = \link[bayesm]{rbprobitGibbs}}, \code{mlogit = 
+  \link[mlogit]{mlogit}}, and \code{Rchoice = \link[Rchoice]{Rchoice}}).}
 
 \item{des}{A design matrix in which each row is a profile.}
 
-\item{y}{A numeric matrix. Each columnvector is the sequence of choices of a
-unique respondent. There can be \code{n.sets} rows with discrete values
-indicating the chosen alternative of that set, or there can be \code{n.sets
-  * n.alts} rows with binary values indicating for each alternative whether it
-was chosen or not. In the latter case the \code{bin} argument should be
-\code{TRUE}.}
+\item{y}{A numeric vector containing binary or discrete responses. See \code{bin}.}
 
 \item{n.alts}{Numeric value indicating the number of alternatives per choice
 set.}
@@ -28,32 +24,42 @@ set.}
 
 \item{n.resp}{Numeric value indicating the number of respondents.}
 
-\item{n.par}{Numeric value indicating the number of model parameters that
-needs to be estimated.}
-
-\item{no.choice}{Logical value indicating whether a no choice response could
-be observed. This would be a \code{0} for each alternative.}
-
-\item{bin}{Logical value indicating whether the reponse matrix contains
+\item{bin}{Logical value indicating whether the reponse vector contains
 binary data (\code{TRUE}) or discrete data (\code{FALSE}). See \code{y}.}
+
+\item{alt.names}{A character vector containing the names of the alternatives.
+The default = \code{NULL}}
 }
 \value{
 The data ready to be used by the specified package.
 }
 \description{
-Transforms the data into the neccesary format in order to use estimation
-functions from different packages.
+Transforms the data into the desired data format required by different
+estimation packages.
+}
+\details{
+The \code{des} specified should be the full aggregate design. Thus if all
+participants responded to the same design, \code{des} will be a repetition of
+that design matrix.
+
+The responses in \code{y} should be succesive when there are multiple
+respondents. There can be \code{n.sets} elements for each respondent with
+discrete values indicating the chosen alternative for each set. Or there can
+be \code{n.sets * n.alts} elements for each respondent with binary values
+indicating for each alternative whether it was chosen or not. In the latter
+case the \code{bin} argument should be \code{TRUE}.
+
+\code{n.sets} indicates the number of sets each repondent responded to. It is
+assumed that every responded responded to the same number of choice sets.
 }
 \examples{
-# 3 Attributes, 2 are dummy coded and 1 continuous.
-cs <- Profiles(lvls = c(2, 3, 2), coding = c("D", "C", "D"), c.lvls = list(c(2,4,6)))
-p <- c(0.8, 0.2, -0.3) # parameter vector
-# Generate design
-des <- Modfed(cand.set = cs, n.sets = 8, n.alts = 2, alt.cte = c(0,0), par.draws = p)$des
-# Generate responses
-y <- RespondMNL(par = p, des = des, n.alts = 2)
-y <- matrix(y, 16)
-#  data 
-Datatrans(pkg = 4, des = des, y = y, n.alts = 2, n.sets = 8, n.resp = 1,
-          n.par = 3, no.choice = FALSE, bin = TRUE)
+idefix.data <- aggregate_design 
+des <- as.matrix(idefix.data[, 3:8], ncol = 6)
+y <- idefix.data[, 9]
+bayesm.data <- Datatrans(pkg = "bayesm", des = des, y = y, 
+n.alts = 2, n.sets = 8, n.resp = 7, bin = TRUE)
+Mix.pro.data <- Datatrans(pkg = "Mixed.Probit", des = des, y = y,
+ n.alts = 2, n.sets = 8, n.resp = 7, bin = TRUE)
+mlogit.data <- Datatrans(pkg = "mlogit", des = des, y = y,
+ n.alts = 2, n.sets = 8, n.resp = 7, bin = TRUE)
 }
