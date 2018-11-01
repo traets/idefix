@@ -27,11 +27,9 @@ Function to generate responses given parameter values and a design matrix,
 assuming a MNL model.
 }
 \examples{
-# 3 Attributes, 2 are dummy coded and 1 continuous.
-cs <- Profiles(lvls = c(2, 3, 2), coding = c("D", "C", "D"), c.lvls = list(c(2,4,6)))
-p <- c(0.8, 0.2, -0.3) # parameter vector
-# Generate design
-des <- Modfed(cand.set = cs, n.sets = 8, n.alts = 2, alt.cte = c(0,0), par.draws = p)$des
-# Generate responses
-y <- RespondMNL(par = p, des = des, n.alts = 2)
+# design: 3 dummy coded attributes, each 3 levels. There are 8 choice sets.
+des <- example_design
+set.seed(123)
+true_par <- rnorm(6)
+RespondMNL(par=true_par, des = des, n.alts = 2)
 }

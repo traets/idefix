@@ -4,8 +4,8 @@
 \alias{ImpsampMNL}
 \title{Importance sampling MNL}
 \usage{
-ImpsampMNL(n.draws, prior.mean, prior.covar, des, n.alts, y, alt.cte = NULL,
-  lower = NULL, upper = NULL)
+ImpsampMNL(n.draws, prior.mean, prior.covar, des, n.alts, y,
+  alt.cte = NULL, lower = NULL, upper = NULL)
 }
 \arguments{
 \item{n.draws}{numeric value indicating the number of draws.}
@@ -49,14 +49,14 @@ MNL likelihood.
 \details{
 For the proposal distribution a t-distribution with degrees of freedom equal
 to the number of parameters is used. The mode is estimated using
-\code{\link[stat]{optim}}, and the covariance matrix is calculated as the negative
+\code{\link[stats]{optim}}, and the covariance matrix is calculated as the negative
 inverse of the generalized Fisher information matrix. See reference for more
 information.
 
 From this distribution a lattice grid of draws is generated.
 
 If truncation is present, incorrect draws are rejected and new ones are
-generated untill \code{n} is reached. The covariance matrix is in this case
+generated untill \code{n.draws} is reached. The covariance matrix is in this case
 still calculated as if no truncation was present.
 }
 \examples{
@@ -92,5 +92,5 @@ ImpsampMNL(n.draws = 100, prior.mean =  pm, prior.covar = pc, des = design,
            n.alts = 3, y = resp, lower = low, upper = up, alt.cte = c(1, 1, 0))
 }
 \references{
-\insertRef{ju}{mnldes}
+\insertRef{ju}{idefix}
 }

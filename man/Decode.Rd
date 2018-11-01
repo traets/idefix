@@ -2,13 +2,17 @@
 % Please edit documentation in R/shiny_support.R
 \name{Decode}
 \alias{Decode}
-\title{Coded design to readable design}
+\title{Coded design to readable design.}
 \usage{
-Decode(des, lvl.names, coding, alt.cte = NULL, c.lvls = NULL)
+Decode(des, n.alts, lvl.names, coding, alt.cte = NULL, c.lvls = NULL,
+  no.choice = NULL)
 }
 \arguments{
 \item{des}{A numeric matrix which represents the design matrix. Each row is a
 profile.}
+
+\item{n.alts}{Numeric value indicating the number of alternatives per choice
+set.}
 
 \item{lvl.names}{A list containing character vectors with the values of each
 level of each attribute.}
@@ -21,16 +25,23 @@ alternative specific constant is present. The default is \code{NULL}.}
 
 \item{c.lvls}{A list containing numeric vectors with the attributelevels for
 each continuous attribute. The default is \code{NULL}.}
+
+\item{no.choice}{An integer indicating the no choice alternative. The default
+is \code{NULL}.}
 }
 \value{
-A character matrix which represents the design.
+\item{design}{A character matrix which represents the design.}
+\item{lvl.balance}{A list containing the frequency of appearance of each
+attribute level in the design.}
 }
 \description{
 Transforms a coded design matrix into a design containing character attribute
-levels, ready to be used in a survey.
+levels, ready to be used in a survey. The frequency of each attribute level
+in the design is also included in the output.
 }
 \details{
-\code{des} can also be a single choice set.
+\code{des} A design matrix, this can also be a single choice set. See for
+example the output of \link[idefix]{Modfed}.
 
 In \code{lvl.names}, the number of character vectors in the list should equal
 the number of attributes in de choice set. The number of elements in each
@@ -42,7 +53,7 @@ be applied. All possible levels of that attribute should then be specified in
 \code{c.lvls}. If \code{D} (dummy coding) is used
 \code{\link{contr.treatment}} will be applied to that attribute. The first
 attribute wil be used as reference level.  For \code{E} (effect coding)
-\code{\link{contr.sum}} is applied, in this case the last attributelevel is
+\code{\link{contr.sum}} is applied, in this case the last attribute level is
 used as reference level.
 
 If \code{des} contains columns for alternative specific constants,

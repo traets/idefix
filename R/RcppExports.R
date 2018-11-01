@@ -2,10 +2,10 @@
 # Generator token: 10BE3573-1514-4C36-9D1C-5A225CD40393
 
 det_cpp <- function(set) {
-    .Call(`_idefix_det_cpp`, set)
+    .Call('_idefix_det_cpp', PACKAGE = 'idefix', set)
 }
 
 InfoDes_cpp <- function(par, des, n_alts) {
-    .Call(`_idefix_InfoDes_cpp`, par, des, n_alts)
+    .Call('_idefix_InfoDes_cpp', PACKAGE = 'idefix', par, des, n_alts)
 }
 

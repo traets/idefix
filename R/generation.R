@@ -107,14 +107,16 @@ Altspec <- function(alt.cte, n.sets) {
   return(cte.mat)
 }
 
-
-
 # Create row and column names for designs 
-Rcnames <- function(n.sets, n.alts, alt.cte) {
+Rcnames <- function(n.sets, n.alts, alt.cte, no.choice) {
   # rownames
   r.s <- rep(1:n.sets, each = n.alts)
   r.a <- rep(1:n.alts, n.sets)
   r.names <- paste(paste("set", r.s, sep = ""), paste("alt", r.a, sep = ""), sep = ".")
+  if(no.choice){
+    ncsek <- seq(n.alts, (n.sets * n.alts), n.alts)  
+    r.names[ncsek] <- "no.choice"
+  }
   # colnames alternative specific constants
   if(sum(alt.cte) > 0.2){
     cte.names <- paste(paste("alt", which(alt.cte == 1), sep = ""), ".cte", sep = "") 
@@ -173,7 +175,6 @@ Lat <- function(K, b, m) {
   return(latt)
 }
 
-
 # Lattice multivariate t-distribution.
 # 
 # Generates a grid of points coming from a multivariate t-distribution.
@@ -205,7 +206,6 @@ Lattice_mvt <- function (mean, cvar, df, m, b=2) {
   return (X)
 }
 
-
 # Lattice multivariate normal distribution.
 # 
 # Generates a grid of points coming from a multivariate normal distribution.
@@ -229,10 +229,6 @@ Lattice_mvn <- function(mean, cvar, m, b=2) {
   return(X)
 }
 
-#function to get DB error of start designs
-StartDB <- function(des, par.draws, n.alts){
-  apply(par.draws, 1, Derr, des = des,  n.alts = n.alts)
-} 
 
 ## generate grid for truncated distribution
 Lattice_trunc <- function (n, mean, cvar, lower, upper, df) {
@@ -267,10 +263,10 @@ Fullsets <- function(cand.set, n.alts, no.choice, reduce = TRUE){
   if(!is.null(no.choice)){
     n.alts <- n.alts - 1
   }
-  full.comb <- combn(1:nrow(cand.set), n.alts, FUN = function(x)  cand.set[x, ], simplify = FALSE)
+  full.comb <- utils::combn(1:nrow(cand.set), n.alts, FUN = function(x)  cand.set[x, ], simplify = FALSE)
   #reduce
   if (reduce){
-    m <- rnorm(ncol(cand.set))
+    m <- stats::rnorm(ncol(cand.set))
     inf <-list()
     for(i in 1:length(full.comb)){
       inf[[i]] <- round(InfoDes(m, full.comb[[i]], n.alts), digits = 3)
