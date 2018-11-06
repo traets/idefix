@@ -132,7 +132,7 @@ Modfed <- function(cand.set, n.sets, n.alts, par.draws, alt.cte = NULL, no.choic
    }
     ncsek <- seq(n.alts, (n.sets * n.alts), n.alts) 
   } else {
-    ncsek = NULL
+    ncsek <- NULL
   }
   # Handling par.draws with alternative specific contstants.
   if(isTRUE(all.equal(n.cte, 1))){
@@ -248,11 +248,11 @@ Modfed <- function(cand.set, n.sets, n.alts, par.draws, alt.cte = NULL, no.choic
     no_cores <- parallel::detectCores() - 1
     cl <- parallel::makeCluster(no_cores)
     parallel::clusterExport(cl, c("n.sets", "par.draws", "cand.set", "n.alts", "n.cte", "alt.cte", "no.choice", "max.iter","ncsek"), envir = environment())
-    deslist <- parallel::parLapply(cl, start.des, Modfedje_ucpp, par.draws, cand.set, n.alts, n.sets, n.cte, alt.cte, no.choice, max.iter)
+    deslist <- parallel::parLapply(cl, start.des, Modfedje_ucpp, par.draws, cand.set, n.alts, n.sets, n.cte, alt.cte, no.choice, max.iter, ncsek)
     parallel::stopCluster(cl)
     ########
   } else {
-    deslist <- lapply(start.des, Modfedje_ucpp, par.draws, cand.set, n.alts, n.sets, n.cte, alt.cte, no.choice, max.iter = max.iter)
+    deslist <- lapply(start.des, Modfedje_ucpp, par.draws, cand.set, n.alts, n.sets, n.cte, alt.cte, no.choice, max.iter = max.iter, ncsek)
   }                                 
   bestdes <- deslist[[which.min(unlist(lapply(deslist, function(x) (x$error))))]]
   
@@ -261,7 +261,7 @@ Modfed <- function(cand.set, n.sets, n.alts, par.draws, alt.cte = NULL, no.choic
 
 # Core of the Modfed algorithm
 Modfedje_ucpp <- function(desje, par.draws, cand.set, n.alts, n.sets, n.cte, alt.cte,
-                          no.choice, max.iter){
+                          no.choice, max.iter, ncsek){
   converge <- FALSE
   change <- FALSE
   it <- 1
