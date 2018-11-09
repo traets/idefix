@@ -299,8 +299,6 @@ SurveyApp <- function(des = NULL, n.total, alts, atts, lvl.names, coding,
       warning("'n.draws' will be ignored, since there are no adaptive sets.")
     }
   }
-  #c.lvls
-  
   if(is.null(des)){
     fulldes <- matrix(data = NA, nrow = (n.alts * n.total), ncol = ncol(cand.set))
   } else {
@@ -321,7 +319,6 @@ SurveyApp <- function(des = NULL, n.total, alts, atts, lvl.names, coding,
         warning("no.choice.cte column name detected in 'des' while 'no.choice = NULL'")
       }
     }
-    
   }
   
   shinyApp(
@@ -379,12 +376,12 @@ SurveyApp <- function(des = NULL, n.total, alts, atts, lvl.names, coding,
             
             ## Design storage
             if (sn == 1) {
-              rowcol <- Rcnames(n.sets = 1, n.alts = n.alts, alt.cte = alt.cte)
+              rowcol <- Rcnames(n.sets = 1, n.alts = n.alts, alt.cte = alt.cte, no.choice = FALSE)
               rownames(set) <- rownames(set, do.NULL = FALSE, prefix = paste(paste("set", sn , sep = ""), "alt", sep = "."))
               colnames(set) <- c(rowcol[[2]], paste("par", 1:(ncol(set) - n.cte), sep = "."))
               fulldes <<- set
             } else {
-              rowcol <- Rcnames(n.sets = 1, n.alts = n.alts, alt.cte = alt.cte)
+              rowcol <- Rcnames(n.sets = 1, n.alts = n.alts, alt.cte = alt.cte, no.choice = FALSE)
               rownames(set) <- rownames(set, do.NULL = FALSE, prefix = paste(paste("set", sn , sep = ""), "alt", sep = "."))
               colnames(set) <- c(rowcol[[2]], paste("par", 1:(ncol(set) - n.cte), sep = "."))
               fulldes <<- rbind(fulldes, set)
