@@ -103,9 +103,10 @@
 CEA <- function(lvls, coding, c.lvls = NULL, n.sets, n.alts, par.draws, 
                 alt.cte = NULL, no.choice = FALSE, start.des = NULL, 
                 parallel = TRUE, max.iter = Inf, n.start = 12, best = TRUE) {
-  ### Create all levels for each attribute
+  
+  ### Error handling for creating initial random design
   # Error lvls vector. At least 2 attributes
-  if (length(lvls) < 2 || (!(is.numeric(lvls)))){
+  if (length(lvls) < 2 || (!(is.numeric(lvls)))) {
     stop("lvls argument is incorrect.")
   }
   # Error correct coding types.
@@ -135,6 +136,107 @@ CEA <- function(lvls, coding, c.lvls = NULL, n.sets, n.alts, par.draws,
     }
   }
   
+  ### Error handling for design specifications
+  # If no alternative constant is given, create the variable as a vector of 0s
+  if (is.null(alt.cte)) {
+    alt.cte <- rep(0L, n.alts)
+  }
+  #init
+  n.cte <- length(which(alt.cte == 1))
+  
+  # If only one draw is given, transform it to a matrix
+  if (!is.list(par.draws)) {
+    if (is.vector(par.draws)) {
+      par.draws <- matrix(par.draws, nrow = 1)
+    }
+  }
+  
+  # Alternative constant errors
+  if (length(alt.cte) != n.alts) {
+    stop("'n.alts' does not match the 'alt.cte' vector")
+  }
+  if (!all(alt.cte %in% c(0, 1))) {
+    stop("'alt.cte' should only contain zero or ones.")
+  }
+  
+  # No choice errors
+  if (!is.logical(no.choice)) {
+    stop("'no.choice' should be TRUE or FALSE")
+  }
+  if (no.choice) {
+    if (!isTRUE(all.equal(alt.cte[n.alts], 1))) {
+      stop("if 'no.choice' is TRUE, the last alternative constant should equal 1.")
+    }
+    ncsek <- seq(n.alts, (n.sets * n.alts), n.alts)  # Rows in the design matrix
+    # to be assigned as zeros in all attributes
+  } else {
+    ncsek <- NULL
+  }
+  
+  # Handling par.draws with alternative specific contstants.
+  # This conditional is when there is only one alternative constant
+  if (isTRUE(all.equal(n.cte, 1))) {
+    if (!(is.list(par.draws))) {
+      stop("par.draws should be a list")
+    }
+    if (!isTRUE(all.equal(length(par.draws), 2))) {
+      stop("'par.draws' should contain two components")
+    }
+    # If only draws for the constant are given in a vector, transform it to a
+    # matrix
+    if (is.vector(par.draws[[1]])) {
+      par.draws[[1]] <- matrix(par.draws[[1]], ncol = 1) 
+    }
+    if (!(all(unlist(lapply(par.draws, is.matrix))))) {
+      stop("'par.draws' should contain two matrices")
+    }
+    dims <-  as.data.frame(lapply(par.draws, dim))
+    if (!isTRUE(all.equal(dims[1, 1], dims[1, 2]))) { 
+      stop("the number of rows in the components of 'par.draws' should be equal")
+    }
+    
+    #%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+    # To Do: I have to compute the number of colums of the design to make this
+    # conditional
+    # if (!identical((dims[2, 1] + dims[2, 2]), (n.cte + ncol(cand.set)))) { 
+    #   stop("the sum of the number of columns in the components of 'par.draws'
+    #        should equal the number of columns of 'cand.set' + the number of non-zero elements in 'alt.cte'")
+    # }
+    par.draws  <- do.call("cbind", par.draws) # Transform draws to a matrix
+  } else {
+    if (!(is.list(par.draws))) { 
+      stop("par.draws should be a list")
+    } 
+    if (!isTRUE(all.equal(length(par.draws), 2))) {
+      stop("'par.draws' should contain two components")
+    }
+    if (!(all(unlist(lapply(par.draws, is.matrix))))) {
+      stop("'par.draws' should contain two matrices")
+    }
+    if (!isTRUE(all.equal(ncol(par.draws[[1]]), n.cte))) {
+      stop("the first component of 'par.draws' should contain the same number
+           of columns as there are non zero elements in 'alt.cte'")
+    }
+    dims <-  as.data.frame(lapply(par.draws, dim))
+    if(!isTRUE(all.equal(dims[1, 1], dims[1, 2]))){
+      stop("the number of rows in the components of 'par.draws' should be equal")
+    }
+    #%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+    # To Do: I have to compute the number of colums of the design to make this
+    # conditional
+    # if(!identical((dims[2, 1] + dims[2, 2]), (n.cte + ncol(cand.set)))){ 
+    #   stop("the sum of the number of columns in the components of 'par.draws' 
+    #        should equal the number of columns of 'cand.set' + the number of non-zero elements in 'alt.cte'")
+    # }
+    par.draws  <- do.call("cbind", par.draws) # Transform draws to a matrix
+  }
+  
+  # Error identifying model.
+  if (n.sets < ncol(par.draws)) {
+    stop("Model is unidentified. Increase the number of choice sets or decrease parameters to estimate.")
+  }
+  
+  ### Create all levels for each attribute
   # Change into correct coding. 
   coding <- dplyr::recode(coding, D = "contr.treatment", E = "contr.sum")
   # Create all combinations of attribute levels.
@@ -158,9 +260,14 @@ CEA <- function(lvls, coding, c.lvls = NULL, n.sets, n.alts, par.draws,
         contrasts(levels.list[[i]]) <- coding[i]
       }
     }
-    # Compute all possible values for each attribute
+    # Compute all possible values for each categorical attribute
     levels.list[categ] <- lapply(X = levels.list[categ], contrasts)
   }
+  
+  # Create alternative specific design.
+  cte.des <- Altspec(alt.cte = alt.cte, n.sets = n.sets)
+  
+  
   return(levels.list)
 }
 
