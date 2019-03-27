@@ -204,31 +204,32 @@ CEA <- function(lvls, coding, c.lvls = NULL, n.sets, n.alts, par.draws,
     # }
     par.draws  <- do.call("cbind", par.draws) # Transform draws to a matrix
   } else {
-    if (!(is.list(par.draws))) { 
-      stop("par.draws should be a list")
-    } 
-    if (!isTRUE(all.equal(length(par.draws), 2))) {
-      stop("'par.draws' should contain two components")
+    if (n.cte > 1.2) {
+      if (!(is.list(par.draws))) { 
+        stop("par.draws should be a list")
+      } 
+      if (!isTRUE(all.equal(length(par.draws), 2))) {
+        stop("'par.draws' should contain two components")
+      }
+      if (!(all(unlist(lapply(par.draws, is.matrix))))) {
+        stop("'par.draws' should contain two matrices")
+      }
+      if (!isTRUE(all.equal(ncol(par.draws[[1]]), n.cte))) {
+        stop("the first component of 'par.draws' should contain the same number of columns as there are non zero elements in 'alt.cte'")
+      }
+      dims <-  as.data.frame(lapply(par.draws, dim))
+      if (!isTRUE(all.equal(dims[1, 1], dims[1, 2]))) {
+        stop("the number of rows in the components of 'par.draws' should be equal")
+      }
+      #%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+      # To Do: I have to compute the number of colums of the design to make this
+      # conditional
+      # if(!identical((dims[2, 1] + dims[2, 2]), (n.cte + ncol(cand.set)))){ 
+      #   stop("the sum of the number of columns in the components of 'par.draws' 
+      #        should equal the number of columns of 'cand.set' + the number of non-zero elements in 'alt.cte'")
+      # }
+      par.draws  <- do.call("cbind", par.draws) # Transform draws to a matrix
     }
-    if (!(all(unlist(lapply(par.draws, is.matrix))))) {
-      stop("'par.draws' should contain two matrices")
-    }
-    if (!isTRUE(all.equal(ncol(par.draws[[1]]), n.cte))) {
-      stop("the first component of 'par.draws' should contain the same number
-           of columns as there are non zero elements in 'alt.cte'")
-    }
-    dims <-  as.data.frame(lapply(par.draws, dim))
-    if(!isTRUE(all.equal(dims[1, 1], dims[1, 2]))){
-      stop("the number of rows in the components of 'par.draws' should be equal")
-    }
-    #%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-    # To Do: I have to compute the number of colums of the design to make this
-    # conditional
-    # if(!identical((dims[2, 1] + dims[2, 2]), (n.cte + ncol(cand.set)))){ 
-    #   stop("the sum of the number of columns in the components of 'par.draws' 
-    #        should equal the number of columns of 'cand.set' + the number of non-zero elements in 'alt.cte'")
-    # }
-    par.draws  <- do.call("cbind", par.draws) # Transform draws to a matrix
   }
   
   # Error identifying model.
@@ -243,6 +244,8 @@ CEA <- function(lvls, coding, c.lvls = NULL, n.sets, n.alts, par.draws,
   levels.list <- lapply(X = as.list(lvls), function(x) (1:x))
   # Replace continuous.
   levels.list[contins] <- c.lvls
+  # Transform to matrix
+  levels.list[contins] <- lapply(X = levels.list[contins], as.matrix)
   # Transform categorical attributes
   categ <-  which(coding %in% c("contr.treatment", "contr.sum"))
   n.categ <- length(categ)
@@ -267,8 +270,58 @@ CEA <- function(lvls, coding, c.lvls = NULL, n.sets, n.alts, par.draws,
   # Create alternative specific design.
   cte.des <- Altspec(alt.cte = alt.cte, n.sets = n.sets)
   
+  # Count the number of colums of the design matrix without constants
+  ncol.des.noconst <- sum(unlist(lapply(levels.list,ncol)))
+  #ncol.des.noconst <- sum(unlist(lapply(levels.list,function(x){
+  #  if (is.matrix(x)) { ncol(x) }
+  #  else{if (is.numeric(x)) { 1 }}
+  #})))
   
-  return(levels.list)
+  if (!identical(as.integer(ncol(par.draws)), 
+                 as.integer(n.cte + ncol.des.noconst))) {
+    stop("The sum of the number of columns in the components of 'par.draws' should equal the number of columns of design matrix (including alternative specific constants)")
+  }
+  
+  # Random initial design.
+  if (is.null(start.des)) {
+    #create start designs
+    nr.starts <- n.start
+    start.des <- vector(mode = 'list', length = nr.starts)
+    okstart <- FALSE
+    while (okstart == FALSE) {
+      for (i in 1:nr.starts) {
+        # r is to know which levels to take in each attribute
+        r <- NULL
+        start <- NULL
+        for (j in 1:length(lvls)) {
+          r <- round(stats::runif((n.sets * n.alts), 1, lvls[j]))
+          start <- cbind(start, levels.list[[j]][r,])
+        }
+        start.des[[i]] <- cbind(cte.des, start)
+        okstart <- T
+  
+        
+      }
+    }
+  }
+  
+  
+  #       if(no.choice){
+  #         start.des[[i]][ncsek, (ncol(cte.des) + 1) : (ncol(cte.des) + ncol(cand.set))] <- c(rep(0, ncol(cand.set)))
+  #       }
+  #     }
+  #     d.start <- lapply(start.des, StartDB, par.draws, n.alts)
+  #     if(any(is.finite(unlist(lapply(d.start, mean, na.rm = TRUE))))){
+  #       okstart <- TRUE
+  #     } 
+  #   }
+  # } else {
+  #   if(!is.list(start.des)){
+  #       stop("'start.des' should be a list")
+  #   }
+  # }
+  
+  return(start.des)
 }
 
 

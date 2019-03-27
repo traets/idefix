@@ -95,8 +95,7 @@ test_that("Errors for creating initial design in CEA function", {
                    par.draws = list(as.matrix(c(0)), 
                                     as.matrix(c(0, 0, 0, 0, 0, 0))), 
                    no.choice = F), 
-"the first component of 'par.draws' should contain the same number
-           of columns as there are non zero elements in 'alt.cte'")
+"the first component of 'par.draws' should contain the same number of columns as there are non zero elements in 'alt.cte'")
   # Different number of draws for the alternative constants and betas
   # Note: There should be the same number of draws for both components
   # All these values are random
@@ -120,6 +119,19 @@ test_that("Errors for creating initial design in CEA function", {
                    n.alts = 2, alt.cte = c(1, 0), 
                    par.draws = p.d, no.choice = F),  
   "Model is unidentified. Increase the number of choice sets or decrease parameters to estimate.")
+  # Number of columns of par.draws has to be the same as number of parameters
+  # in the model
+  mu <- c(0.5, 0.8, 0.2, -0.3, -1.2, 1.6, 2.2) 
+  v <- diag(length(mu)) # Prior variance.
+  set.seed(123) 
+  pd <- MASS::mvrnorm(n = 3, mu = mu, Sigma = v) # 10 draws.
+  p.d <- list(matrix(pd[,1], ncol = 1), pd[,2:6])
+  expect_error(CEA(lvls = c(3, 3, 3), coding = c("D", "D", "D"), n.sets = 6,
+                   n.alts = 2, alt.cte = c(1, 0), 
+                   par.draws = p.d, no.choice = F),  
+               "The sum of the number of columns in the components of 'par.draws' should equal the number of columns of design matrix \\(including alternative specific constants\\)")
+  
 })
+
 
 
