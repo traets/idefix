@@ -250,11 +250,21 @@ CEA <- function(lvls, coding, c.lvls = NULL, n.sets, n.alts, par.draws,
     }
     # Compute all possible values for each categorical attribute
     levels.list[categ] <- lapply(X = levels.list[categ], contrasts)
-    # To Do, give proper colnames for the starting design
-    # levels.list <- lapply(X = levels.list, function(x){
-    #   a <- ncol(x)
-    #   paste(rep("Var_",a),seq(1,a),sep = "")})
   }
+  # Set colnames for the design matrix
+  c.nam = list()
+  for (i in 1:length(lvls)) {
+    if (coding[i] == "contr.treatment") {
+      c.nam[[i]] <- paste("Var", i, 2:lvls[i], sep = "")
+    } else {
+      if (coding[i] == "contr.sum") {
+        c.nam[[i]] <- paste("Var", i, 1:(lvls[i] - 1), sep = "")
+      } else {
+        c.nam[[i]] <- paste("Var", i, sep = "")
+      }
+    }
+  }
+  c.nam = unlist(c.nam)
   
   # Create alternative specific design.
   cte.des <- Altspec(alt.cte = alt.cte, n.sets = n.sets)
@@ -286,6 +296,7 @@ CEA <- function(lvls, coding, c.lvls = NULL, n.sets, n.alts, par.draws,
           r <- round(stats::runif((n.sets * n.alts), 1, lvls[j]))
           start <- cbind(start, levels.list[[j]][r,])
         }
+        colnames(start) <- c.nam
         start.des[[i]] <- cbind(cte.des, start)
         if (no.choice) {
           start.des[[i]][ncsek, (ncol(cte.des) + 1):(ncol(cte.des) + ncol.des.noconst)] <- c(rep(0, ncol.des.noconst))
