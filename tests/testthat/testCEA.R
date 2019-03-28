@@ -130,7 +130,61 @@ test_that("Errors for creating initial design in CEA function", {
                    n.alts = 2, alt.cte = c(1, 0), 
                    par.draws = p.d, no.choice = F),  
                "The sum of the number of columns in the components of 'par.draws' should equal the number of columns of design matrix \\(including alternative specific constants\\)")
-  
+  # When initial designs are given, should be in a list
+  mu <- c(1.2, 1, 0.8, 0.2, -0.3, -1.2, 1.6, 2.2) # Prior parameter vector
+  v <- diag(length(mu)) # Prior variance.
+  set.seed(123) 
+  pd <- MASS::mvrnorm(n = 3, mu = mu, Sigma = v) # 10 draws.
+  p.d <- list(matrix(pd[,1:2], ncol = 2), pd[,3:8])
+  initial <- matrix(c(1, 0, 1, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 
+                      0, 1, 0, 0, 0, 0, 0, 0, 1, 0, 0, 1, 0, 0, 0, 0, 
+                      0, 0, 0, 0, 0, 1, 1, 0, 0, 1, 0, 0, 0, 0, 0, 0, 
+                      1, 0, 0, 1, 0, 1, 0, 1, 0, 0, 1, 0, 1, 0, 0, 0, 
+                      0, 1, 0, 0, 0, 0, 0, 0, 1, 0, 1, 0, 0, 1, 1, 0, 
+                      0, 0, 0, 0, 1, 0, 0, 1, 0, 1, 0, 0, 0, 0, 0, 0, 
+                      1, 0, 0, 1, 0, 1, 0, 0, 0, 0, 0, 0, 1, 0, 1, 0, 
+                      0, 1, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0, 0, 
+                      0, 0, 1, 0, 0, 1, 1, 0, 0, 1, 0, 0, 0, 0, 0, 0, 
+                      1, 0, 0, 1, 1, 0, 1, 0, 0, 0, 1, 0, 0, 0, 0, 1, 
+                      0, 1, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1, 0, 0, 
+                      0, 0, 0, 1, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 
+                      1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 1, 0, 0, 1, 
+                      0, 1, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 1, 0, 
+                      0, 0, 1, 0, 0, 1, 0, 1, 0, 1, 0, 0, 0, 0, 0, 0, 
+                      1, 0, 0, 0, 0, 1, 0, 1, 0, 0, 1, 0, 0, 0, 1, 0, 
+                      0, 1, 0, 0, 0, 0, 0, 0, 1, 0, 1, 0, 1, 0, 0, 1, 
+                      0, 0, 0, 1, 0, 0, 1, 0, 0, 1, 0, 0, 0, 0, 0, 0), 
+                    36,8,byrow = T)
+  expect_error(CEA(lvls = c(3, 3, 3), coding = c("D", "D", "D"), 
+                   par.draws = p.d, n.alts = 3, n.sets = 12, parallel = F, 
+                   alt.cte = c(1, 0, 1), no.choice = T,
+                   start.des = initial), "'start.des' should be a list")
+  # All initial designs should be matrices
+  initial_v <- list(initial, as.vector(initial))
+  expect_error(CEA(lvls = c(3, 3, 3), coding = c("D", "D", "D"), 
+                   par.draws = p.d, n.alts = 3, n.sets = 12, parallel = F, 
+                   alt.cte = c(1, 0, 1), no.choice = T,start.des = initial_v),
+               "'start.des' should contain matrices as components")
+  # All initial designs should have the same dimensions
+  initial_d <- list(initial, initial[-(1:3),])
+  expect_error(CEA(lvls = c(3, 3, 3), coding = c("D", "D", "D"), 
+                   par.draws = p.d, n.alts = 3, n.sets = 12, parallel = F, 
+                   alt.cte = c(1, 0, 1), no.choice = T, start.des = initial_d),
+               "start designs have different dimensions")
+  # The number of rows of the initial design should be the same as the number
+  # of alternatives per (times) choice set (n.alts*n.sets)
+  initial_r <- list(initial[-(1:3),])
+  expect_error(CEA(lvls = c(3, 3, 3), coding = c("D", "D", "D"), 
+                   par.draws = p.d, n.alts = 3, n.sets = 12, parallel = F, 
+                   alt.cte = c(1, 0, 1), no.choice = T, start.des = initial_r),
+               "number of rows of start design\\(s\\) does not match with 'n.alts' \\* 'n.sets'")
+  # The number of columns of the initial design should be the same as the number
+  # of parameter in the model
+  initial_c <- list(initial[,-1])
+  expect_error(CEA(lvls = c(3, 3, 3), coding = c("D", "D", "D"), 
+                   par.draws = p.d, n.alts = 3, n.sets = 12, parallel = F, 
+                   alt.cte = c(1, 0, 1), no.choice = T, start.des = initial_c),
+  "number of columns of start design\\(s\\) does not match with the number of columns in the design matrix")
 })
 
 
