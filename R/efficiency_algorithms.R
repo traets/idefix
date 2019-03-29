@@ -55,7 +55,7 @@
 #'   alternative specific constant is desired. The default is \code{NULL}.
 #' @param par.draws A matrix or a list, dependend on \code{alt.cte}.
 #' @param no.choice A logical value indicating whether a no choice alternative 
-#'   should be added to each choice set. The default is \code{NULL}.
+#'   should be added to each choice set. The default is \code{FALSE}.
 #' @param start.des A list containing one or more matrices. The default is \code{NULL}.
 #' @param parallel Logical value indicating whether computations should be done 
 #'   over multiple cores. The default is \code{TRUE}.

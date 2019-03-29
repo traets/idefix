@@ -15,7 +15,7 @@
 #' @param lvls  A numeric vector which contains for each attribute, the number
 #'   of levels.
 #' @param coding Type op coding that needs to be used for each attribute.
-#' @param c.lvls A list containing numeric vectors with the attributelevels for
+#' @param c.lvls A list containing numeric vectors with the attribute levels for
 #'   each continuous attribute. The default is \code{NULL}.
 #' @return A numeric matrix which contains all possible profiles.
 #' @examples 

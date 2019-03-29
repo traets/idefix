@@ -1,13 +1,13 @@
 
 #' Coordinate Exchange algorithm for MNL models.
 #' 
-#' The algorithm swaps every profile of an initial start design with candidate 
-#' profiles. By doing this it tries to minimize the D(B)-error, based on a 
-#' multinomial logit model. This routine is repeated for multiple starting 
-#' designs.
+#' The algorithm improves an initial start design by considering changes on an
+#' attribute-by-attribute basis. By doing this it tries to minimize the 
+#' D(B)-error, based on a multinomial logit model. This routine is repeated for
+#' multiple starting designs.
 #' 
 #' Each iteration will loop through all profiles from the initial design, 
-#' evaluating the change in D(B)-error for every profile from \code{cand.set}. 
+#' evaluating the change in D(B)-error for every level in each attribute.
 #' The algorithm stops when an iteration occured without replacing a profile or 
 #' when \code{max.iter} is reached.
 #' 
@@ -31,9 +31,11 @@
 #' 
 #' \code{start.des} is a list with one or several matrices. In each matrix each
 #' row is a profile. The number of rows equals \code{n.sets * n.alts}, and the
-#' number of columns equals the number of columns of \code{cand.set} + the
-#' number of non-zero elements in \code{alt.cte}. If \code{start.des
-#' = NULL}, \code{n.start} random start designs will be
+#' number of columns equals the number of columns of the design matrix + the
+#' number of non-zero elements in \code{alt.cte}. Consider that for a 
+#' categorical attribute with *p* levels, there are *p - 1* columns in the design
+#' matrix, whereas for a continuous attribute there is only one column. If
+#' \code{start.des = NULL}, \code{n.start} random start designs will be
 #' generated. If start designs are provided, \code{n.start} is ignored.
 #' 
 #' If \code{no.choice} is \code{TRUE}, in each choice set an alternative with
@@ -45,17 +47,21 @@
 #' cores will be used to search for efficient designs. The computation time will
 #' decrease significantly when \code{parallel = TRUE}.
 #' 
-#' @param cand.set A numeric matrix in which each row is a possible profile. The
-#'   \code{\link{Profiles}} function can be used to generate this.
+#' @param lvls  A numeric vector which contains for each attribute, the number
+#'   of levels.
+#' @param coding Type op coding that needs to be used for each attribute.
+#' @param c.lvls A list containing numeric vectors with the attribute levels for
+#'   each continuous attribute. The default is \code{NULL}.
 #' @param n.sets Numeric value indicating the number of choice sets.
 #' @param n.alts Numeric value indicating the number of alternatives per choice 
 #'   set.
+#' @param par.draws A matrix or a list, dependend on \code{alt.cte}.
 #' @param alt.cte A binary vector indicating for each alternative whether an 
 #'   alternative specific constant is desired. The default is \code{NULL}.
-#' @param par.draws A matrix or a list, dependend on \code{alt.cte}.
 #' @param no.choice A logical value indicating whether a no choice alternative 
-#'   should be added to each choice set. The default is \code{NULL}.
-#' @param start.des A list containing one or more matrices. The default is \code{NULL}.
+#'   should be added to each choice set. The default is \code{FALSE}.
+#' @param start.des A list containing one or more matrices. The default is 
+#' \code{NULL}.
 #' @param parallel Logical value indicating whether computations should be done 
 #'   over multiple cores. The default is \code{TRUE}.
 #' @param max.iter A numeric value indicating the maximum number allowed 
@@ -77,28 +83,37 @@
 #' \donttest{
 #' # DB-efficient designs
 #' # 3 Attributes, all dummy coded. 1 alternative specific constant. = 7 parameters
-#' cand.set <- Profiles(lvls = c(3, 3, 3), coding = c("D", "D", "D"))
-#' mu <- c(0.5, 0.8, 0.2, -0.3, -1.2, 1.6, 2.2) # Prior parameter vector
+#' mu <- c(1.2, 0.8, 0.2, -0.3, -1.2, 1.6, 2.2) # Prior parameter vector
 #' v <- diag(length(mu)) # Prior variance.
 #' set.seed(123) 
 #' pd <- MASS::mvrnorm(n = 10, mu = mu, Sigma = v) # 10 draws.
 #' p.d <- list(matrix(pd[,1], ncol = 1), pd[,2:7])
-#' Modfed(cand.set = cand.set, n.sets = 8, n.alts = 2, 
-#'        alt.cte = c(1, 0), parallel = FALSE, par.draws = p.d, best = FALSE)
+#' CEA(lvls = c(3, 3, 3), coding = c("D", "D", "D"), par.draws = p.d,
+#' n.alts = 2, n.sets = 8, parallel = FALSE, alt.cte = c(0, 1))
+#' 
+#' # DB-efficient design with categorical and continuous factors
+#' # 2 categorical attributes with 4 and 2 levels (effect coded) and 1 
+#' continuous attribute (= 5 parameters)
+#' mu <- c(0.5, 0.8, 0.2, 0.4, 0.3) 
+#' v <- diag(length(mu)) # Prior variance.
+#' set.seed(123) 
+#' pd <- MASS::mvrnorm(n = 3, mu = mu, Sigma = v) # 10 draws.
+#' CEA(lvls = c(4, 2, 3), coding = c("E", "E", "C"), par.draws = pd,
+#' c.lvls = list(c(2, 4, 6)), n.alts = 2, n.sets = 6, parallel = F)
 #' 
 #' # DB-efficient design with start design provided.  
 #' # 3 Attributes with 3 levels, all dummy coded (= 6 parameters).
-#' cand.set <- Profiles(lvls = c(3, 3, 3), coding = c("D", "D", "D")) 
-#' mu <- c(0.8, 0.2, -0.3, -0.2, 0.7, 0.4) # Prior mean (total = 5 parameters).
+#' mu <- c(0.8, 0.2, -0.3, -0.2, 0.7, 0.4) 
 #' v <- diag(length(mu)) # Prior variance.
 #' sd <- list(example_design)
 #' set.seed(123)
 #' ps <- MASS::mvrnorm(n = 10, mu = mu, Sigma = v) # 10 draws.
-#' Modfed(cand.set = cand.set, n.sets = 8, n.alts = 2, 
-#'        alt.cte = c(0, 0), parallel = FALSE, par.draws = ps, start.des = sd)
+#' CEA(lvls = c(3, 3, 3), coding = c("D", "D", "D"), par.draws = ps,
+#' n.alts = 2, n.sets = 8, parallel = F, start.des = sd)
 #'}
 #' @importFrom Rdpack reprompt
-#' @references \insertRef{federov}{idefix}
+#' @references \insertRef{cea}{idefix}
+#' @references \insertRef{cea_discrete}{idefix}
 #' @export
 CEA <- function(lvls, coding, c.lvls = NULL, n.sets, n.alts, par.draws, 
                 alt.cte = NULL, no.choice = FALSE, start.des = NULL, 
