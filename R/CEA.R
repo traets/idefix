@@ -435,7 +435,14 @@ CEAcore_ucpp <- function(des, par.draws, levels.list, n.alts, n.sets, n.cte,
     na.percentage <- scales::percent(sum(is.na(d.errors)) / n.samples)
   } 
   # Utility balance.
-  ub <- apply(par.draws, 1, Utbal, des = des,  n.alts = n.alts)
+  # ub <- apply(par.draws, 1, Utbal, des = des,  n.alts = n.alts)
+  # ub2 <- apply(par.draws, 1, InfoDes2, des = des,  n.alts = n.alts, utbal = T)
+  # ub_ucpp <- apply(par.draws, 1, InfoDes_cpp, des = des,  n_alts = n.alts, 
+  #                  utbal = T)
+  
+  # Utility balance using c++ function
+  ub <- apply(par.draws, 1, InfoDes_cpp, des = des,  n_alts = n.alts, 
+                   utbal = T)
   pmat <- matrix(rowMeans(ub), ncol = n.alts, byrow = TRUE)
   rownames(pmat) <- paste("set", 1:n.sets, sep = "")
   colnames(pmat) <- paste(paste("Pr(", paste("alt", 1:n.alts, sep = ""), 
