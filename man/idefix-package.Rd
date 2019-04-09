@@ -28,4 +28,9 @@ Useful links:
 \author{
 \strong{Maintainer}: Frits Traets \email{frits.traets@kuleuven.be}
 
+Other contributors:
+\itemize{
+  \item Daniel Gil \email{danielgils@gmail.com} [contributor]
+}
+
 }

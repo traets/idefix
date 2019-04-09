@@ -102,8 +102,8 @@
 #' @references \insertRef{federov}{idefix}
 #' @export
 Modfed <- function(cand.set, n.sets, n.alts, par.draws, alt.cte = NULL, no.choice = FALSE, 
-                        start.des = NULL, parallel = TRUE, max.iter = Inf, n.start = 12,
-                        best = TRUE) {
+                   start.des = NULL, parallel = TRUE, max.iter = Inf, n.start = 12,
+                   best = TRUE) {
   if (is.null(alt.cte)) {
     alt.cte <- rep(0L, n.alts)
   }
@@ -127,9 +127,9 @@ Modfed <- function(cand.set, n.sets, n.alts, par.draws, alt.cte = NULL, no.choic
     stop("'no.choice' should be TRUE or FALSE")
   }
   if (no.choice) {
-   if (!isTRUE(all.equal(alt.cte[n.alts], 1))) {
-     stop("if 'no.choice' is TRUE, alt.cte[n.alts] should equal 1.")
-   }
+    if (!isTRUE(all.equal(alt.cte[n.alts], 1))) {
+      stop("if 'no.choice' is TRUE, alt.cte[n.alts] should equal 1.")
+    }
     ncsek <- seq(n.alts, (n.sets * n.alts), n.alts) 
   } else {
     ncsek <- NULL
@@ -161,7 +161,7 @@ Modfed <- function(cand.set, n.sets, n.alts, par.draws, alt.cte = NULL, no.choic
            should equal the number of columns of 'cand.set' + the number of non-zero elements in 'alt.cte'")
     }
     par.draws  <- do.call("cbind", par.draws)
-    }
+  }
   if (n.cte > 1.2) {
     if (!(is.list(par.draws))) {
       stop("par.draws should be a list")
@@ -185,7 +185,7 @@ Modfed <- function(cand.set, n.sets, n.alts, par.draws, alt.cte = NULL, no.choic
            should equal the number of columns of 'cand.set' + the number of non-zero elements in 'alt.cte'")
     }
     par.draws  <- do.call("cbind", par.draws)
-    }
+  }
   # Create alternative specific design.
   cte.des <- Altspec(alt.cte = alt.cte, n.sets = n.sets)
   # Error identifying model.
@@ -228,7 +228,7 @@ Modfed <- function(cand.set, n.sets, n.alts, par.draws, alt.cte = NULL, no.choic
     if (!any(is.finite(unlist(lapply(d.start, mean, na.rm = TRUE))))) {
       stop("One or more of the provided start designs resulted in an unvalid db-error.")
     }
-    } 
+  } 
   if (is.null(start.des)) {
     #create start designs
     nr.starts <- n.start
@@ -262,7 +262,7 @@ Modfed <- function(cand.set, n.sets, n.alts, par.draws, alt.cte = NULL, no.choic
   bestdes <- deslist[[which.min(unlist(lapply(deslist, function(x) (x$error))))]]
   
   ifelse(best, return(bestdes), return(deslist))
-  }
+}
 
 # Core of the Modfed algorithm
 Modfedje_ucpp <- function(desje, par.draws, cand.set, n.alts, n.sets, n.cte, alt.cte,
@@ -327,7 +327,7 @@ Modfedje_ucpp <- function(desje, par.draws, cand.set, n.alts, n.sets, n.cte, alt
   
   # Utility balance using c++ function
   ub <- apply(par.draws, 1, InfoDes_cpp, des = desje,  n_alts = n.alts, 
-                 utbal = T)
+              utbal = T)
   pmat <- matrix(rowMeans(ub), ncol = n.alts, byrow = TRUE)
   rownames(pmat) <- paste("set", 1:n.sets, sep = "")
   colnames(pmat) <- paste(paste("Pr(", paste("alt", 1:n.alts, sep = ""), 
@@ -509,7 +509,7 @@ SeqDB <- function(des = NULL, cand.set, n.alts, par.draws, prior.covar, alt.cte 
              should equal the number of columns of 'cand.set' + the number of non-zero elements in 'alt.cte'")
       }
       par.draws  <- do.call("cbind", par.draws)
-      }
+    }
     if(n.cte > 1.2){
       if(!(is.list(par.draws))){stop("'par.draws' should be a list when 'alt.cte' is not NULL")} 
       if (!isTRUE(all.equal(length(par.draws), 2))){
@@ -531,11 +531,11 @@ SeqDB <- function(des = NULL, cand.set, n.alts, par.draws, prior.covar, alt.cte 
              should equal the number of columns of 'cand.set' + the number of non-zero elements in 'alt.cte'")
       }
       par.draws  <- do.call("cbind", par.draws)
-      }
+    }
     # Create alternative specific design.
     cte.des <- Altspec(alt.cte = alt.cte, n.sets = n.sets)
     cte.set <- matrix(cte.des[1:n.alts, ], ncol = n.cte, byrow = FALSE)
-    } else {cte.des = NULL}
+  } else {cte.des = NULL}
   # if no alternative constants 
   if(!is.matrix(par.draws)){
     stop("'par.draws'should be a matrix when 'alt.cte' = NULL")

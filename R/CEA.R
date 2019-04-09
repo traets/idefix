@@ -501,12 +501,18 @@ CEAcore_ucpp <- function(des, par.draws, levels.list, n.alts, n.sets, n.cte,
 #' for the alternative specific parameters. The second matrix containing the
 #' draws for the rest of the parameters.
 #' 
-#' The list of potential choice sets are created using 
-#' \code{\link[gtools]{combinations}}. If \code{reduce} is \code{TRUE}, 
-#' \code{repeats.allowed = FALSE} and vice versa. Furthermore, the list of 
-#' potential choice sets will be screaned in order to select only those choice 
-#' sets with a unique information matrix. If no alternative specific constants are used, 
-#' \code{reduce} should always be \code{TRUE}. When alternative specific 
+#' The list of potential choice sets is created by selecting randomly a level for
+#' each attribute in an alternative/profile. \code{n.cs} controls the number of
+#' potential choice sets to consider. The default is \code{
+#' NULL}, which means that the number of possible choice sets is the product of
+#' attribute levels considered in the experiment. For instance, an experiment 
+#' with 3 attribute and 3 levels each will consider 3^3 = 27 possible choice sets. 
+#' 
+#' If \code{reduce} is \code{TRUE}, \code{repeats.allowed = FALSE} and vice versa.
+#' Furthermore, the list of potential choice sets will be screaned in order to
+#' select only those choice sets with a unique information matrix. If no 
+#' alternative specific constants 
+#' are used, \code{reduce} should always be \code{TRUE}. When alternative specific 
 #' constants are used \code{reduce} can be \code{TRUE} so that the algorithm 
 #' will be faster, but the combinations of constants and profiles will not be 
 #' evaluated exhaustively.
@@ -520,11 +526,15 @@ CEAcore_ucpp <- function(des, par.draws, levels.list, n.alts, n.sets, n.cte,
 #' cores will be used to search for the optimal choice set. For small problems 
 #' (6 parameters), \code{parallel = TRUE} can be slower. For larger problems the
 #' computation time will decrease significantly.
-#' @inheritParams Modfed
-#' @param par.draws A matrix or a list, dependend on \code{alt.cte}. 
+#' @inheritParams CEA
+#' @param par.draws A matrix or a list, depending on \code{alt.cte}. 
 #' @param des A design matrix in which each row is a profile. If alternative 
 #'   specific constants are present, those should be included as the first 
-#'   column(s) of the design. Can be generated with \code{\link{Modfed}}
+#'   column(s) of the design. Can be generated with \code{\link{Modfed}} or
+#'   \code{\link{CEA}}
+#' @param n.cs An integer indicating the number of possible random choice sets to 
+#' consider in the search for the next best choice set possible. The default is
+#'  \code{NULL}. 
 #' @param prior.covar Covariance matrix of the prior distribution.
 #' @param weights A vector containing the weights of the draws. Default is 
 #'   \code{NULL}, See also \code{\link{ImpsampMNL}}.
@@ -539,37 +549,36 @@ CEAcore_ucpp <- function(des, par.draws, levels.list, n.alts, n.sets, n.cte,
 #'   design.}
 #' @importFrom Rdpack reprompt
 #' @references \insertRef{ju}{idefix}
+#' @references \insertRef{cea}{idefix}
+#' @references \insertRef{cea_discrete}{idefix}
 #' @examples 
 #' # DB efficient choice set, given a design and parameter draws. 
-#' # Candidate profiles 
-#' cs <- Profiles(lvls = c(3, 3, 3), coding = c("E", "E", "E"))
+#' # 3 attributes with 3 levels each
 #' m <- c(0.3, 0.2, -0.3, -0.2, 1.1, 2.4) # mean (total = 6 parameters).
 #' pc <- diag(length(m)) # covariance matrix
 #' set.seed(123)
 #' sample <- MASS::mvrnorm(n = 10, mu = m, Sigma = pc)
 #' # Initial design.
-#' des <- example_design 
-#' # Efficient choice set to add. 
-#' SeqDB(des = des, cand.set = cs, n.alts = 2, par.draws = sample, 
-#'            prior.covar = pc, parallel = FALSE)
+#' des <- example_design
+#' # Efficient choice set to add.
+#' SeqCEA(des = des, lvls = c(3, 3, 3), coding = c("E", "E", "E"), n.alts = 2,
+#'        par.draws = sample, prior.covar = pc, parallel = FALSE)
 #' 
 #' # DB efficient choice set, given parameter draws. 
 #' # with alternative specific constants 
-#' des <- example_design2 
-#' cs <- Profiles(lvls = c(3, 3, 3), coding = c("E", "E", "E"))
-#' ac <- c(1, 1, 0) # Alternative specific constants. 
-#' m <- c(0.3, 0.2, -0.3, -0.2, 1.1, 2.4, 1.8, 1.2) # mean 
+#' des <- example_design2
+#' ac <- c(1, 1, 0) # Alternative specific constants.
+#' m <- c(0.3, 0.2, -0.3, -0.2, 1.1, 2.4, 1.8, 1.2) # mean
 #' pc <- diag(length(m)) # covariance matrix
 #' pos <- MASS::mvrnorm(n = 10, mu = m, Sigma = pc)
 #' sample <- list(pos[ , 1:2], pos[ , 3:8])
-#' # Efficient choice set. 
-#' SeqDB(des = des, cand.set = cs, n.alts = 3, par.draws = sample, alt.cte = ac, 
-#'            prior.covar = pc, parallel = FALSE)
+#' # Efficient choice set.
+#' SeqCEA(des = des, lvls = c(3, 3, 3), coding = c("E", "E", "E"), n.alts = 3, 
+#'       par.draws = sample, alt.cte = ac, prior.covar = pc, parallel = FALSE)
 #' @export
 SeqCEA <- function(des = NULL, lvls, coding, c.lvls = NULL, n.alts, par.draws, 
                    prior.covar, n.cs = NULL, alt.cte = NULL, no.choice = NULL,
-                   weights = NULL,
-                   parallel = TRUE, reduce = TRUE) {
+                   weights = NULL, parallel = TRUE, reduce = TRUE) {
   # Error handling initial design
   if (is.null(des)) {
     n.sets <- 1L

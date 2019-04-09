@@ -123,7 +123,7 @@ Rcnames <- function(n.sets, n.alts, alt.cte, no.choice) {
   } else {
     cte.names <- NULL
   }
-    # return
+  # return
   return(list(r.names, cte.names))
 }
 
