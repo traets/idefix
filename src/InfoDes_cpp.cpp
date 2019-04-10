@@ -5,7 +5,7 @@ using namespace Rcpp;
 
 // [[Rcpp::export]]
 NumericMatrix InfoDes_cpp(NumericVector par, NumericMatrix des,
-                             double n_alts) {
+                             double n_alts, bool utbal = false) {
   int i = 0;
   NumericVector group(des.nrow());
   int ind = 0;
@@ -74,44 +74,49 @@ NumericMatrix InfoDes_cpp(NumericVector par, NumericMatrix des,
     p[i] = uexp[i] / rowsum_rep[i];
   }
   
-  // information matrix
-  //  Crossprod 1
-  // des_p = des*p
-  NumericMatrix des_p(des.nrow(),des.ncol());
-  for(int j = 0; j < des.ncol(); j++){
-    for( i = 0; i < des.nrow(); i++){
-      des_p(i,j) = des(i,j) * p[i];
-    }
-  }
+  if (utbal == true) {
+    return(p);
+  } else {
   
-  // crossprod(des * p, des)
-  arma::mat des_p_arma(des_p.begin(), des_p.nrow(), des_p.ncol(), false);
-  arma::mat cross_1 = des_p_arma.t() * des_arma;
-  
-  //  Crossprod 2
-  //rowsum( des * p, group)
-  NumericMatrix des_p_rowsum(des_p.nrow()/n_alts,des_p.ncol());
-  for(int j=0; j < des_p.ncol(); j++){ 
-    cont = 1;
-    index = 0;
-    for( i = 0; i < des_p.nrow(); i++){
-      if( cont <= n_alts){
-        des_p_rowsum(index,j) += des_p(i,j);
-        cont++;
-      }else{
-        index++;
-        des_p_rowsum(index,j) += des_p(i,j);
-        cont = 2;
+    // information matrix
+    //  Crossprod 1
+    // des_p = des*p
+    NumericMatrix des_p(des.nrow(),des.ncol());
+    for(int j = 0; j < des.ncol(); j++){
+      for( i = 0; i < des.nrow(); i++){
+        des_p(i,j) = des(i,j) * p[i];
       }
     }
-  }
-  
-  // crossprod(des * p, des)
-  arma::mat des_p_rowsum_arma(des_p_rowsum.begin(), des_p_rowsum.nrow(), des_p_rowsum.ncol(), false);
-  arma::mat cross_2 = des_p_rowsum_arma.t() * des_p_rowsum_arma;
-  
-  // Info.des
-  //info.des <- crossprod(des * p, des) - crossprod(rowsum( des * p, group))
-  arma::mat info_des = cross_1 - cross_2;
-  return(wrap(info_des));
+    
+    // crossprod(des * p, des)
+    arma::mat des_p_arma(des_p.begin(), des_p.nrow(), des_p.ncol(), false);
+    arma::mat cross_1 = des_p_arma.t() * des_arma;
+    
+    //  Crossprod 2
+    //rowsum( des * p, group)
+    NumericMatrix des_p_rowsum(des_p.nrow()/n_alts,des_p.ncol());
+    for(int j=0; j < des_p.ncol(); j++){ 
+      cont = 1;
+      index = 0;
+      for( i = 0; i < des_p.nrow(); i++){
+        if( cont <= n_alts){
+          des_p_rowsum(index,j) += des_p(i,j);
+          cont++;
+        }else{
+          index++;
+          des_p_rowsum(index,j) += des_p(i,j);
+          cont = 2;
+        }
+      }
+    }
+    
+    // crossprod(des * p, des)
+    arma::mat des_p_rowsum_arma(des_p_rowsum.begin(), des_p_rowsum.nrow(), des_p_rowsum.ncol(), false);
+    arma::mat cross_2 = des_p_rowsum_arma.t() * des_p_rowsum_arma;
+    
+    // Info.des
+    //info.des <- crossprod(des * p, des) - crossprod(rowsum( des * p, group))
+    arma::mat info_des = cross_1 - cross_2;
+    return(wrap(info_des));
+  } // End of else
 }

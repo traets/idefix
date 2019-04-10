@@ -5,7 +5,7 @@ det_cpp <- function(set) {
     .Call('_idefix_det_cpp', PACKAGE = 'idefix', set)
 }
 
-InfoDes_cpp <- function(par, des, n_alts) {
-    .Call('_idefix_InfoDes_cpp', PACKAGE = 'idefix', par, des, n_alts)
+InfoDes_cpp <- function(par, des, n_alts, utbal = FALSE) {
+    .Call('_idefix_InfoDes_cpp', PACKAGE = 'idefix', par, des, n_alts, utbal)
 }
 
