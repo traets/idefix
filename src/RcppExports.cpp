@@ -6,17 +6,6 @@
 
 using namespace Rcpp;
 
-// det_cpp
-double det_cpp(NumericMatrix set);
-RcppExport SEXP _idefix_det_cpp(SEXP setSEXP) {
-BEGIN_RCPP
-    Rcpp::RObject rcpp_result_gen;
-    Rcpp::RNGScope rcpp_rngScope_gen;
-    Rcpp::traits::input_parameter< NumericMatrix >::type set(setSEXP);
-    rcpp_result_gen = Rcpp::wrap(det_cpp(set));
-    return rcpp_result_gen;
-END_RCPP
-}
 // InfoDes_cpp
 NumericMatrix InfoDes_cpp(NumericVector par, NumericMatrix des, double n_alts);
 RcppExport SEXP _idefix_InfoDes_cpp(SEXP parSEXP, SEXP desSEXP, SEXP n_altsSEXP) {
@@ -30,10 +19,21 @@ BEGIN_RCPP
     return rcpp_result_gen;
 END_RCPP
 }
+// det_cpp
+double det_cpp(NumericMatrix set);
+RcppExport SEXP _idefix_det_cpp(SEXP setSEXP) {
+BEGIN_RCPP
+    Rcpp::RObject rcpp_result_gen;
+    Rcpp::RNGScope rcpp_rngScope_gen;
+    Rcpp::traits::input_parameter< NumericMatrix >::type set(setSEXP);
+    rcpp_result_gen = Rcpp::wrap(det_cpp(set));
+    return rcpp_result_gen;
+END_RCPP
+}
 
 static const R_CallMethodDef CallEntries[] = {
-    {"_idefix_det_cpp", (DL_FUNC) &_idefix_det_cpp, 1},
     {"_idefix_InfoDes_cpp", (DL_FUNC) &_idefix_InfoDes_cpp, 3},
+    {"_idefix_det_cpp", (DL_FUNC) &_idefix_det_cpp, 1},
     {NULL, NULL, 0}
 };
 
