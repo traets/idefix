@@ -29,7 +29,7 @@
 DBerr <- function(par.draws, des, n.alts, weights = NULL) {
   if(is.list(par.draws)){
     if (!isTRUE(all.equal(length(par.draws), 2))){
-      stop("'par.draws' should contain two components")
+      stop("If 'par.draws' is a list, it should contain two components")
     }
     if(!(all(unlist(lapply(par.draws, is.matrix))))){
       stop("'par.draws' should contain two matrices")
