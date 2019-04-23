@@ -44,7 +44,7 @@ survey.}
 \item{data.dir}{A character string with the directory denoting where the data
 needs to be written. The default is NULL}
 
-\item{c.lvls}{A list containing numeric vectors with the attributelevels for
+\item{c.lvls}{A list containing numeric vectors with the attribute levels for
 each continuous attribute. The default is \code{NULL}.}
 
 \item{prior.mean}{Numeric vector indicating the mean of the multivariate

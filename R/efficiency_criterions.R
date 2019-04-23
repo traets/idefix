@@ -176,6 +176,21 @@ InfoDes <- function(par, des, n.alts) {
   return(info.des)
 }
 
+# Infodes joined with utility balance function
+# InfoDes2 <- function(par, des, n.alts, utbal = NULL) {
+#   group <- rep(seq(1, nrow(des) / n.alts, 1), each = n.alts)
+#   # probability
+#   u <- des %*% diag(par)
+#   u <- .rowSums(u, m = nrow(des), n = length(par))
+#   p <- exp(u) / rep(rowsum(exp(u), group), each = n.alts)
+#   if (isTRUE(utbal)) {
+#     return(p)
+#   } else {
+#     # information matrix
+#     info.des <- crossprod(des * p, des) - crossprod(rowsum( des * p, group))
+#     return(info.des)
+#   }
+# } 
 
 # Utility balance 
 Utbal <- function(par, des, n.alts) { 

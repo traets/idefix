@@ -12,7 +12,7 @@ of levels.}
 
 \item{coding}{Type op coding that needs to be used for each attribute.}
 
-\item{c.lvls}{A list containing numeric vectors with the attributelevels for
+\item{c.lvls}{A list containing numeric vectors with the attribute levels for
 each continuous attribute. The default is \code{NULL}.}
 }
 \value{

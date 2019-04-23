@@ -23,7 +23,7 @@ attribute. See also \code{\link{Profiles}}.}
 \item{alt.cte}{A binary vector indicating for each alternative if an
 alternative specific constant is present. The default is \code{NULL}.}
 
-\item{c.lvls}{A list containing numeric vectors with the attributelevels for
+\item{c.lvls}{A list containing numeric vectors with the attribute levels for
 each continuous attribute. The default is \code{NULL}.}
 
 \item{no.choice}{An integer indicating the no choice alternative. The default

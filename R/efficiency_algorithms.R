@@ -55,12 +55,12 @@
 #'   alternative specific constant is desired. The default is \code{NULL}.
 #' @param par.draws A matrix or a list, dependend on \code{alt.cte}.
 #' @param no.choice A logical value indicating whether a no choice alternative 
-#'   should be added to each choice set. The default is \code{NULL}.
+#'   should be added to each choice set. The default is \code{FALSE}.
 #' @param start.des A list containing one or more matrices. The default is \code{NULL}.
 #' @param parallel Logical value indicating whether computations should be done 
 #'   over multiple cores. The default is \code{TRUE}.
 #' @param max.iter A numeric value indicating the maximum number allowed 
-#'   iterations. The default is \code{TRUE}.
+#'   iterations. The default is \code{Inf}.
 #' @param n.start A numeric value indicating the number of random start designs
 #'   to use. The default is 12.
 #' @param best A logical value indicating whether only the best design should be
@@ -102,16 +102,16 @@
 #' @references \insertRef{federov}{idefix}
 #' @export
 Modfed <- function(cand.set, n.sets, n.alts, par.draws, alt.cte = NULL, no.choice = FALSE, 
-                        start.des = NULL, parallel = TRUE, max.iter = Inf, n.start = 12,
-                        best = TRUE) {
-  if(is.null(alt.cte)){
+                   start.des = NULL, parallel = TRUE, max.iter = Inf, n.start = 12,
+                   best = TRUE) {
+  if (is.null(alt.cte)) {
     alt.cte <- rep(0L, n.alts)
   }
   #init
   n.cte <- length(which(alt.cte == 1))
   ### Errors
-  if(!is.list(par.draws)){
-    if(is.vector(par.draws)){
+  if (!is.list(par.draws)) {
+    if (is.vector(par.draws)) {
       par.draws <- matrix(par.draws, nrow = 1)
     }
   }
@@ -119,69 +119,73 @@ Modfed <- function(cand.set, n.sets, n.alts, par.draws, alt.cte = NULL, no.choic
   if (length(alt.cte) != n.alts) {
     stop("'n.alts' does not match the 'alt.cte' vector")
   }
-  if (!all(alt.cte %in% c(0, 1))){
+  if (!all(alt.cte %in% c(0, 1))) {
     stop("'alt.cte' should only contain zero or ones.")
   }
   #if no.choice
-  if(!is.logical(no.choice)){
+  if (!is.logical(no.choice)) {
     stop("'no.choice' should be TRUE or FALSE")
   }
-  if(no.choice){
-   if(!isTRUE(all.equal(alt.cte[n.alts], 1))){
-     stop("if 'no.choice' is TRUE, alt.cte[n.alts] should equal 1.")
-   }
+  if (no.choice) {
+    if (!isTRUE(all.equal(alt.cte[n.alts], 1))) {
+      stop("if 'no.choice' is TRUE, alt.cte[n.alts] should equal 1.")
+    }
     ncsek <- seq(n.alts, (n.sets * n.alts), n.alts) 
   } else {
     ncsek <- NULL
   }
   # Handling par.draws with alternative specific contstants.
-  if(isTRUE(all.equal(n.cte, 1))){
-    if(!(is.list(par.draws))){stop("par.draws should be a list")}
-    if (!isTRUE(all.equal(length(par.draws), 2))){
+  if (isTRUE(all.equal(n.cte, 1))) {
+    if (!(is.list(par.draws))) {
+      stop("par.draws should be a list")
+    }
+    if (!isTRUE(all.equal(length(par.draws), 2))) {
       stop("'par.draws' should contain two components")
     }
-    if(is.vector(par.draws[[1]])){
+    if (is.vector(par.draws[[1]])) {
       par.draws[[1]] <- matrix(par.draws[[1]], ncol = 1)
     }
-    if(!(all(unlist(lapply(par.draws, is.matrix))))){
+    if (!(all(unlist(lapply(par.draws, is.matrix))))) {
       stop("'par.draws' should contain two matrices")
     }
-    if(!isTRUE(all.equal(ncol(par.draws[[1]]), n.cte))){
+    if (!isTRUE(all.equal(ncol(par.draws[[1]]), n.cte))) {
       stop("the first component of 'par.draws' should contain the same number 
            of columns as there are non zero elements in 'alt.cte'")
     }
     dims <-  as.data.frame(lapply(par.draws, dim))
-    if(!isTRUE(all.equal(dims[1, 1], dims[1, 2]))){ 
+    if (!isTRUE(all.equal(dims[1, 1], dims[1, 2]))) {
       stop("the number of rows in the components of 'par.draws' should be equal")
     }
-    if(!identical((dims[2, 1] + dims[2, 2]), (n.cte + ncol(cand.set)))){ 
+    if (!identical((dims[2, 1] + dims[2, 2]), (n.cte + ncol(cand.set)))) { 
       stop("the sum of the number of columns in the components of 'par.draws' 
            should equal the number of columns of 'cand.set' + the number of non-zero elements in 'alt.cte'")
     }
     par.draws  <- do.call("cbind", par.draws)
-    }
-  if(n.cte > 1.2){
-    if(!(is.list(par.draws))){stop("par.draws should be a list")} 
-    if (!isTRUE(all.equal(length(par.draws), 2))){
+  }
+  if (n.cte > 1.2) {
+    if (!(is.list(par.draws))) {
+      stop("par.draws should be a list")
+    } 
+    if (!isTRUE(all.equal(length(par.draws), 2))) {
       stop("'par.draws' should contain two components")
     }
-    if(!(all(unlist(lapply(par.draws, is.matrix))))){
+    if (!(all(unlist(lapply(par.draws, is.matrix))))) {
       stop("'par.draws' should contain two matrices")
     }
-    if(!isTRUE(all.equal(ncol(par.draws[[1]]), n.cte))){
+    if (!isTRUE(all.equal(ncol(par.draws[[1]]), n.cte))) {
       stop("the first component of 'par.draws' should contain the same number 
            of columns as there are non zero elements in 'alt.cte'")
     }
     dims <-  as.data.frame(lapply(par.draws, dim))
-    if(!isTRUE(all.equal(dims[1, 1], dims[1, 2]))){ 
+    if (!isTRUE(all.equal(dims[1, 1], dims[1, 2]))) { 
       stop("the number of rows in the components of 'par.draws' should be equal")
     }
-    if(!identical((dims[2, 1] + dims[2, 2]), (n.cte + ncol(cand.set)))){ 
+    if (!identical((dims[2, 1] + dims[2, 2]), (n.cte + ncol(cand.set)))) { 
       stop("the sum of the number of columns in the components of 'par.draws' 
            should equal the number of columns of 'cand.set' + the number of non-zero elements in 'alt.cte'")
     }
     par.draws  <- do.call("cbind", par.draws)
-    }
+  }
   # Create alternative specific design.
   cte.des <- Altspec(alt.cte = alt.cte, n.sets = n.sets)
   # Error identifying model.
@@ -189,7 +193,7 @@ Modfed <- function(cand.set, n.sets, n.alts, par.draws, alt.cte = NULL, no.choic
     stop("Model is unidentified. Increase the number of choice sets or decrease parameters to estimate.")
   }
   # Handling cand.set
-  if(!all(is.finite(cand.set))){
+  if (!all(is.finite(cand.set))) {
     stop("'cand.set' contains non finite values.")
   }
   # Error handling cte.des
@@ -199,51 +203,52 @@ Modfed <- function(cand.set, n.sets, n.alts, par.draws, alt.cte = NULL, no.choic
   }
   # Random start design.
   if (!is.null(start.des)) {
-    if(!is.list(start.des)){
+    if (!is.list(start.des)) {
       stop("'start.des' should be a list")
     }
-    if(!(all(unlist(lapply(start.des, is.matrix))))){
+    if (!(all(unlist(lapply(start.des, is.matrix))))) {
       stop("'start.des' should contain matrices as components")
     }
     dimstart <- as.matrix(lapply(start.des, dim))
     nr.starts <- length(dimstart)
-    if(nr.starts > 1.5){
-      if(!isTRUE(all.equal(length(unique(unlist(dimstart))), 2))){
+    if (nr.starts > 1.5) {
+      if (!isTRUE(all.equal(length(unique(unlist(dimstart))), 2))) {
         stop("start designs have different dimensions")
       }
     }
-    if(!isTRUE(all.equal(n.alts * n.sets, unique(unlist(dimstart))[1]))){
+    if (!isTRUE(all.equal(n.alts * n.sets, unique(unlist(dimstart))[1]))) {
       stop("number of rows of start design(s) does not match with 'n.alts' * 'n.sets'")
     }
-    if(!isTRUE(all.equal(sum(ncol(cand.set), ncol(cte.des)), unique(unlist(dimstart))[2]))){
+    if (!isTRUE(all.equal(sum(ncol(cand.set), ncol(cte.des)), 
+                          unique(unlist(dimstart))[2]))) {
       stop("number of columns of start design(s) does not match with the number
            of columns in 'cand.set' + the non zero parameters in 'alt.cte'")
     }
     d.start <- lapply(start.des, StartDB, par.draws, n.alts)
-    if(!any(is.finite(unlist(lapply(d.start, mean, na.rm = TRUE))))) {
+    if (!any(is.finite(unlist(lapply(d.start, mean, na.rm = TRUE))))) {
       stop("One or more of the provided start designs resulted in an unvalid db-error.")
     }
-    } 
+  } 
   if (is.null(start.des)) {
     #create start designs
     nr.starts <- n.start
     start.des <- vector(mode = 'list', length = nr.starts)
     okstart <- FALSE
-    while(okstart == FALSE){
-      for (i in 1:nr.starts){
+    while (okstart == FALSE) {
+      for (i in 1:nr.starts) {
         r <- round(stats::runif((n.sets * n.alts), 1, nrow(cand.set)))
         start.des[[i]] <- cbind(cte.des, data.matrix(cand.set[r, ]))
-        if(no.choice){
-          start.des[[i]][ncsek, (ncol(cte.des) + 1) : (ncol(cte.des) + ncol(cand.set))] <- c(rep(0, ncol(cand.set)))
+        if (no.choice) {
+          start.des[[i]][ncsek, (ncol(cte.des) + 1):(ncol(cte.des) + ncol(cand.set))] <- c(rep(0, ncol(cand.set)))
         }
       }
       d.start <- lapply(start.des, StartDB, par.draws, n.alts)
-      if(any(is.finite(unlist(lapply(d.start, mean, na.rm = TRUE))))){
+      if (any(is.finite(unlist(lapply(d.start, mean, na.rm = TRUE))))) {
         okstart <- TRUE
       } 
     }
   }
-  if (parallel){
+  if (parallel) {
     ########
     no_cores <- parallel::detectCores() - 1
     cl <- parallel::makeCluster(no_cores)
@@ -257,7 +262,7 @@ Modfed <- function(cand.set, n.sets, n.alts, par.draws, alt.cte = NULL, no.choic
   bestdes <- deslist[[which.min(unlist(lapply(deslist, function(x) (x$error))))]]
   
   ifelse(best, return(bestdes), return(deslist))
-  }
+}
 
 # Core of the Modfed algorithm
 Modfedje_ucpp <- function(desje, par.draws, cand.set, n.alts, n.sets, n.cte, alt.cte,
@@ -274,15 +279,15 @@ Modfedje_ucpp <- function(desje, par.draws, cand.set, n.alts, n.sets, n.cte, alt
     # save design before iteration.
     iter.des <- desje
     # For every row in the design.
-    sek <- 1 : nrow(desje)
-    if (no.choice){
+    sek <- 1:nrow(desje)
+    if (no.choice) {
       sek <- sek[-ncsek]
     }
     for (r in sek) {
       # Switch with everey row in candidate set. 
       db <- numeric(nrow(cand.set))
       for (c in 1:nrow(cand.set)) {
-        desje[r, (n.cte + 1) : n.par ] <- cand.set[c, ]
+        desje[r, (n.cte + 1):n.par ] <- cand.set[c, ]
         # Calculate D-errors.
         d.errors <- apply(par.draws, 1, Derr_ucpp, des = desje,  n.alts = n.alts)
         # DB-error. 
@@ -300,7 +305,7 @@ Modfedje_ucpp <- function(desje, par.draws, cand.set, n.alts, n.sets, n.cte, alt
       }
       # Replace with best profile if change.
       if (change) {
-        desje[r, (n.cte + 1) : n.par] <- best.row
+        desje[r, (n.cte + 1):n.par] <- best.row
       } else {
         desje[r, ] <- iter.des[r, ]
       }
@@ -316,11 +321,18 @@ Modfedje_ucpp <- function(desje, par.draws, cand.set, n.alts, n.sets, n.cte, alt
     na.percentage <- scales::percent(sum(is.na(d.errors)) / n.samples)
   } 
   # Utility balance.
-  ub <- apply(par.draws, 1, Utbal, des = desje,  n.alts = n.alts)
+  # ub <- apply(par.draws, 1, Utbal, des = desje,  n.alts = n.alts)
+  # ubcpp <- apply(par.draws, 1, InfoDes_cpp, des = desje,  n_alts = n.alts, 
+  #                utbal = T)
+  
+  # Utility balance using c++ function
+  ub <- apply(par.draws, 1, InfoDes_cpp, des = desje,  n_alts = n.alts, 
+              utbal = T)
   pmat <- matrix(rowMeans(ub), ncol = n.alts, byrow = TRUE)
   rownames(pmat) <- paste("set", 1:n.sets, sep = "")
-  colnames(pmat) <- paste(paste("Pr(", paste("alt", 1:n.alts, sep = ""), sep = ""), ")", sep= "")
-  if(no.choice){
+  colnames(pmat) <- paste(paste("Pr(", paste("alt", 1:n.alts, sep = ""), 
+                                sep = ""), ")", sep = "")
+  if (no.choice) {
     colnames(pmat)[n.alts] <- "Pr(no choice)"
   }
   # Rownames design. 
@@ -497,7 +509,7 @@ SeqDB <- function(des = NULL, cand.set, n.alts, par.draws, prior.covar, alt.cte 
              should equal the number of columns of 'cand.set' + the number of non-zero elements in 'alt.cte'")
       }
       par.draws  <- do.call("cbind", par.draws)
-      }
+    }
     if(n.cte > 1.2){
       if(!(is.list(par.draws))){stop("'par.draws' should be a list when 'alt.cte' is not NULL")} 
       if (!isTRUE(all.equal(length(par.draws), 2))){
@@ -519,11 +531,11 @@ SeqDB <- function(des = NULL, cand.set, n.alts, par.draws, prior.covar, alt.cte 
              should equal the number of columns of 'cand.set' + the number of non-zero elements in 'alt.cte'")
       }
       par.draws  <- do.call("cbind", par.draws)
-      }
+    }
     # Create alternative specific design.
     cte.des <- Altspec(alt.cte = alt.cte, n.sets = n.sets)
     cte.set <- matrix(cte.des[1:n.alts, ], ncol = n.cte, byrow = FALSE)
-    } else {cte.des = NULL}
+  } else {cte.des = NULL}
   # if no alternative constants 
   if(!is.matrix(par.draws)){
     stop("'par.draws'should be a matrix when 'alt.cte' = NULL")
