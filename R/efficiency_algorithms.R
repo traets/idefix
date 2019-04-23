@@ -404,6 +404,8 @@ Modfedje_ucpp <- function(desje, par.draws, cand.set, n.alts, n.sets, n.cte, alt
 #'   is \code{NULL}.
 #' @param reduce Logical value indicating whether the candidate set should be 
 #'   reduced or not.
+#' @param allow.rep Logical value indicating whether repeated choice sets are
+#' allowed in the design.
 #' @return \item{set}{A matrix representing a DB efficient choice set.} 
 #'   \item{error}{A numeric value indicating the DB-error of the whole 
 #'   design.}
@@ -436,12 +438,16 @@ Modfedje_ucpp <- function(desje, par.draws, cand.set, n.alts, n.sets, n.cte, alt
 #' SeqDB(des = des, cand.set = cs, n.alts = 3, par.draws = sample, alt.cte = ac, 
 #'            prior.covar = pc, parallel = FALSE)
 #' @export
-SeqDB <- function(des = NULL, cand.set, n.alts, par.draws, prior.covar, alt.cte = NULL, no.choice = NULL, weights = NULL, parallel = TRUE, reduce = TRUE) {
+SeqDB <- function(des = NULL, cand.set, n.alts, par.draws, prior.covar, 
+                  alt.cte = NULL, no.choice = NULL, weights = NULL, 
+                  parallel = TRUE, reduce = TRUE, 
+                  allow.rep = FALSE) {
   #init
   if (is.null(des)) {
     n.sets <- 1L
+    allow.rep <- T
   } else { 
-    if(!is.matrix(des)){
+    if (!is.matrix(des)) {
       stop("'des' should be a matrix or NULL")
     }
     if (!isTRUE(nrow(des) %% n.alts == 0)) {
@@ -450,83 +456,83 @@ SeqDB <- function(des = NULL, cand.set, n.alts, par.draws, prior.covar, alt.cte 
     n.sets <- nrow(des) / n.alts
   }
   # if alternative constants 
-  if(!is.null(alt.cte)){
+  if (!is.null(alt.cte)) {
     if (length(alt.cte) != n.alts) {
       stop("'n.alts' does not match the 'alt.cte' vector")
     }
-    if (!all(alt.cte %in% c(0, 1))){
+    if (!all(alt.cte %in% c(0, 1))) {
       stop("'alt.cte' should only contain zero or ones.")
     }
     # alternative specific constants
     n.cte <- length(which(alt.cte == 1L))
-    if (isTRUE(all.equal(n.cte, 0L))){
+    if (isTRUE(all.equal(n.cte, 0L))) {
       alt.cte <- NULL
       cte.des <- NULL
     }
   }
   #if no.choice
-  if(!is.null(no.choice)){
-    if(!is.wholenumber(no.choice)){
+  if (!is.null(no.choice)) {
+    if (!is.wholenumber(no.choice)) {
       stop("'no.choice' should be an integer or NULL")
     }
-    if(any(isTRUE(no.choice > (n.alts + 0.2)), isTRUE(no.choice < 0.2))){
+    if (any(isTRUE(no.choice > (n.alts + 0.2)), isTRUE(no.choice < 0.2))) {
       stop("'no.choice' does not indicate one of the alternatives")
     }
-    if(is.null(alt.cte)){
+    if (is.null(alt.cte)) {
       stop("if there is a no choice alternative, 'alt.cte' should be specified")
     }
-    if(!isTRUE(all.equal(alt.cte[no.choice], 1))){
+    if (!isTRUE(all.equal(alt.cte[no.choice], 1))) {
       stop("the no choice alternative should correspond with a 1 in 'alt.cte'")
     }
   }
-  if(!is.null(alt.cte)){
+  if (!is.null(alt.cte)) {
     #prior.covar
-    if(!isTRUE(all.equal(ncol(prior.covar), (ncol(cand.set) + n.cte)))){
+    if (!isTRUE(all.equal(ncol(prior.covar), (ncol(cand.set) + n.cte)))) {
       stop("number of columns of 'prior.covar' does not equal 
            the number of columns in 'cand.set' + nonzero elements in 'alt.cte'")
     }
-    if(isTRUE(all.equal(n.cte, 1))){
-      if(!is.list(par.draws)){stop("'par.draws' should be a list when 'alt.cte' is not NULL")}
-      if (!isTRUE(all.equal(length(par.draws), 2))){
+    if (isTRUE(all.equal(n.cte, 1))) {
+      if (!is.list(par.draws)) {stop("'par.draws' should be a list when 'alt.cte' is not NULL")}
+      if (!isTRUE(all.equal(length(par.draws), 2))) {
         stop("'par.draws' should contain two components")
       }
-      if(is.vector(par.draws[[1]])){
+      if (is.vector(par.draws[[1]])) {
         par.draws[[1]] <- matrix(par.draws[[1]], ncol = 1)
       }
-      if(!(all(unlist(lapply(par.draws, is.matrix))))){
+      if (!(all(unlist(lapply(par.draws, is.matrix))))) {
         stop("'par.draws' should contain 2 matrices")
       }
-      if(!isTRUE(all.equal(ncol(par.draws[[1]]), n.cte))){
+      if (!isTRUE(all.equal(ncol(par.draws[[1]]), n.cte))) {
         stop("the first component of 'par.draws' should contain the same number 
              of columns as there are non zero elements in 'alt.cte'")
       }
       dims <-  as.data.frame(lapply(par.draws, dim))
-      if(!isTRUE(all.equal(dims[1, 1], dims[1, 2]))){ 
+      if (!isTRUE(all.equal(dims[1, 1], dims[1, 2]))) { 
         stop("the number of rows in the components of 'par.draws' should be equal")
       }
-      if(!identical((dims[2, 1] + dims[2, 2]), (n.cte + ncol(cand.set)))){ 
+      if (!identical((dims[2, 1] + dims[2, 2]), (n.cte + ncol(cand.set)))) { 
         stop("the sum of the number of columns in the components of 'par.draws' 
              should equal the number of columns of 'cand.set' + the number of non-zero elements in 'alt.cte'")
       }
       par.draws  <- do.call("cbind", par.draws)
     }
-    if(n.cte > 1.2){
-      if(!(is.list(par.draws))){stop("'par.draws' should be a list when 'alt.cte' is not NULL")} 
-      if (!isTRUE(all.equal(length(par.draws), 2))){
+    if (n.cte > 1.2) {
+      if (!(is.list(par.draws))) {stop("'par.draws' should be a list when 'alt.cte' is not NULL")} 
+      if (!isTRUE(all.equal(length(par.draws), 2))) {
         stop("'par.draws' should contain two components")
       }
-      if(!(all(unlist(lapply(par.draws, is.matrix))))){
+      if (!(all(unlist(lapply(par.draws, is.matrix))))) {
         stop("'par.draws' should contain two matrices")
       }
-      if(!isTRUE(all.equal(ncol(par.draws[[1]]), n.cte))){
+      if (!isTRUE(all.equal(ncol(par.draws[[1]]), n.cte))) {
         stop("the first component of 'par.draws' should contain the same number 
              of columns as there are non zero elements in 'alt.cte'")
       }
       dims <-  as.data.frame(lapply(par.draws, dim))
-      if(!isTRUE(all.equal(dims[1, 1], dims[1, 2]))){ 
+      if (!isTRUE(all.equal(dims[1, 1], dims[1, 2]))) { 
         stop("the number of rows in the components of 'par.draws' should be equal")
       }
-      if(!identical((dims[2, 1] + dims[2, 2]), (n.cte + ncol(cand.set)))){ 
+      if (!identical((dims[2, 1] + dims[2, 2]), (n.cte + ncol(cand.set)))) { 
         stop("the sum of the number of columns in the components of 'par.draws' 
              should equal the number of columns of 'cand.set' + the number of non-zero elements in 'alt.cte'")
       }
@@ -537,13 +543,13 @@ SeqDB <- function(des = NULL, cand.set, n.alts, par.draws, prior.covar, alt.cte 
     cte.set <- matrix(cte.des[1:n.alts, ], ncol = n.cte, byrow = FALSE)
   } else {cte.des = NULL}
   # if no alternative constants 
-  if(!is.matrix(par.draws)){
+  if (!is.matrix(par.draws)) {
     stop("'par.draws'should be a matrix when 'alt.cte' = NULL")
   }
   #init
   n.par <- ncol(par.draws)
-  if(!is.null(weights)){
-    if(!isTRUE(all.equal(length(weights), nrow(par.draws)))){
+  if (!is.null(weights)) {
+    if (!isTRUE(all.equal(length(weights), nrow(par.draws)))) {
       stop("length of 'weights' does not match number total number of rows in 'par.draws'")
     }
   }
@@ -552,7 +558,7 @@ SeqDB <- function(des = NULL, cand.set, n.alts, par.draws, prior.covar, alt.cte 
     weights <- rep(1L, nrow(par.draws))
   }
   ## whenever a design is supplied 
-  if(!is.null(des)){
+  if (!is.null(des)) {
     # Error par.draws
     if (!isTRUE(all.equal(ncol(des), n.par))) {
       stop("Numbers of columns in 'par.draws' does not match the number of columns in 'des'")
@@ -561,9 +567,9 @@ SeqDB <- function(des = NULL, cand.set, n.alts, par.draws, prior.covar, alt.cte 
     i.cov <- solve(prior.covar)
     d.start <- apply(par.draws, 1, DerrC_ucpp, des = des,  n.alts = n.alts, i.cov = i.cov)
     db.start <- mean(d.start, na.rm = TRUE)
-    full.comb <- Fullsets_ucpp(cand.set = cand.set, n.alts = n.alts, no.choice = no.choice, reduce = reduce)
+    full.comb <- Fullsets_ucpp(cand.set = cand.set, n.alts = n.alts, no.choice = no.choice, reduce = reduce, allow.rep = allow.rep, des = des)
     #if alt.cte
-    if(!is.null(cte.des)){
+    if (!is.null(cte.des)) {
       full.comb <- lapply(full.comb, function(x) cbind(cte.set, x))
     }
     full.des <- lapply(full.comb, function(x) rbind(des, x))
@@ -591,16 +597,18 @@ SeqDB <- function(des = NULL, cand.set, n.alts, par.draws, prior.covar, alt.cte 
     return(list("set" = set, "error" = db))
   }
   
-  if(is.null(des)){
+  if (is.null(des)) {
     
     # Starting and initializing values.
     i.cov <- solve(prior.covar)
-    full.comb <- Fullsets_ucpp(cand.set = cand.set, n.alts = n.alts, no.choice = no.choice, reduce = reduce)
+    full.comb <- Fullsets_ucpp(cand.set = cand.set, n.alts = n.alts, 
+                               no.choice = no.choice, reduce = reduce, 
+                               allow.rep = allow.rep, des = des)
     #if alt.cte
-    if(!is.null(cte.des)){
+    if (!is.null(cte.des)) {
       full.comb <- lapply(full.comb, function(x) cbind(cte.set, x))
     } else {
-      if(!isTRUE(all.equal(ncol(cand.set), ncol(par.draws)))){
+      if (!isTRUE(all.equal(ncol(cand.set), ncol(par.draws)))) {
         stop("number of  columns of 'par.draws' and 'cand.set' should be equal when 'alt.cte = NULL'")
       }
     }
@@ -622,7 +630,8 @@ SeqDB <- function(des = NULL, cand.set, n.alts, par.draws, prior.covar, alt.cte 
       ##### parallel #####
     } else {
       # For each potential set, select best. 
-      db.errors <- lapply(full.comb, DBerrS.P_ucpp, par.draws, n.alts, i.cov, weights)
+      db.errors <- lapply(full.comb, DBerrS.P_ucpp, par.draws, n.alts, i.cov,
+                          weights)
     }
     dbs <- unlist(db.errors, use.names = FALSE)
     set <- full.comb[[which.min(dbs)]]

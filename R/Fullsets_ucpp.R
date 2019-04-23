@@ -1,11 +1,39 @@
 # Fullsets using Infodes_cpp
-Fullsets_ucpp <- function(cand.set, n.alts, no.choice, reduce = TRUE){
+Fullsets_ucpp <- function(cand.set, n.alts, no.choice, reduce = TRUE, allow.rep,
+                           des){
   if (!is.null(no.choice)) {
     n.alts <- n.alts - 1
   }
   full.comb <- utils::combn(1:nrow(cand.set), n.alts, 
                             FUN = function(x)  cand.set[x, ], simplify = FALSE)
-  #reduce
+  
+  # If no repeated choice sets
+  if (!allow.rep) { 
+    n.sets <- nrow(des) / n.alts # Number of choice sets in initial design
+    i <- 1 # loop counter for rows in initial design
+    repe <- matrix(F, length(full.comb), n.sets) # True where the choice set is
+                                            # located
+    j <- 1 # counter of choice sets inside the loop
+    while (i < nrow(des)) {
+      cset <- des[i:(i + n.alts - 1),] # Subset a choice set from initial design
+      per <- expand.grid(1:nrow(cset),1:nrow(cset)) # Compute permutations
+      per <- per[apply(per, 1, function(x) {length(unique(x)) == n.alts}),]
+      cset_comb <- list()
+      for (k in 1:dim(per)[1]) {
+        cset_comb[[k]] <- cset[as.numeric(per[k,]),] # Permutations
+      } # End for
+      # in repe: True where the choice set is located
+      repe[, j] <- unlist(lapply(full.comb, function(x){ 
+        any(unlist(lapply(cset_comb, function(y) all(x == y))))})) 
+      i <- i + n.alts
+      j <- j + 1
+    } # End while
+    # delete: index of repeated choice sets
+    delete <- apply(repe, 2, function(x) which(x == T)) 
+    full.comb <- full.comb[-delete]
+  }
+  
+  #reduce: Remove choice sets with same information matrix
   if (reduce) {
     m <- stats::rnorm(ncol(cand.set))
     inf <- list()
