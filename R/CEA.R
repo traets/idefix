@@ -93,7 +93,7 @@
 #' 
 #' # DB-efficient design with categorical and continuous factors
 #' # 2 categorical attributes with 4 and 2 levels (effect coded) and 1 
-#' continuous attribute (= 5 parameters)
+#' # continuous attribute (= 5 parameters)
 #' mu <- c(0.5, 0.8, 0.2, 0.4, 0.3) 
 #' v <- diag(length(mu)) # Prior variance.
 #' set.seed(123) 
@@ -264,7 +264,7 @@ CEA <- function(lvls, coding, c.lvls = NULL, n.sets, n.alts, par.draws,
       }
     }
     # Compute all possible values for each categorical attribute
-    levels.list[categ] <- lapply(X = levels.list[categ], contrasts)
+    levels.list[categ] <- lapply(X = levels.list[categ], stats::contrasts)
   }
   # Set colnames for the design matrix
   c.nam = list()
@@ -704,7 +704,7 @@ SeqCEA <- function(des = NULL, lvls, coding, c.lvls = NULL, n.alts, par.draws,
       }
     }
     # Compute all possible values for each categorical attribute
-    levels.list[categ] <- lapply(X = levels.list[categ], contrasts)
+    levels.list[categ] <- lapply(X = levels.list[categ], stats::contrasts)
   }
   # Set colnames for the design matrix
   c.nam = list()
