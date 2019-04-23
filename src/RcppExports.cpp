@@ -33,13 +33,8 @@ END_RCPP
 }
 
 static const R_CallMethodDef CallEntries[] = {
-<<<<<<< HEAD
-    {"_idefix_InfoDes_cpp", (DL_FUNC) &_idefix_InfoDes_cpp, 3},
-    {"_idefix_det_cpp", (DL_FUNC) &_idefix_det_cpp, 1},
-=======
     {"_idefix_det_cpp", (DL_FUNC) &_idefix_det_cpp, 1},
     {"_idefix_InfoDes_cpp", (DL_FUNC) &_idefix_InfoDes_cpp, 4},
->>>>>>> fe420387d86d4f6ff762f2809d2b1713bfc6b6eb
     {NULL, NULL, 0}
 };
 
