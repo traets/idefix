@@ -255,12 +255,12 @@ CEA <- function(lvls, coding, c.lvls = NULL, n.sets, n.alts, par.draws,
     if (n.contins > 0) {
       for (i in 1:length(lvls)) {
         if (!(i %in% contins)) {
-          contrasts(levels.list[[i]]) <- coding[i]
+          stats::contrasts(levels.list[[i]]) <- coding[i]
         }
       }
     }else {
       for (i in 1:length(lvls)) {
-        contrasts(levels.list[[i]]) <- coding[i]
+        stats::contrasts(levels.list[[i]]) <- coding[i]
       }
     }
     # Compute all possible values for each categorical attribute
@@ -695,12 +695,12 @@ SeqCEA <- function(des = NULL, lvls, coding, c.lvls = NULL, n.alts, par.draws,
     if (n.contins > 0) {
       for (i in 1:length(lvls)) {
         if (!(i %in% contins)) {
-          contrasts(levels.list[[i]]) <- coding[i]
+          stats::contrasts(levels.list[[i]]) <- coding[i]
         }
       }
     }else {
       for (i in 1:length(lvls)) {
-        contrasts(levels.list[[i]]) <- coding[i]
+        stats::contrasts(levels.list[[i]]) <- coding[i]
       }
     }
     # Compute all possible values for each categorical attribute
