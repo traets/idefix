@@ -20,7 +20,7 @@ Fullsets_ucpp <- function(cand.set, n.alts, no.choice, reduce = TRUE, allow.rep,
       per <- do.call(expand.grid, rep(list(1:nrow(cset)), n.alts))
       per <- per[apply(per, 1, function(x) {length(unique(x)) == n.alts}),]
       cset_comb <- list()
-      for (k in 1:dim(per)[1]) {
+      for (k in 1:nrow(per)) {
         cset_comb[[k]] <- cset[as.numeric(per[k,]),] # Permutations
       } # End for
       # in repe: True where the choice set is located
