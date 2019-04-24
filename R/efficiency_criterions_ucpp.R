@@ -2,7 +2,11 @@
 Derr_ucpp <- function(par, des, n.alts) {
   info.des <- InfoDes_cpp(par, des, n.alts)
   detinfo <- det_cpp(info.des)
-  ifelse((detinfo <= 0), return(NA), return(detinfo^(-1 / length(par))))
+  if(is.nan(detinfo)){
+    return(NaN)
+  } else {
+    ifelse((detinfo <= 0), return(NA), return(detinfo^(-1 / length(par))))
+  }
 }
 
 # DerrS_P using InfoDes_cpp and det_cpp
