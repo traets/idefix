@@ -117,7 +117,7 @@ n.alts = 2, n.sets = 8, parallel = FALSE, alt.cte = c(0, 1))
 
 # DB-efficient design with categorical and continuous factors
 # 2 categorical attributes with 4 and 2 levels (effect coded) and 1 
-continuous attribute (= 5 parameters)
+# continuous attribute (= 5 parameters)
 mu <- c(0.5, 0.8, 0.2, 0.4, 0.3) 
 v <- diag(length(mu)) # Prior variance.
 set.seed(123) 

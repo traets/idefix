@@ -137,9 +137,9 @@ ImpsampMNL <- function(n.draws, prior.mean, prior.covar, des, n.alts, y,
     n.cte <- 0
   }
   # mode imp dens 
-  maxest <- stats::optim(par = prior.mean, LogPost, lower2 = lower, upper2 = upper, prior.mean = prior.mean, prior.covar = prior.covar, 
-                  des = des, y = y, n.alts = n.alts, lower = lower, upper = upper, 
-                  method = "L-BFGS-B", hessian = FALSE)$par
+  maxest <- stats::optim(par = prior.mean, LogPost, lower2 = lower, upper2 = upper, prior.mean = prior.mean, 
+                         prior.covar = prior.covar, des = des, y = y, n.alts = n.alts, lower = lower, upper = upper, 
+                         method = "L-BFGS-B", hessian = FALSE)$par
   # covar imp dens 
   hess <- Hessian(par = maxest, des = des, prior.covar = prior.covar, n.alts = n.alts)
   g.covar <- -solve(hess)
