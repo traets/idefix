@@ -16,7 +16,8 @@ Fullsets_ucpp <- function(cand.set, n.alts, no.choice, reduce = TRUE, allow.rep,
     j <- 1 # counter of choice sets inside the loop
     while (i < nrow(des)) {
       cset <- des[i:(i + n.alts - 1),] # Subset a choice set from initial design
-      per <- expand.grid(1:nrow(cset),1:nrow(cset)) # Compute permutations
+      #per <- expand.grid(1:nrow(cset),1:nrow(cset),1:nrow(cset)) # Compute permutations
+      per <- do.call(expand.grid, rep(list(1:nrow(cset)), n.alts))
       per <- per[apply(per, 1, function(x) {length(unique(x)) == n.alts}),]
       cset_comb <- list()
       for (k in 1:dim(per)[1]) {
