@@ -226,7 +226,8 @@ Modfed <- function(cand.set, n.sets, n.alts, par.draws, alt.cte = NULL, no.choic
     }
     d.start <- lapply(start.des, StartDB, par.draws, n.alts)
     if (!any(is.finite(unlist(lapply(d.start, mean, na.rm = TRUE))))) {
-      stop("One or more of the provided start designs resulted in an unvalid db-error.")
+      stop("One or more of the provided start designs resulted in an unvalid db-error.
+           Make sure the utility of any alternative cannot exceed 700.")
     }
   } 
   if (is.null(start.des)) {
@@ -243,7 +244,10 @@ Modfed <- function(cand.set, n.sets, n.alts, par.draws, alt.cte = NULL, no.choic
         }
       }
       d.start <- lapply(start.des, StartDB, par.draws, n.alts)
-      if (any(is.finite(unlist(lapply(d.start, mean, na.rm = TRUE))))) {
+      if(!any(is.finite(unlist(lapply(d.start, mean, na.rm = TRUE))))){
+        stop("One or more draws resulted in an unvalid d-error. 
+             Make sure the utility of any alternative cannot exceed 700.")
+      } else {
         okstart <- TRUE
       } 
     }
