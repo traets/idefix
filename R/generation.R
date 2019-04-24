@@ -37,8 +37,9 @@ Profiles <- function(lvls, coding, c.lvls = NULL) {
   contins <-  which(coding == "C")
   n.contins <-  length(contins)
   # error continuous levels 
-  if (!is.null(c.lvls) && !is.list(c.lvls)) { 
-    stop('c.lvls should be a list.')
+  if (!is.null(c.lvls)){ 
+    if(!is.list(c.lvls)){stop("'c.lvls' should be a list.")}
+    if(!is.numeric(unlist(c.lvls))){stop("components of 'c.lvls' should be numeric")}
   }
   # Error correct coding types.
   codings.types <- c("E", "D", "C")
@@ -240,7 +241,7 @@ Lattice_trunc <- function (n, mean, cvar, lower, upper, df) {
   A <- chol(cvar)
   XX <- NULL
   while(left > 0.2){
-    m = ceiling(sqrt(left))
+    m = ceiling(log(left)/log(2))
     if(m < 2){m = 2}
     lattice <- Lat(K = dim, b = 2, m = m)
     X <- matrix(NA, nrow(lattice), dim)
