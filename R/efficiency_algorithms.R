@@ -689,8 +689,9 @@ SeqDB <- function(des = NULL, cand.set, n.alts, par.draws, prior.covar,
 #' # Efficient choice set to add. 
 #' SeqKL(cand.set = cs, n.alts = 2, alt.cte = ac, par.draws = ps, weights = NULL)
 #' @export
-SeqKL <- function(cand.set, n.alts, alt.cte = NULL, par.draws, weights, 
-                  reduce = TRUE) {
+SeqKL <- function(des = NULL, cand.set, n.alts, alt.cte = NULL, par.draws, 
+                  weights = NULL, reduce = FALSE, allow.rep = FALSE) {
+  # Reduce parameter does not matter in SeqKL
   # Handling par.draws.
   if (!(is.matrix(par.draws))) {
     par.draws <- matrix(par.draws, nrow = 1)
@@ -733,26 +734,32 @@ SeqKL <- function(cand.set, n.alts, alt.cte = NULL, par.draws, weights,
   #   stop("dimension of par.draws does not match the dimension of alt.cte + cand.set.")
   # }
   # All choice sets.
-  full.comb <- gtools::combinations(n = nrow(cand.set), r = n.alts, 
-                                    repeats.allowed = !reduce)
+  # full.comb <- gtools::combinations(n = nrow(cand.set), r = n.alts, 
+  #                                   repeats.allowed = !reduce)
+  full.comb <- Fullsets_ucpp(cand.set = cand.set, n.alts = n.alts, 
+                                 no.choice = NULL, reduce = reduce, 
+                                 allow.rep = allow.rep, des = des)
+  
   # If no weights, equal weights.
   if (is.null(weights)) {
     weights <- rep(1, nrow(par.draws))
   }
   # Calculate KL for each set.
-  kl.infos <- apply(full.comb, 1, KLs, par.draws, cte.des, cand.set, weights)
+  #kl.infos <- apply(full.comb, 1, KLs, par.draws, cte.des, cand.set, weights)
+  kl.infos <- lapply(full.comb, KL, par.draws, weights)
+  
   # Select maximum.
-  comb.nr <- as.numeric(full.comb[which.max(kl.infos), ])
-  set <- cand.set[comb.nr, ]
+  #comb.nr <- as.numeric(full.comb[which.max(kl.infos), ])
+  #set <- cand.set[comb.nr, ]
+  set <- full.comb[[which.max(kl.infos)]]
   # Add alternative specific constants if necessary
   if (!is.null(cte.des)) {
     set <- cbind(cte.des, set)
   }
   row.names(set) <- NULL
   # return.
-  return(list(set = set, kl = max(kl.infos)))
+  return(list(set = set, kl = max(unlist(kl.infos))))
 }
-
 
 # SeqKL <- function(des = NULL, cand.set, n.alts, par.draws, prior.covar, 
 #                     alt.cte = NULL, no.choice = NULL, weights = NULL, 

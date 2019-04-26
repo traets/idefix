@@ -4,10 +4,14 @@
 \alias{SeqKL}
 \title{Sequential Kullback-Leibler based algorithm for the MNL model.}
 \usage{
-SeqKL(cand.set, n.alts, alt.cte = NULL, par.draws, weights,
-  reduce = TRUE)
+SeqKL(des = NULL, cand.set, n.alts, alt.cte = NULL, par.draws, weights,
+  reduce = TRUE, allow.rep = FALSE)
 }
 \arguments{
+\item{des}{A design matrix in which each row is a profile. If alternative
+specific constants are present, those should be included as the first
+column(s) of the design. Can be generated with \code{\link{Modfed}}}
+
 \item{cand.set}{A numeric matrix in which each row is a possible profile. The
 \code{\link{Profiles}} function can be used to generate this.}
 
@@ -24,6 +28,9 @@ alternative specific constant is desired.}
 
 \item{reduce}{Logical value indicating whether the candidate set should be
 reduced or not.}
+
+\item{allow.rep}{Logical value indicating whether repeated choice sets are
+allowed in the design.}
 }
 \value{
 \item{set}{Numeric matrix containing the choice set that maximizes the expected KL divergence.}
