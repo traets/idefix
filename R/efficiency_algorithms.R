@@ -504,7 +504,7 @@ SeqDB <- function(des = NULL, cand.set, n.alts, par.draws, prior.covar,
         par.draws[[1]] <- matrix(par.draws[[1]], ncol = 1)
       }
       if (!(all(unlist(lapply(par.draws, is.matrix))))) {
-        stop("'par.draws' should contain 2 matrices")
+        stop("'par.draws' should contain two matrices")
       }
       if (!isTRUE(all.equal(ncol(par.draws[[1]]), n.cte))) {
         stop("the first component of 'par.draws' should contain the same number 
@@ -689,23 +689,52 @@ SeqDB <- function(des = NULL, cand.set, n.alts, par.draws, prior.covar,
 #' # Efficient choice set to add. 
 #' SeqKL(cand.set = cs, n.alts = 2, alt.cte = ac, par.draws = ps, weights = NULL)
 #' @export
-SeqKL <- function(cand.set, n.alts, alt.cte, par.draws, weights, reduce = TRUE) {
+SeqKL <- function(cand.set, n.alts, alt.cte = NULL, par.draws, weights, 
+                  reduce = TRUE) {
   # Handling par.draws.
   if (!(is.matrix(par.draws))) {
     par.draws <- matrix(par.draws, nrow = 1)
   }
   # Error alternative specific constants.
-  if (length(alt.cte) != n.alts) {
-    stop("n.alts does not match the alt.cte vector")
+  if (!is.null(alt.cte)) {
+    if (length(alt.cte) != n.alts) {
+      stop("n.alts does not match the alt.cte vector")
+    }
+    if (!all(alt.cte %in% c(0, 1))) {
+      stop("'alt.cte' should only contain zero or ones.")
+    }
+    # alternative specific constants
+    n.cte <- length(which(alt.cte == 1L))
+    if (isTRUE(all.equal(n.cte, 0L))) {
+      alt.cte <- NULL
+      cte.des <- NULL
+    }
+    # Create alternative specific design.
+    cte.des <- Altspec(alt.cte = alt.cte, n.sets = 1)  
+    
+    # Error handling cte.des
+    if (ncol(cand.set) + ncol(cte.des) != ncol(par.draws)) {
+      stop("dimension of par.draws does not match the dimension of alt.cte + cand.set.")
+    }
+  } else {
+    cte.des <- NULL
+    
+    # Error handling cte.des
+    if (ncol(cand.set) != ncol(par.draws)) {
+      stop("dimension of par.draws does not match the dimension of alt.cte + cand.set.")
+    }
   }
+  
   # Create alternative specific design.
-  cte.des <- Altspec(alt.cte = alt.cte, n.sets = 1)
+  # cte.des <- Altspec(alt.cte = alt.cte, n.sets = 1)
+  
   # Error handling cte.des
-  if (ncol(cand.set) + ncol(cte.des) != ncol(par.draws)) {
-    stop("dimension of par.draws does not match the dimension of alt.cte + cand.set.")
-  }
+  # if (ncol(cand.set) + ncol(cte.des) != ncol(par.draws)) {
+  #   stop("dimension of par.draws does not match the dimension of alt.cte + cand.set.")
+  # }
   # All choice sets.
-  full.comb <- gtools::combinations(n = nrow(cand.set), r = n.alts, repeats.allowed = !reduce)
+  full.comb <- gtools::combinations(n = nrow(cand.set), r = n.alts, 
+                                    repeats.allowed = !reduce)
   # If no weights, equal weights.
   if (is.null(weights)) {
     weights <- rep(1, nrow(par.draws))
@@ -725,4 +754,140 @@ SeqKL <- function(cand.set, n.alts, alt.cte, par.draws, weights, reduce = TRUE) 
 }
 
 
+# SeqKL <- function(des = NULL, cand.set, n.alts, par.draws, prior.covar, 
+#                     alt.cte = NULL, no.choice = NULL, weights = NULL, 
+#                     parallel = TRUE, reduce = TRUE, 
+#                     allow.rep = FALSE) {
+#   # Error handling initial design
+#   if (is.null(des)) {
+#     n.sets <- 1L
+#     allow.rep <- T
+#   } else { 
+#     if (!is.matrix(des)) {
+#       stop("'des' should be a matrix or NULL")
+#     }
+#     if (!isTRUE(nrow(des) %% n.alts == 0)) {
+#       stop("'n.alts' does not seem to match with the number of rows in 'des'")
+#     }
+#     n.sets <- nrow(des) / n.alts
+#   }
+#   
+#   ### Error handling for design specifications
+#   # No choice errors
+#   if (!is.null(no.choice)) {
+#     if (!is.wholenumber(no.choice)) {
+#       stop("'no.choice' should be an integer or NULL")
+#     }
+#     if (any(isTRUE(no.choice > (n.alts + 0.2)), isTRUE(no.choice < 0.2))) {
+#       stop("'no.choice' does not indicate one of the alternatives")
+#     }
+#     if (is.null(alt.cte)) {
+#       stop("if there is a no choice alternative, 'alt.cte' should be specified")
+#     }
+#     if (!isTRUE(all.equal(alt.cte[no.choice], 1))) {
+#       stop("the no choice alternative should correspond with a 1 in 'alt.cte'")
+#     }
+#   }
+#   
+#   # Alternative constant errors
+#   if (!is.null(alt.cte)) {
+#     if (length(alt.cte) != n.alts) {
+#       stop("'n.alts' does not match the 'alt.cte' vector")
+#     }
+#     if (!all(alt.cte %in% c(0, 1))) {
+#       stop("'alt.cte' should only contain zero or ones.")
+#     }
+#     # alternative specific constants
+#     n.cte <- length(which(alt.cte == 1L))
+#     if (isTRUE(all.equal(n.cte, 0L))) {
+#       alt.cte <- NULL
+#       cte.des <- NULL
+#     }
+#     #prior.covar
+#     if (!isTRUE(all.equal(ncol(prior.covar), (ncol(cand.set) + n.cte)))) {
+#       stop("number of columns of 'prior.covar' does not equal 
+#            the number of columns in 'cand.set' + nonzero elements in 'alt.cte'")
+#     }
+#     
+#     # Handling errors when there are alternative constants
+#     if (n.cte > 0.2) {
+#       if (!is.list(par.draws)) {
+#         stop("'par.draws' should be a list when 'alt.cte' is not NULL")
+#       }
+#       if (!isTRUE(all.equal(length(par.draws), 2))) {
+#         stop("'par.draws' should contain two components")
+#       }
+#       # If there is only one specific constant and is a vector, then it is
+#       # transformed to a matrix
+#       if (isTRUE(all.equal(n.cte, 1))) {
+#         if (is.vector(par.draws[[1]])) {
+#           par.draws[[1]] <- matrix(par.draws[[1]], ncol = 1)
+#         }
+#       }
+#       if (!(all(unlist(lapply(par.draws, is.matrix))))) {
+#         stop("'par.draws' should contain two matrices")
+#       }
+#       if (!isTRUE(all.equal(ncol(par.draws[[1]]), n.cte))) {
+#         stop("the first component of 'par.draws' should contain the same number 
+#              of columns as there are non zero elements in 'alt.cte'")
+#       }
+#       dims <-  as.data.frame(lapply(par.draws, dim))
+#       if (!isTRUE(all.equal(dims[1, 1], dims[1, 2]))) { 
+#         stop("the number of rows in the components of 'par.draws' should be equal")
+#       }
+#       if (!identical((dims[2, 1] + dims[2, 2]), (n.cte + ncol(cand.set)))) { 
+#         stop("the sum of the number of columns in the components of 'par.draws' 
+#              should equal the number of columns of 'cand.set' + the number of non-zero elements in 'alt.cte'")
+#       }
+#       par.draws  <- do.call("cbind", par.draws) # Transform par.draws to a matrix
+#     }
+#     # Create alternative specific design.
+#     cte.des <- Altspec(alt.cte = alt.cte, n.sets = n.sets)
+#     cte.set <- matrix(cte.des[1:n.alts, ], ncol = n.cte, byrow = FALSE)
+#   } else {
+#       cte.des <- NULL
+#       n.cte <- 0
+#       # if no alternative constants 
+#       if (!is.matrix(par.draws)) {
+#         stop("'par.draws'should be a matrix when 'alt.cte' = NULL")
+#       }
+#     }
+#   
+#   # Weights errors
+#   n.par <- ncol(par.draws)
+#   if (!is.null(weights)) {
+#     if (!isTRUE(all.equal(length(weights), nrow(par.draws)))) {
+#       stop("length of 'weights' does not match number total number of rows in 'par.draws'")
+#     }
+#   } else {
+#     weights <- rep(1L, nrow(par.draws))
+#   }
+#   
+#   ## When a design is supplied
+#   if (!is.null(des)) {
+#     # Error par.draws
+#     if (!isTRUE(all.equal(ncol(des), n.par))) {
+#       stop("number of columns in 'par.draws' does not match the number of columns in 'des'")
+#     }
+#     # Starting and initializing values.
+#     i.cov <- solve(prior.covar)
+#     # d.start <- apply(par.draws, 1, DerrC_ucpp, des = des,  n.alts = n.alts, 
+#     #                  i.cov = i.cov)
+#     d.start <- apply(par.draws, 1, KL, set = des, weights = weights)
+#     
+#     db.start <- mean(d.start, na.rm = TRUE)
+#     full.comb <- Fullsets_ucpp(cand.set = cand.set, n.alts = n.alts, 
+#                                no.choice = no.choice, reduce = reduce, 
+#                                allow.rep = allow.rep, des = des)
+#     # Adding alternative constants
+#     if (!is.null(cte.des)) {
+#       full.comb <- lapply(full.comb, function(x) cbind(cte.set, x))
+#     }
+#     
+#     # Adding these new choice sets to the initial design
+#     full.des <- lapply(full.comb, function(x) rbind(des, x))
+#     
+#     
+#   } # End if when a design is supplied
+# }
 

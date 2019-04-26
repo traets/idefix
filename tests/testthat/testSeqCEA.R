@@ -89,7 +89,7 @@ test_that("Errors for creating initial design in CEA function", {
                                                    list(sample[ , 2:7])),
                       prior.covar = pc, 
                       alt.cte = c(1, 0), parallel = FALSE), 
-               "'par.draws' should contain 2 matrices")
+               "'par.draws' should contain two matrices")
   
   # When there is only one alternative constant, there must only one column in 
   # the first element of par.draws. Here there are two elements

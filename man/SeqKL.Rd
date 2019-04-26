@@ -4,7 +4,8 @@
 \alias{SeqKL}
 \title{Sequential Kullback-Leibler based algorithm for the MNL model.}
 \usage{
-SeqKL(cand.set, n.alts, alt.cte, par.draws, weights, reduce = TRUE)
+SeqKL(cand.set, n.alts, alt.cte = NULL, par.draws, weights,
+  reduce = TRUE)
 }
 \arguments{
 \item{cand.set}{A numeric matrix in which each row is a possible profile. The
