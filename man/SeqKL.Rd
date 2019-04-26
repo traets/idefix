@@ -4,8 +4,8 @@
 \alias{SeqKL}
 \title{Sequential Kullback-Leibler based algorithm for the MNL model.}
 \usage{
-SeqKL(des = NULL, cand.set, n.alts, alt.cte = NULL, par.draws, weights,
-  reduce = TRUE, allow.rep = FALSE)
+SeqKL(des = NULL, cand.set, n.alts, alt.cte = NULL, par.draws,
+  weights = NULL, allow.rep = FALSE)
 }
 \arguments{
 \item{des}{A design matrix in which each row is a profile. If alternative
@@ -25,9 +25,6 @@ alternative specific constant is desired.}
 
 \item{weights}{A vector containing the weights of the draws. Default is
 \code{NULL}, See also \code{\link{ImpsampMNL}}.}
-
-\item{reduce}{Logical value indicating whether the candidate set should be
-reduced or not.}
 
 \item{allow.rep}{Logical value indicating whether repeated choice sets are
 allowed in the design.}
