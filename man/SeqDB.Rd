@@ -6,7 +6,7 @@
 \usage{
 SeqDB(des = NULL, cand.set, n.alts, par.draws, prior.covar,
   alt.cte = NULL, no.choice = NULL, weights = NULL,
-  parallel = TRUE, reduce = TRUE)
+  parallel = TRUE, reduce = TRUE, allow.rep = FALSE)
 }
 \arguments{
 \item{des}{A design matrix in which each row is a profile. If alternative
@@ -37,6 +37,9 @@ over multiple cores.}
 
 \item{reduce}{Logical value indicating whether the candidate set should be
 reduced or not.}
+
+\item{allow.rep}{Logical value indicating whether repeated choice sets are
+allowed in the design.}
 }
 \value{
 \item{set}{A matrix representing a DB efficient choice set.}

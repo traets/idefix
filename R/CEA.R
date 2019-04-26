@@ -640,7 +640,7 @@ SeqCEA <- function(des = NULL, lvls, coding, c.lvls = NULL, n.alts, par.draws,
         }
       }
       if (!(all(unlist(lapply(par.draws, is.matrix))))) {
-        stop("'par.draws' should contain 2 matrices")
+        stop("'par.draws' should contain two matrices")
       }
       if (!isTRUE(all.equal(ncol(par.draws[[1]]), n.cte))) {
         stop("the first component of 'par.draws' should contain the same number 
