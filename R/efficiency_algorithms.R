@@ -473,6 +473,8 @@ SeqDB <- function(des = NULL, cand.set, n.alts, par.draws, prior.covar,
       alt.cte <- NULL
       cte.des <- NULL
     }
+  } else {
+    n.cte <- 0
   }
   #if no.choice
   if (!is.null(no.choice)) {
@@ -569,9 +571,12 @@ SeqDB <- function(des = NULL, cand.set, n.alts, par.draws, prior.covar,
     }
     # Starting and initializing values.
     i.cov <- solve(prior.covar)
-    d.start <- apply(par.draws, 1, DerrC_ucpp, des = des,  n.alts = n.alts, i.cov = i.cov)
+    d.start <- apply(par.draws, 1, DerrC_ucpp, des = des,  n.alts = n.alts, 
+                     i.cov = i.cov)
     db.start <- mean(d.start, na.rm = TRUE)
-    full.comb <- Fullsets_ucpp(cand.set = cand.set, n.alts = n.alts, no.choice = no.choice, reduce = reduce, allow.rep = allow.rep, des = des)
+    full.comb <- Fullsets_ucpp(cand.set = cand.set, n.alts = n.alts, 
+                               no.choice = no.choice, reduce = reduce, 
+                               allow.rep = allow.rep, des = des, n.cte = n.cte)
     #if alt.cte
     if (!is.null(cte.des)) {
       full.comb <- lapply(full.comb, function(x) cbind(cte.set, x))
@@ -728,6 +733,7 @@ SeqKL <- function(des = NULL, cand.set, n.alts, alt.cte = NULL, par.draws,
       stop("dimension of par.draws does not match the dimension of alt.cte + cand.set.")
     }
   } else {
+    n.cte <- 0
     cte.des <- NULL
     # Error handling cte.des
     if (ncol(cand.set) != ncol(par.draws)) {
@@ -740,7 +746,7 @@ SeqKL <- function(des = NULL, cand.set, n.alts, alt.cte = NULL, par.draws,
   #                                   repeats.allowed = !reduce)
   full.comb <- Fullsets_ucpp(cand.set = cand.set, n.alts = n.alts, 
                                  no.choice = NULL, reduce = FALSE, 
-                                 allow.rep = allow.rep, des = des)
+                                 allow.rep = allow.rep, des = des, n.cte = n.cte)
   
   # If no weights, equal weights.
   if (is.null(weights)) {
