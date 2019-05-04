@@ -561,7 +561,7 @@ CEAcore_ucpp <- function(des, par.draws, levels.list, n.alts, n.sets, n.cte,
 #' # Initial design.
 #' des <- example_design
 #' # Efficient choice set to add.
-#' SeqCEA(des = des, lvls = c(3, 3, 3), coding = c("E", "E", "E"), n.alts = 2,
+#' SeqCEA(des = des, lvls = c(3, 3, 3), coding = c("D", "D", "D"), n.alts = 2,
 #'        par.draws = sample, prior.covar = pc, parallel = FALSE)
 #' 
 #' # DB efficient choice set, given parameter draws. 
@@ -573,12 +573,12 @@ CEAcore_ucpp <- function(des, par.draws, levels.list, n.alts, n.sets, n.cte,
 #' pos <- MASS::mvrnorm(n = 10, mu = m, Sigma = pc)
 #' sample <- list(pos[ , 1:2], pos[ , 3:8])
 #' # Efficient choice set.
-#' SeqCEA(des = des, lvls = c(3, 3, 3), coding = c("E", "E", "E"), n.alts = 3, 
+#' SeqCEA(des = des, lvls = c(3, 3, 3), coding = c("D", "D", "D"), n.alts = 3, 
 #'       par.draws = sample, alt.cte = ac, prior.covar = pc, parallel = FALSE)
 #' @export
 SeqCEA <- function(des = NULL, lvls, coding, c.lvls = NULL, n.alts, par.draws, 
-                   prior.covar, n.cs = NULL, alt.cte = NULL, no.choice = NULL,
-                   weights = NULL, parallel = TRUE, reduce = TRUE) {
+                   prior.covar, alt.cte = NULL, no.choice = NULL,
+                   weights = NULL, parallel = TRUE, reduce = TRUE, n.cs = NULL) {
   # Error handling initial design
   if (is.null(des)) {
     n.sets <- 1L

@@ -418,7 +418,7 @@ Modfedje_ucpp <- function(desje, par.draws, cand.set, n.alts, n.sets, n.cte, alt
 #' @examples 
 #' # DB efficient choice set, given a design and parameter draws. 
 #' # Candidate profiles 
-#' cs <- Profiles(lvls = c(3, 3, 3), coding = c("E", "E", "E"))
+#' cs <- Profiles(lvls = c(3, 3, 3), coding = c("D", "D", "D"))
 #' m <- c(0.3, 0.2, -0.3, -0.2, 1.1, 2.4) # mean (total = 6 parameters).
 #' pc <- diag(length(m)) # covariance matrix
 #' set.seed(123)
@@ -432,7 +432,7 @@ Modfedje_ucpp <- function(desje, par.draws, cand.set, n.alts, n.sets, n.cte, alt
 #' # DB efficient choice set, given parameter draws. 
 #' # with alternative specific constants 
 #' des <- example_design2 
-#' cs <- Profiles(lvls = c(3, 3, 3), coding = c("E", "E", "E"))
+#' cs <- Profiles(lvls = c(3, 3, 3), coding = c("D", "D", "D"))
 #' ac <- c(1, 1, 0) # Alternative specific constants. 
 #' m <- c(0.3, 0.2, -0.3, -0.2, 1.1, 2.4, 1.8, 1.2) # mean 
 #' pc <- diag(length(m)) # covariance matrix
@@ -692,8 +692,8 @@ SeqDB <- function(des = NULL, cand.set, n.alts, par.draws, prior.covar,
 #' # Efficient choice set to add. 
 #' SeqKL(cand.set = cs, n.alts = 2, alt.cte = ac, par.draws = ps, weights = NULL)
 #' @export
-SeqKL <- function(des = NULL, cand.set, n.alts, alt.cte = NULL, par.draws, 
-                  weights = NULL, allow.rep = FALSE) {
+SeqKL <- function(des = NULL, cand.set, n.alts, par.draws, alt.cte = NULL, 
+                  no.choice = NULL, weights = NULL, allow.rep = FALSE) {
   # Handling error initial design
   if (is.null(des)) {
     n.sets <- 1L
@@ -708,10 +708,23 @@ SeqKL <- function(des = NULL, cand.set, n.alts, alt.cte = NULL, par.draws,
     n.sets <- nrow(des) / n.alts
   }
   
-  # Handling par.draws.
-  if (!(is.matrix(par.draws))) {
-    par.draws <- matrix(par.draws, nrow = 1)
+  ### Error handling for design specifications
+  # No choice errors
+  if (!is.null(no.choice)) {
+    if (!is.wholenumber(no.choice)) {
+      stop("'no.choice' should be an integer or NULL")
+    }
+    if (any(isTRUE(no.choice > (n.alts + 0.2)), isTRUE(no.choice < 0.2))) {
+      stop("'no.choice' does not indicate one of the alternatives")
+    }
+    if (is.null(alt.cte)) {
+      stop("if there is a no choice alternative, 'alt.cte' should be specified")
+    }
+    if (!isTRUE(all.equal(alt.cte[no.choice], 1))) {
+      stop("the no choice alternative should correspond with a 1 in 'alt.cte'")
+    }
   }
+  
   # Error alternative specific constants.
   if (!is.null(alt.cte)) {
     if (length(alt.cte) != n.alts) {
@@ -726,8 +739,39 @@ SeqKL <- function(des = NULL, cand.set, n.alts, alt.cte = NULL, par.draws,
       alt.cte <- NULL
       cte.des <- NULL
     }
+    
+    # Handling errors when there are alternative constants
+    if (n.cte > 0.2) {
+      if (!is.list(par.draws)) {
+        stop("'par.draws' should be a list when 'alt.cte' is not NULL")
+      }
+      if (!isTRUE(all.equal(length(par.draws), 2))) {
+        stop("'par.draws' should contain two components")
+      }
+      # If there is only one specific constant and is a vector, then it is
+      # transformed to a matrix
+      if (isTRUE(all.equal(n.cte, 1))) {
+        if (is.vector(par.draws[[1]])) {
+          par.draws[[1]] <- matrix(par.draws[[1]], ncol = 1)
+        }
+      }
+      if (!(all(unlist(lapply(par.draws, is.matrix))))) {
+        stop("'par.draws' should contain two matrices")
+      }
+      if (!isTRUE(all.equal(ncol(par.draws[[1]]), n.cte))) {
+        stop("the first component of 'par.draws' should contain the same number 
+             of columns as there are non zero elements in 'alt.cte'")
+      }
+      dims <-  as.data.frame(lapply(par.draws, dim))
+      if (!isTRUE(all.equal(dims[1, 1], dims[1, 2]))) { 
+        stop("the number of rows in the components of 'par.draws' should be equal")
+      }
+      par.draws  <- do.call("cbind", par.draws) # Transform par.draws to a matrix
+    }
+    
     # Create alternative specific design.
     cte.des <- Altspec(alt.cte = alt.cte, n.sets = 1)  
+    cte.set <- matrix(cte.des[1:n.alts, ], ncol = n.cte, byrow = FALSE)
     # Error handling cte.des
     if (ncol(cand.set) + ncol(cte.des) != ncol(par.draws)) {
       stop("dimension of par.draws does not match the dimension of alt.cte + cand.set.")
@@ -741,16 +785,27 @@ SeqKL <- function(des = NULL, cand.set, n.alts, alt.cte = NULL, par.draws,
     }
   }
   
+  # Check number of columns in par.draws and weights
+  n.par <- ncol(par.draws)
+  if (!is.null(weights)) {
+    if (!isTRUE(all.equal(length(weights), nrow(par.draws)))) {
+      stop("length of 'weights' does not match number total number of rows in 'par.draws'")
+    }
+  }
   # All choice sets.
   # full.comb <- gtools::combinations(n = nrow(cand.set), r = n.alts, 
   #                                   repeats.allowed = !reduce)
   full.comb <- Fullsets_ucpp(cand.set = cand.set, n.alts = n.alts, 
-                                 no.choice = NULL, reduce = FALSE, 
+                                 no.choice = no.choice, reduce = FALSE, 
                                  allow.rep = allow.rep, des = des, n.cte = n.cte)
   
   # If no weights, equal weights.
   if (is.null(weights)) {
     weights <- rep(1, nrow(par.draws))
+  }
+  # Add alternative specific constants if necessary
+  if (!is.null(cte.des)) {
+    full.comb <- lapply(full.comb, function(x) cbind(cte.set, x))
   }
   # Calculate KL for each set.
   #kl.infos <- apply(full.comb, 1, KLs, par.draws, cte.des, cand.set, weights)
@@ -761,9 +816,9 @@ SeqKL <- function(des = NULL, cand.set, n.alts, alt.cte = NULL, par.draws,
   #set <- cand.set[comb.nr, ]
   set <- full.comb[[which.max(kl.infos)]]
   # Add alternative specific constants if necessary
-  if (!is.null(cte.des)) {
-    set <- cbind(cte.des, set)
-  }
+  #if (!is.null(cte.des)) {
+  #  set <- cbind(cte.des, set)
+  #}
   row.names(set) <- NULL
   # return.
   return(list(set = set, kl = max(unlist(kl.infos))))
