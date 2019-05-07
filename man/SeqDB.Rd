@@ -91,7 +91,7 @@ computation time will decrease significantly.
 \examples{
 # DB efficient choice set, given a design and parameter draws. 
 # Candidate profiles 
-cs <- Profiles(lvls = c(3, 3, 3), coding = c("E", "E", "E"))
+cs <- Profiles(lvls = c(3, 3, 3), coding = c("D", "D", "D"))
 m <- c(0.3, 0.2, -0.3, -0.2, 1.1, 2.4) # mean (total = 6 parameters).
 pc <- diag(length(m)) # covariance matrix
 set.seed(123)
@@ -105,7 +105,7 @@ SeqDB(des = des, cand.set = cs, n.alts = 2, par.draws = sample,
 # DB efficient choice set, given parameter draws. 
 # with alternative specific constants 
 des <- example_design2 
-cs <- Profiles(lvls = c(3, 3, 3), coding = c("E", "E", "E"))
+cs <- Profiles(lvls = c(3, 3, 3), coding = c("D", "D", "D"))
 ac <- c(1, 1, 0) # Alternative specific constants. 
 m <- c(0.3, 0.2, -0.3, -0.2, 1.1, 2.4, 1.8, 1.2) # mean 
 pc <- diag(length(m)) # covariance matrix

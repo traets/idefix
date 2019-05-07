@@ -5,8 +5,8 @@
 \title{Sequential coordinate exchange algorithm for MNL model.}
 \usage{
 SeqCEA(des = NULL, lvls, coding, c.lvls = NULL, n.alts, par.draws,
-  prior.covar, n.cs = NULL, alt.cte = NULL, no.choice = NULL,
-  weights = NULL, parallel = TRUE, reduce = TRUE)
+  prior.covar, alt.cte = NULL, no.choice = NULL, weights = NULL,
+  parallel = TRUE, reduce = TRUE, n.cs = NULL)
 }
 \arguments{
 \item{des}{A design matrix in which each row is a profile. If alternative
@@ -29,10 +29,6 @@ set.}
 
 \item{prior.covar}{Covariance matrix of the prior distribution.}
 
-\item{n.cs}{An integer indicating the number of possible random choice sets to
-consider in the search for the next best choice set possible. The default is
-\code{NULL}.}
-
 \item{alt.cte}{A binary vector indicating for each alternative whether an
 alternative specific constant is desired. The default is \code{NULL}.}
 
@@ -47,6 +43,10 @@ over multiple cores.}
 
 \item{reduce}{Logical value indicating whether the candidate set should be
 reduced or not.}
+
+\item{n.cs}{An integer indicating the number of possible random choice sets to
+consider in the search for the next best choice set possible. The default is
+\code{NULL}.}
 }
 \value{
 \item{set}{A matrix representing a DB efficient choice set.}
@@ -111,7 +111,7 @@ sample <- MASS::mvrnorm(n = 10, mu = m, Sigma = pc)
 # Initial design.
 des <- example_design
 # Efficient choice set to add.
-SeqCEA(des = des, lvls = c(3, 3, 3), coding = c("E", "E", "E"), n.alts = 2,
+SeqCEA(des = des, lvls = c(3, 3, 3), coding = c("D", "D", "D"), n.alts = 2,
        par.draws = sample, prior.covar = pc, parallel = FALSE)
 
 # DB efficient choice set, given parameter draws. 
@@ -123,7 +123,7 @@ pc <- diag(length(m)) # covariance matrix
 pos <- MASS::mvrnorm(n = 10, mu = m, Sigma = pc)
 sample <- list(pos[ , 1:2], pos[ , 3:8])
 # Efficient choice set.
-SeqCEA(des = des, lvls = c(3, 3, 3), coding = c("E", "E", "E"), n.alts = 3, 
+SeqCEA(des = des, lvls = c(3, 3, 3), coding = c("D", "D", "D"), n.alts = 3, 
       par.draws = sample, alt.cte = ac, prior.covar = pc, parallel = FALSE)
 }
 \references{
