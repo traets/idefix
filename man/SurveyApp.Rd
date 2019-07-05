@@ -94,7 +94,7 @@ design will be put on screen, one set after the other, and the responses will
 be saved. If \code{n.total} > (\code{nrow(des)} / \code{length(alts)}), first
 the specified design will be shown and afterwards the remaining sets will be
 generated adaptively. If \code{des} = \code{NULL}, \code{n.total} sets will be
-generated adaptively. See \code{\link{SeqDB}} for more information on adaptive
+generated adaptively. See \code{\link{SeqMOD}} for more information on adaptive
 choice sets.
 
 Whenever adaptive sets will be generated, \code{prior.mean},

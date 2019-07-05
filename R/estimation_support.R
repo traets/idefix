@@ -223,7 +223,7 @@ Datatrans <- function(pkg, des, y, n.alts, n.sets, n.resp, bin, alt.names = NULL
 #' Function to generate responses given parameter values and a design matrix,
 #' assuming a MNL model.
 #' @param par Numeric vector containing parameter values.
-#' @inheritParams SeqDB
+#' @inheritParams SeqMOD
 #' @param bin Indicates whether the returned value should be a binary vector or 
 #'   a discrete value which denotes the chosen alternative.
 #' @return Numeric vector indicating the chosen alternatives.

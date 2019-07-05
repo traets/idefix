@@ -9,7 +9,7 @@
 #'
 #' \itemize{
 #' \item To generate efficient designs using a modified federov algorithm, please consult the \link[idefix]{Modfed} documentation.
-#' \item To generate adaptive designs, please consult the \link[idefix]{SeqDB} documentation.
+#' \item To generate adaptive designs, please consult the \link[idefix]{SeqMOD} documentation.
 #' \item To generate a discrete choice survey on screen, please consult the \link[idefix]{SurveyApp} documentation. 
 #' }
 #'

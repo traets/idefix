@@ -13,7 +13,7 @@
 #'be saved. If \code{n.total} > (\code{nrow(des)} / \code{length(alts)}), first 
 #'the specified design will be shown and afterwards the remaining sets will be 
 #'generated adaptively. If \code{des} = \code{NULL}, \code{n.total} sets will be
-#'generated adaptively. See \code{\link{SeqDB}} for more information on adaptive
+#'generated adaptively. See \code{\link{SeqMOD}} for more information on adaptive
 #'choice sets.
 #'
 #'Whenever adaptive sets will be generated, \code{prior.mean}, 
@@ -76,7 +76,7 @@
 #'@inheritParams Decode
 #'@inheritParams Modfed
 #'@inheritParams Profiles
-#'@inheritParams SeqDB
+#'@inheritParams SeqMOD
 #'@inheritParams ImpsampMNL
 #'@importFrom Rdpack reprompt
 #'@references \insertRef{ju}{idefix}
@@ -369,7 +369,7 @@ SurveyApp <- function(des = NULL, n.total, alts, atts, lvl.names, coding,
             }
             ## Selecting set
             # Select new set based on DB
-            setobj <- SeqDB(des = des, cand.set = cand.set, n.alts = n.alts, par.draws = s, prior.covar = prior.covar, alt.cte = alt.cte,
+            setobj <- SeqMOD(des = des, cand.set = cand.set, n.alts = n.alts, par.draws = s, prior.covar = prior.covar, alt.cte = alt.cte,
                             weights = w, no.choice = no.choice, parallel = parallel, reduce = reduce)
             set <- setobj$set
             db  <- setobj$db

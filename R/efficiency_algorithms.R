@@ -426,7 +426,7 @@ Modfedje_ucpp <- function(desje, par.draws, cand.set, n.alts, n.sets, n.cte, alt
 #' # Initial design.
 #' des <- example_design 
 #' # Efficient choice set to add. 
-#' SeqDB(des = des, cand.set = cs, n.alts = 2, par.draws = sample, 
+#' SeqMOD(des = des, cand.set = cs, n.alts = 2, par.draws = sample, 
 #'            prior.covar = pc, parallel = FALSE)
 #' 
 #' # DB efficient choice set, given parameter draws. 
@@ -439,10 +439,10 @@ Modfedje_ucpp <- function(desje, par.draws, cand.set, n.alts, n.sets, n.cte, alt
 #' pos <- MASS::mvrnorm(n = 10, mu = m, Sigma = pc)
 #' sample <- list(pos[ , 1:2], pos[ , 3:8])
 #' # Efficient choice set. 
-#' SeqDB(des = des, cand.set = cs, n.alts = 3, par.draws = sample, alt.cte = ac, 
+#' SeqMOD(des = des, cand.set = cs, n.alts = 3, par.draws = sample, alt.cte = ac, 
 #'            prior.covar = pc, parallel = FALSE)
 #' @export
-SeqDB <- function(des = NULL, cand.set, n.alts, par.draws, prior.covar, 
+SeqMOD <- function(des = NULL, cand.set, n.alts, par.draws, prior.covar, 
                   alt.cte = NULL, no.choice = NULL, weights = NULL, 
                   parallel = TRUE, reduce = TRUE, 
                   allow.rep = FALSE) {
@@ -661,7 +661,7 @@ SeqDB <- function(des = NULL, cand.set, n.alts, par.draws, prior.covar,
 #' divergence between prior and expected posterior. Otherwisely framed the 
 #' algorithm selects the choice set that maximizes the expected information 
 #' gain.
-#' @inheritParams SeqDB
+#' @inheritParams SeqMOD
 #' @param alt.cte A binary vector indicating for each alternative if an
 #'   alternative specific constant is desired.
 #' @return \item{set}{Numeric matrix containing the choice set that maximizes the expected KL divergence.}

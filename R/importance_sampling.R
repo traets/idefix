@@ -18,7 +18,7 @@
 #' generated untill \code{n.draws} is reached. The covariance matrix is in this case
 #' still calculated as if no truncation was present.
 #' 
-#' @inheritParams SeqDB
+#' @inheritParams SeqMOD
 #' @param n.draws numeric value indicating the number of draws. 
 #' @param prior.mean Numeric vector indicating the mean of the multivariate
 #'   normal distribution (prior).
