@@ -11,25 +11,25 @@ RespondMNL(par, des, n.alts, bin = TRUE)
 
 \item{des}{A design matrix in which each row is a profile. If alternative
 specific constants are present, those should be included as the first
-column(s) of the design. Can be generated with \code{\link{Modfed}}}
+column(s) of the design. Can be generated with \code{\link{Modfed}} or \code{\link{CEA}}.}
 
 \item{n.alts}{Numeric value indicating the number of alternatives per choice
 set.}
 
-\item{bin}{Indicates whether the returned value should be a binary vector or
-a discrete value which denotes the chosen alternative.}
+\item{bin}{A logical value indicating whether the returned value should be a
+binary vector or a discrete value which denotes the chosen alternative.}
 }
 \value{
 Numeric vector indicating the chosen alternatives.
 }
 \description{
-Function to generate responses given parameter values and a design matrix,
-assuming a MNL model.
+Function to generate random responses given parameter values and a design
+matrix, assuming a MNL model.
 }
 \examples{
 # design: 3 dummy coded attributes, each 3 levels. There are 8 choice sets.
 des <- example_design
 set.seed(123)
 true_par <- rnorm(6)
-RespondMNL(par=true_par, des = des, n.alts = 2)
+RespondMNL(par = true_par, des = des, n.alts = 2)
 }

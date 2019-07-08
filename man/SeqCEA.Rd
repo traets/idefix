@@ -2,7 +2,7 @@
 % Please edit documentation in R/CEA.R
 \name{SeqCEA}
 \alias{SeqCEA}
-\title{Sequential coordinate exchange algorithm for MNL model.}
+\title{Sequential Coordinate Exchange algorithm for MNL model.}
 \usage{
 SeqCEA(des = NULL, lvls, coding, c.lvls = NULL, n.alts, par.draws,
   prior.covar, alt.cte = NULL, no.choice = NULL, weights = NULL,
@@ -14,10 +14,10 @@ specific constants are present, those should be included as the first
 column(s) of the design. Can be generated with \code{\link{Modfed}} or
 \code{\link{CEA}}}
 
-\item{lvls}{A numeric vector which contains for each attribute, the number
+\item{lvls}{A numeric vector which contains for each attribute the number
 of levels.}
 
-\item{coding}{Type op coding that needs to be used for each attribute.}
+\item{coding}{Type of coding that needs to be used for each attribute.}
 
 \item{c.lvls}{A list containing numeric vectors with the attribute levels for
 each continuous attribute. The default is \code{NULL}.}
@@ -36,7 +36,7 @@ alternative specific constant is desired. The default is \code{NULL}.}
 is \code{NULL}.}
 
 \item{weights}{A vector containing the weights of the draws. Default is
-\code{NULL}, See also \code{\link{ImpsampMNL}}.}
+\code{NULL}. See also \code{\link{ImpsampMNL}}.}
 
 \item{parallel}{Logical value indicating whether computations should be done
 over multiple cores.}
@@ -65,7 +65,7 @@ values are updated after each observed response.
 
 Previously generated choice sets, which together form an initial design, can
 be provided in \code{des}. When no design is provided, the algorithm will
-select te most efficient choice set based on the fisher information of the
+select the most efficient choice set based on the fisher information of the
 prior covariance matrix \code{prior.covar}.
 
 If \code{alt.cte = NULL}, \code{par.draws} should be a matrix in which each
@@ -82,15 +82,6 @@ NULL}, which means that the number of possible choice sets is the product of
 attribute levels considered in the experiment. For instance, an experiment
 with 3 attribute and 3 levels each will consider 3^3 = 27 possible choice sets.
 
-If \code{reduce} is \code{TRUE}, \code{repeats.allowed = FALSE} and vice versa.
-Furthermore, the list of potential choice sets will be screaned in order to
-select only those choice sets with a unique information matrix. If no
-alternative specific constants
-are used, \code{reduce} should always be \code{TRUE}. When alternative specific
-constants are used \code{reduce} can be \code{TRUE} so that the algorithm
-will be faster, but the combinations of constants and profiles will not be
-evaluated exhaustively.
-
 The \code{weights} argument can be used when the \code{par.draws} have
 weights. This is for example the case when parameter values are updated using
 \code{\link{ImpsampMNL}}.
@@ -100,6 +91,11 @@ be used to decide upon the number of available cores. That number minus 1
 cores will be used to search for the optimal choice set. For small problems
 (6 parameters), \code{parallel = TRUE} can be slower. For larger problems the
 computation time will decrease significantly.
+
+\emph{Note:} this function is faster than \code{\link[idefix]{SeqMOD}}, but
+the output is not as stable. This happens because this function
+makes a random search to get the choice set, whereas
+\code{\link[idefix]{SeqMOD}} makes an exhaustive search.
 }
 \examples{
 # DB efficient choice set, given a design and parameter draws. 

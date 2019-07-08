@@ -53,9 +53,9 @@ normal distribution (prior).}
 \item{prior.covar}{Covariance matrix of the prior distribution.}
 
 \item{cand.set}{A numeric matrix in which each row is a possible profile. The
-\code{\link{Profiles}} function can be used to generate this.}
+\code{\link{Profiles}} function can be used to generate this matrix.}
 
-\item{n.draws}{numeric value indicating the number of draws.}
+\item{n.draws}{Numeric value indicating the number of draws.}
 
 \item{lower}{Numeric vector of lower truncation points, the default
 is \code{NULL}.}

@@ -2,8 +2,8 @@
 #' Coordinate Exchange algorithm for MNL models.
 #' 
 #' The algorithm improves an initial start design by considering changes on an
-#' attribute-by-attribute basis. By doing this it tries to minimize the 
-#' D(B)-error, based on a multinomial logit model. This routine is repeated for
+#' attribute-by-attribute basis. By doing this, it tries to minimize the 
+#' D(B)-error based on a multinomial logit model. This routine is repeated for
 #' multiple starting designs.
 #' 
 #' Each iteration will loop through all profiles from the initial design, 
@@ -16,7 +16,7 @@
 #' in which each row is a draw from a multivariate distribution, the DB-error 
 #' will be calculated, and the design will be optimised globally. Whenever there
 #' are alternative specific constants, \code{par.draws} should be a list 
-#' containing two matrices. The first matrix containing the parameter draws for
+#' containing two matrices: The first matrix containing the parameter draws for
 #' the alternative specific constant parameters. The second matrix containing
 #' the draws for the rest of the parameters.
 #' 
@@ -29,13 +29,14 @@
 #' of this binary vector should equal \code{n.alts}, were \code{0} indicates the
 #' absence of an alternative specific constant and \code{1} the opposite.
 #' 
-#' \code{start.des} is a list with one or several matrices. In each matrix each
-#' row is a profile. The number of rows equals \code{n.sets * n.alts}, and the
+#' \code{start.des} is a list with one or several matrices corresponding to 
+#' initial start design(s). In each matrix each row is a profile. The number of rows
+#' equals \code{n.sets * n.alts}, and the
 #' number of columns equals the number of columns of the design matrix + the
 #' number of non-zero elements in \code{alt.cte}. Consider that for a 
 #' categorical attribute with *p* levels, there are *p - 1* columns in the design
 #' matrix, whereas for a continuous attribute there is only one column. If
-#' \code{start.des = NULL}, \code{n.start} random start designs will be
+#' \code{start.des = NULL}, \code{n.start} random initial designs will be
 #' generated. If start designs are provided, \code{n.start} is ignored.
 #' 
 #' If \code{no.choice} is \code{TRUE}, in each choice set an alternative with
@@ -47,21 +48,21 @@
 #' cores will be used to search for efficient designs. The computation time will
 #' decrease significantly when \code{parallel = TRUE}.
 #' 
-#' @param lvls  A numeric vector which contains for each attribute, the number
+#' @param lvls  A numeric vector which contains for each attribute the number
 #'   of levels.
-#' @param coding Type op coding that needs to be used for each attribute.
+#' @param coding Type of coding that needs to be used for each attribute.
 #' @param c.lvls A list containing numeric vectors with the attribute levels for
 #'   each continuous attribute. The default is \code{NULL}.
 #' @param n.sets Numeric value indicating the number of choice sets.
 #' @param n.alts Numeric value indicating the number of alternatives per choice 
 #'   set.
-#' @param par.draws A matrix or a list, dependend on \code{alt.cte}.
+#' @param par.draws A matrix or a list, depending on \code{alt.cte}.
 #' @param alt.cte A binary vector indicating for each alternative whether an 
 #'   alternative specific constant is desired. The default is \code{NULL}.
 #' @param no.choice A logical value indicating whether a no choice alternative 
 #'   should be added to each choice set. The default is \code{FALSE}.
-#' @param start.des A list containing one or more matrices. The default is 
-#' \code{NULL}.
+#' @param start.des A list containing one or more matrices corresponding to 
+#' initial start design(s). The default is \code{NULL}.
 #' @param parallel Logical value indicating whether computations should be done 
 #'   over multiple cores. The default is \code{TRUE}.
 #' @param max.iter A numeric value indicating the maximum number allowed 
@@ -71,8 +72,9 @@
 #' @param best A logical value indicating whether only the best design should be
 #'   returned. The default is \code{TRUE}.
 #' @return 
-#'   If \code{best = TRUE} the design with the lowest D(B)-error. If \code{best 
-#'   = FALSE}, the result of all (provided) start designs. \item{design}{A
+#'   If \code{best = TRUE} the design with the lowest D(B)-error is returned. 
+#'   If \code{best = FALSE}, the results of all (provided) start designs are
+#'   returned. \item{design}{A
 #'   numeric matrix wich contains an efficient design.} \item{error}{Numeric
 #'   value indicating the D(B)-error of the design.} \item{inf.error}{Numeric
 #'   value indicating the percentage of draws for which the D-error was
@@ -82,7 +84,7 @@
 #' @examples
 #' \donttest{
 #' # DB-efficient designs
-#' # 3 Attributes, all dummy coded. 1 alternative specific constant. = 7 parameters
+#' # 3 Attributes, all dummy coded. 1 alternative specific constant = 7 parameters
 #' mu <- c(1.2, 0.8, 0.2, -0.3, -1.2, 1.6, 2.2) # Prior parameter vector
 #' v <- diag(length(mu)) # Prior variance.
 #' set.seed(123) 
@@ -479,7 +481,7 @@ CEAcore_ucpp <- function(des, par.draws, levels.list, n.alts, n.sets, n.cte,
 }
 
 
-#' Sequential coordinate exchange algorithm for MNL model.
+#' Sequential Coordinate Exchange algorithm for MNL model.
 #' 
 #' Selects the choice set that minimizes the DB-error when added to an initial 
 #' design, given (updated) parameter values.
@@ -491,7 +493,7 @@ CEAcore_ucpp <- function(des, par.draws, levels.list, n.alts, n.sets, n.cte,
 #' 
 #' Previously generated choice sets, which together form an initial design, can
 #' be provided in \code{des}. When no design is provided, the algorithm will
-#' select te most efficient choice set based on the fisher information of the
+#' select the most efficient choice set based on the fisher information of the
 #' prior covariance matrix \code{prior.covar}.
 #' 
 #' If \code{alt.cte = NULL}, \code{par.draws} should be a matrix in which each 
@@ -508,15 +510,6 @@ CEAcore_ucpp <- function(des, par.draws, levels.list, n.alts, n.sets, n.cte,
 #' attribute levels considered in the experiment. For instance, an experiment 
 #' with 3 attribute and 3 levels each will consider 3^3 = 27 possible choice sets. 
 #' 
-#' If \code{reduce} is \code{TRUE}, \code{repeats.allowed = FALSE} and vice versa.
-#' Furthermore, the list of potential choice sets will be screaned in order to
-#' select only those choice sets with a unique information matrix. If no 
-#' alternative specific constants 
-#' are used, \code{reduce} should always be \code{TRUE}. When alternative specific 
-#' constants are used \code{reduce} can be \code{TRUE} so that the algorithm 
-#' will be faster, but the combinations of constants and profiles will not be 
-#' evaluated exhaustively.
-#' 
 #' The \code{weights} argument can be used when the \code{par.draws} have 
 #' weights. This is for example the case when parameter values are updated using
 #' \code{\link{ImpsampMNL}}.
@@ -526,6 +519,11 @@ CEAcore_ucpp <- function(des, par.draws, levels.list, n.alts, n.sets, n.cte,
 #' cores will be used to search for the optimal choice set. For small problems 
 #' (6 parameters), \code{parallel = TRUE} can be slower. For larger problems the
 #' computation time will decrease significantly.
+#' 
+#' *Note:* this function is faster than \code{\link[idefix]{SeqMOD}}, but 
+#' the output is not as stable. This happens because this function 
+#' makes a random search to get the choice set, whereas 
+#' \code{\link[idefix]{SeqMOD}} makes an exhaustive search.
 #' @inheritParams CEA
 #' @param par.draws A matrix or a list, depending on \code{alt.cte}. 
 #' @param des A design matrix in which each row is a profile. If alternative 
@@ -537,7 +535,7 @@ CEAcore_ucpp <- function(des, par.draws, levels.list, n.alts, n.sets, n.cte,
 #'  \code{NULL}. 
 #' @param prior.covar Covariance matrix of the prior distribution.
 #' @param weights A vector containing the weights of the draws. Default is 
-#'   \code{NULL}, See also \code{\link{ImpsampMNL}}.
+#'   \code{NULL}. See also \code{\link{ImpsampMNL}}.
 #' @param parallel Logical value indicating whether computations should be done 
 #'   over multiple cores.
 #' @param no.choice An integer indicating the no choice alternative. The default

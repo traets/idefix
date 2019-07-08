@@ -5,8 +5,8 @@
 #'can be generated sequentially adaptively, or can be a combination of both.
 #'
 #'A pregenerated design can be specified in \code{des}. This should be a matrix 
-#'in which each row is a profile. This can be generated with \code{\link{Modfed}}, but 
-#'is not necesarry.
+#'in which each row is a profile. This can be generated with \code{\link{Modfed}}
+#'or  \code{\link{CEA}}, but it is not necessary.
 #'
 #'If \code{n.total} = \code{nrow(des)} / \code{length(alts)}, the specified 
 #'design will be put on screen, one set after the other, and the responses will 
@@ -18,7 +18,7 @@
 #'
 #'Whenever adaptive sets will be generated, \code{prior.mean}, 
 #'\code{prior.covar}, \code{cand.set} and \code{n.draws}, should be specified. 
-#'These arguments are necesarry for the underlying importance sampling algorithm
+#'These arguments are necessary for the underlying importance sampling algorithm
 #'to update the prior preference distribution. \code{lower} and \code{upper} can
 #'be used to specify lower and upper truncation points. See
 #'\code{\link{ImpsampMNL}} for more details.
@@ -44,8 +44,8 @@
 #'indicating which alternative is the no choice option. This alternative will
 #'not be presented on screen, but the option to select "no choice" will be. The
 #'\code{alt.cte} argument should be specified accordingly, namely with a
-#'\code{1} on the location of the \code{no.choice} option. See examples for an
-#'example.
+#'\code{1} on the location of the \code{no.choice} option. See examples for
+#' illustration.
 #'
 #'When \code{parallel} is \code{TRUE}, \code{\link[parallel]{detectCores}} will
 #'be used to decide upon the number of available cores. That number minus 1 
@@ -481,7 +481,7 @@ SurveyApp <- function(des = NULL, n.total, alts, atts, lvl.names, coding,
 #' in the design is also included in the output.
 #' 
 #' \code{des} A design matrix, this can also be a single choice set. See for
-#' example the output of \link[idefix]{Modfed}.
+#' example the output of \link[idefix]{Modfed} or \link[idefix]{CEA}.
 #' 
 #' In \code{lvl.names}, the number of character vectors in the list should equal
 #' the number of attributes in de choice set. The number of elements in each 
@@ -520,7 +520,7 @@ SurveyApp <- function(des = NULL, n.total, alts, atts, lvl.names, coding,
 #' \donttest{
 #' # Example without continuous attributes.
 #' design <- example_design 
-#' c <- c("D", "D", "D") # Coding.
+#' coded <- c("D", "D", "D") # Coding.
 #' # Levels as they should appear in survey. 
 #' al <- list(
 #'   c("$50", "$75", "$100"), # Levels attribute 1.
@@ -528,11 +528,12 @@ SurveyApp <- function(des = NULL, n.total, alts, atts, lvl.names, coding,
 #'   c("bad", "moderate", "good") # Levels attribute 3.
 #' ) 
 #' # Decode
-#' Decode(des = design, lvl.names = al, coding = c) 
+#' Decode(des = design, n.alts = 2, lvl.names = al, coding = coded) 
+
 #' 
 #' # Example with alternative specific constants
 #' design <- example_design2 
-#' c <- c("D", "D", "D") # Coding.
+#' coded <- c("D", "D", "D") # Coding.
 #' # Levels as they should appear in survey. 
 #' al <- list(
 #'   c("$50", "$75", "$100"), # Levels attribute 1.
@@ -540,7 +541,7 @@ SurveyApp <- function(des = NULL, n.total, alts, atts, lvl.names, coding,
 #'   c("bad", "moderate", "good") # Levels attribute 3.
 #' ) 
 #' # Decode
-#' Decode(des = design, lvl.names = al, coding = c, alt.cte = c(1, 1, 0)) 
+#' Decode(des = design, n.alts = 3, lvl.names = al, coding = coded, alt.cte = c(1, 1, 0)) 
 #' }
 #' @export
 Decode <- function(des, n.alts, lvl.names, coding, alt.cte = NULL, c.lvls = NULL, no.choice = NULL) {
@@ -704,15 +705,16 @@ saveData <- function(data, data.dir, n.atts) {
 
 #' Load numeric choice data from directory
 #' 
-#' Reads all individual choice data files from a directory and concatenates 
+#' Reads all individual choice data files, created by \code{\link{SurveyApp}}
+#' function, from a directory and concatenates 
 #' those files into a single data file. Files containing either "num" or "char"
 #' will be read, with num indicating numeric data and char indicating character
-#' data. for more information see output of \code{\link{SurveyApp}}.
+#' data. For more information, see output of \code{\link{SurveyApp}}.
 #' 
 #' @param data.dir A character string containing the directory to read from.
 #' @param type Character vector containing either num or char. 
 #' @return A data frame containg the full design and all the responses of the 
-#'   combined data files that where found. Different files are indicated by an
+#'   combined data files that were found. Different files are indicated by an
 #'   ID variable.
 #' @export
 LoadData <- function(data.dir, type) {

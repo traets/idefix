@@ -5,8 +5,8 @@
 #' Transforms the data into the desired data format required by different 
 #' estimation packages.
 #' 
-#' The \code{des} specified should be the full aggregate design. Thus if all 
-#' participants responded to the same design, \code{des} will be a repetition of
+#' The design (\code{des}) specified should be the full aggregated design. 
+#' Thus, if all participants responded to the same design, \code{des} will be a repetition of
 #' that design matrix.
 #' 
 #' The responses in \code{y} should be succesive when there are multiple
@@ -26,10 +26,10 @@
 #'   \link[mlogit]{mlogit}}, and \code{Rchoice = \link[Rchoice]{Rchoice}}).
 #' @param des A design matrix in which each row is a profile.
 #' @inheritParams Modfed
-#' @param y A numeric vector containing binary or discrete responses. See \code{bin}.
+#' @param y A numeric vector containing binary or discrete responses. See \code{bin} argument.
 #' @param n.resp Numeric value indicating the number of respondents.
 #' @param bin Logical value indicating whether the reponse vector contains 
-#'   binary data (\code{TRUE}) or discrete data (\code{FALSE}). See \code{y}.
+#'   binary data (\code{TRUE}) or discrete data (\code{FALSE}). See \code{y} argument.
 #' @param alt.names A character vector containing the names of the alternatives.
 #'   The default = \code{NULL}
 #' @return The data ready to be used by the specified package.
@@ -220,22 +220,22 @@ Datatrans <- function(pkg, des, y, n.alts, n.sets, n.resp, bin, alt.names = NULL
 
 #' Response generation
 #' 
-#' Function to generate responses given parameter values and a design matrix,
-#' assuming a MNL model.
+#' Function to generate random responses given parameter values and a design 
+#' matrix, assuming a MNL model.
 #' @param par Numeric vector containing parameter values.
 #' @inheritParams SeqMOD
-#' @param bin Indicates whether the returned value should be a binary vector or 
-#'   a discrete value which denotes the chosen alternative.
+#' @param bin A logical value indicating whether the returned value should be a
+#' binary vector or a discrete value which denotes the chosen alternative.
 #' @return Numeric vector indicating the chosen alternatives.
 #' @examples 
 #' # design: 3 dummy coded attributes, each 3 levels. There are 8 choice sets.
 #' des <- example_design
 #' set.seed(123)
 #' true_par <- rnorm(6)
-#' RespondMNL(par=true_par, des = des, n.alts = 2)
+#' RespondMNL(par = true_par, des = des, n.alts = 2)
 #' @export
 RespondMNL <- function(par, des, n.alts, bin = TRUE) {
-  if (!is.matrix(des)){
+  if (!is.matrix(des)) {
     stop("'des' should be a matrix")
   }
   # Error par is not vector

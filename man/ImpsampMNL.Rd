@@ -8,7 +8,7 @@ ImpsampMNL(n.draws, prior.mean, prior.covar, des, n.alts, y,
   alt.cte = NULL, lower = NULL, upper = NULL)
 }
 \arguments{
-\item{n.draws}{numeric value indicating the number of draws.}
+\item{n.draws}{Numeric value indicating the number of draws.}
 
 \item{prior.mean}{Numeric vector indicating the mean of the multivariate
 normal distribution (prior).}
@@ -17,13 +17,13 @@ normal distribution (prior).}
 
 \item{des}{A design matrix in which each row is a profile. If alternative
 specific constants are present, those should be included as the first
-column(s) of the design. Can be generated with \code{\link{Modfed}}}
+column(s) of the design. Can be generated with \code{\link{Modfed}} or \code{\link{CEA}}.}
 
 \item{n.alts}{Numeric value indicating the number of alternatives per choice
 set.}
 
 \item{y}{A binary response vector. \code{\link{RespondMNL}} can be used to
-simulate respons data.}
+simulate response data.}
 
 \item{alt.cte}{A binary vector indicating for each alternative whether an
 alternative specific constant is desired. The default is \code{NULL}.}
@@ -48,7 +48,7 @@ MNL likelihood.
 }
 \details{
 For the proposal distribution a t-distribution with degrees of freedom equal
-to the number of parameters is used. The mode is estimated using
+to the number of parameters is used. The posterior mode is estimated using
 \code{\link[stats]{optim}}, and the covariance matrix is calculated as the negative
 inverse of the generalized Fisher information matrix. See reference for more
 information.

@@ -7,10 +7,10 @@
 Profiles(lvls, coding, c.lvls = NULL)
 }
 \arguments{
-\item{lvls}{A numeric vector which contains for each attribute, the number
+\item{lvls}{A numeric vector which contains for each attribute the number
 of levels.}
 
-\item{coding}{Type op coding that needs to be used for each attribute.}
+\item{coding}{Type of coding that needs to be used for each attribute.}
 
 \item{c.lvls}{A list containing numeric vectors with the attribute levels for
 each continuous attribute. The default is \code{NULL}.}
@@ -33,7 +33,7 @@ be applied.
 \examples{
 # Without continuous attributes
 at.lvls <- c(3, 4, 2) # 3 Attributes with respectively 3, 4 and 2 levels. 
-c.type <- rep("E", length(at.lvls)) # All Effect coded.
+c.type <- c("E", "E", "E") # All Effect coded.
 Profiles(lvls = at.lvls, coding = c.type) # Generate profiles.
 
 # With continuous attributes 

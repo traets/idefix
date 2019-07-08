@@ -2,8 +2,8 @@
 #' 
 #' This discrete choice design is generated using the \code{\link{Modfed}} 
 #' function. There are 8 choice sets, each containig 2 alternatives (rows). The
-#' alternatives consist of 3 attributes (time, price, comfort) with each 3
-#' levels, all of which are dummy coded (columns).
+#' alternatives consist of 3 attributes (time, price, comfort) with 3
+#' levels each, all of which are dummy coded (columns).
 #' 
 #' @docType data
 #' @usage data(example_design)
@@ -16,8 +16,8 @@
 #' 
 #' This discrete choice design is generated using the \code{\link{Modfed}} 
 #' function. There are 8 choice sets, each containig 3 alternatives (rows). The
-#' alternatives consist of 3 attributes (time, price, comfort) with each 3 
-#' levels, all of which are dummy coded (columns). The first two colums are
+#' alternatives consist of 3 attributes (time, price, comfort) with 3 
+#' levels each, all of which are dummy coded (columns). The first two colums are
 #' alternative specific constants for alternative 1 and 2.
 #' 
 #' @docType data
@@ -29,10 +29,10 @@
 
 #' Discrete choice aggregate design.
 #' 
-#' The dataset contains fictional data for seven participants, who each
-#' responded to eight choice sets with two alternatives. Each alternatives
-#' consists of three attributes who each contain three levels and are dummy
-#' coded.
+#' The dataset contains fictional data for seven participants, each
+#' responding to eight choice sets with two alternatives. Each alternative
+#' consists of three attributes, and each attribute contains three levels, which 
+#' are dummy coded.
 #' 
 #' @docType data
 #' @usage data(aggregate_design)
@@ -46,8 +46,8 @@
 #' This discrete choice design is generated using the \code{\link{Modfed}} 
 #' function. There are 8 choice sets, each containig 3 alternatives (rows), of
 #' which one is a no choice option. The no choice option consist of an
-#' alternative specific constant and zero's for all other attributelevels. There
-#' are three attributes (time, price, comfort) with each 3 levels, all of which
+#' alternative specific constant and zero's for all other attribute levels. There
+#' are three attributes (time, price, comfort) with 3 levels each, all of which
 #' are dummy coded (columns).
 #' 
 #' @docType data

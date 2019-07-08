@@ -11,15 +11,15 @@ SeqMOD(des = NULL, cand.set, n.alts, par.draws, prior.covar,
 \arguments{
 \item{des}{A design matrix in which each row is a profile. If alternative
 specific constants are present, those should be included as the first
-column(s) of the design. Can be generated with \code{\link{Modfed}}}
+column(s) of the design. Can be generated with \code{\link{Modfed}} or \code{\link{CEA}}.}
 
 \item{cand.set}{A numeric matrix in which each row is a possible profile. The
-\code{\link{Profiles}} function can be used to generate this.}
+\code{\link{Profiles}} function can be used to generate this matrix.}
 
 \item{n.alts}{Numeric value indicating the number of alternatives per choice
 set.}
 
-\item{par.draws}{A matrix or a list, dependend on \code{alt.cte}.}
+\item{par.draws}{A matrix or a list, depending on \code{alt.cte}.}
 
 \item{prior.covar}{Covariance matrix of the prior distribution.}
 
@@ -69,8 +69,8 @@ for the alternative specific parameters. The second matrix containing the
 draws for the rest of the parameters.
 
 The list of potential choice sets are created using
-\code{\link[gtools]{combinations}}. If \code{reduce} is \code{TRUE},
-\code{repeats.allowed = FALSE} and vice versa. Furthermore, the list of
+\code{\link[utils]{combn}}. If \code{reduce} is \code{TRUE},
+\code{allow.rep = FALSE} and vice versa. Furthermore, the list of
 potential choice sets will be screaned in order to select only those choice
 sets with a unique information matrix. If no alternative specific constants are used,
 \code{reduce} should always be \code{TRUE}. When alternative specific
@@ -87,6 +87,11 @@ be used to decide upon the number of available cores. That number minus 1
 cores will be used to search for the optimal choice set. For small problems
 (6 parameters), \code{parallel = TRUE} can be slower. For larger problems the
 computation time will decrease significantly.
+
+\emph{Note:} this function is more stable than \code{\link[idefix]{SeqCEA}}, but
+it takes more time to get the output. This happens because this function
+makes an exhaustive search to get the choice set, whereas
+\code{\link[idefix]{SeqCEA}} makes a random search.
 }
 \examples{
 # DB efficient choice set, given a design and parameter draws. 
