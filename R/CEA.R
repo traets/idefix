@@ -623,44 +623,46 @@ SeqCEA <- function(des = NULL, lvls, coding, c.lvls = NULL, n.alts, par.draws,
     }
     
     # Handling errors when there are alternative constants
-    if (n.cte > 0.2) {
-      if (!is.list(par.draws)) {
-        stop("'par.draws' should be a list when 'alt.cte' is not NULL")
-      }
-      if (!isTRUE(all.equal(length(par.draws), 2))) {
-        stop("'par.draws' should contain two components")
-      }
-      # If there is only one specific constant and is a vector, then it is
-      # transformed to a matrix
-      if (isTRUE(all.equal(n.cte, 1))) {
-        if (is.vector(par.draws[[1]])) {
-          par.draws[[1]] <- matrix(par.draws[[1]], ncol = 1)
+    if (!is.null(alt.cte)) {
+      if (n.cte > 0.2) {
+        if (!is.list(par.draws)) {
+          stop("'par.draws' should be a list when 'alt.cte' is not NULL")
         }
+        if (!isTRUE(all.equal(length(par.draws), 2))) {
+          stop("'par.draws' should contain two components")
+        }
+        # If there is only one specific constant and is a vector, then it is
+        # transformed to a matrix
+        if (isTRUE(all.equal(n.cte, 1))) {
+          if (is.vector(par.draws[[1]])) {
+            par.draws[[1]] <- matrix(par.draws[[1]], ncol = 1)
+          }
+        }
+        if (!(all(unlist(lapply(par.draws, is.matrix))))) {
+          stop("'par.draws' should contain two matrices")
+        }
+        if (!isTRUE(all.equal(ncol(par.draws[[1]]), n.cte))) {
+          stop("the first component of 'par.draws' should contain the same number 
+               of columns as there are non zero elements in 'alt.cte'")
+        }
+        dims <-  as.data.frame(lapply(par.draws, dim))
+        if (!isTRUE(all.equal(dims[1, 1], dims[1, 2]))) { 
+          stop("the number of rows in the components of 'par.draws' should be equal")
+        }
+        par.draws  <- do.call("cbind", par.draws) # Transform par.draws to a matrix
       }
-      if (!(all(unlist(lapply(par.draws, is.matrix))))) {
-        stop("'par.draws' should contain two matrices")
-      }
-      if (!isTRUE(all.equal(ncol(par.draws[[1]]), n.cte))) {
-        stop("the first component of 'par.draws' should contain the same number 
-             of columns as there are non zero elements in 'alt.cte'")
-      }
-      dims <-  as.data.frame(lapply(par.draws, dim))
-      if (!isTRUE(all.equal(dims[1, 1], dims[1, 2]))) { 
-        stop("the number of rows in the components of 'par.draws' should be equal")
-      }
-      par.draws  <- do.call("cbind", par.draws) # Transform par.draws to a matrix
-    }
-    # Create alternative specific design.
-    cte.des <- Altspec(alt.cte = alt.cte, n.sets = n.sets)
-    cte.set <- matrix(cte.des[1:n.alts, ], ncol = n.cte, byrow = FALSE)
+      # Create alternative specific design.
+      cte.des <- Altspec(alt.cte = alt.cte, n.sets = n.sets)
+      cte.set <- matrix(cte.des[1:n.alts, ], ncol = n.cte, byrow = FALSE)
+    } 
   } else {
-      cte.des <- NULL
-      n.cte <- 0
-      # if no alternative constants 
-      if (!is.matrix(par.draws)) {
-        stop("'par.draws'should be a matrix when 'alt.cte' = NULL")
-      }
+    cte.des <- NULL
+    n.cte <- 0
+    # if no alternative constants 
+    if (!is.matrix(par.draws)) {
+      stop("'par.draws'should be a matrix when 'alt.cte' = NULL")
     }
+  }
   
   # Weights errors
   n.par <- ncol(par.draws)
