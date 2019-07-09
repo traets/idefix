@@ -60,6 +60,10 @@
 #'\code{TRUE} so that the algorithm will be faster, but the combinations of
 #'constants and profiles will not be evaluated exhaustively.
 #'
+#'When \code{algorithm = "MOD"}, the \code{\link[idefix]{SeqMOD}} function is 
+#'used to select the choice set that minimizes the DB-error. Otherwise, 
+#'\code{algorithm = "CEA"} uses the \code{\link[idefix]{SeqCEA}} function. 
+#'
 #'@param alts A character vector containing the names of the alternatives.
 #'@param atts A character vector containing the names of the attributes.
 #'@param n.total A numeric value indicating the total number of choice sets.
@@ -73,10 +77,12 @@
 #'  survey.
 #'@param data.dir A character string with the directory denoting where the data
 #'  needs to be written. The default is NULL
+#'@param algorithm Can be either "MOD" or "CEA" to use the Modified Fedorov or the Coordinate Exchange algorithm, respectively. The default is "MOD".
 #'@inheritParams Decode
 #'@inheritParams Modfed
 #'@inheritParams Profiles
 #'@inheritParams SeqMOD
+#'@inheritParams SeqCEA
 #'@inheritParams ImpsampMNL
 #'@importFrom Rdpack reprompt
 #'@references \insertRef{ju}{idefix}
@@ -111,7 +117,8 @@
 #'# Display the survey 
 #'SurveyApp (des = xdes, n.total = n.sets, alts = alternatives, 
 #'           atts = attributes, lvl.names = labels, coding = code, 
-#'           buttons.text = b.text, intro.text = i.text, end.text = e.text)
+#'           buttons.text = b.text, intro.text = i.text, end.text = e.text, 
+#'           algorithm = "MOD")
 #'
 #' #### Present choice design with partly adaptive sets (n.total > sets in des)
 #' # example design 
@@ -137,11 +144,18 @@
 #' p.var <- diag(length(p.mean))
 #' dataDir <- getwd()
 #' # Display the survey 
-#' SurveyApp(des = xdes, n.total = n.sets, alts = alternatives, atts = 
-#' attributes, lvl.names = labels, coding = code, buttons.text = b.text, 
-#' intro.text = i.text, end.text = e.text, crit= "DB", prior.mean = p.mean,
-#' prior.covar = p.var, cand.set = cand, n = 50)
-#'
+#' SurveyApp(des = xdes, n.total = n.sets, alts = alternatives, 
+#'           atts = attributes, lvl.names = labels, coding = code, 
+#'           buttons.text = b.text, intro.text = i.text, end.text = e.text, 
+#'           prior.mean = p.mean, prior.covar = p.var, cand.set = cand, 
+#'           n.draws = 50, algorithm = "MOD")
+#' # If CEA algorithm is desired, cand.set argument is not needed
+#' SurveyApp(des = xdes, n.total = n.sets, alts = alternatives, 
+#'           atts = attributes, lvl.names = labels, coding = code, 
+#'           buttons.text = b.text, intro.text = i.text, end.text = e.text, 
+#'           prior.mean = p.mean, prior.covar = p.var, n.draws = 50, 
+#'           algorithm = "CEA")
+#'           
 #'#### Choice design with only adaptive sets (des=NULL)
 #'# setting for adaptive sets 
 #'levels <- c(3, 3, 3)
@@ -164,12 +178,18 @@
 #'e.text <- "Thanks for taking the survey"
 #'dataDir <- getwd()
 #'# Display the survey 
-#'SurveyApp (des = NULL, n.total = n.sets, alts = alternatives, atts =
-#'attributes, lvl.names = labels, coding = code, buttons.text = b.text,
-#'intro.text = i.text, end.text = e.text, crit= "KL", prior.mean = p.mean,
-#'prior.covar = p.var, cand.set = cand, lower = low, upper = up, n = 50) 
-#'
-#'
+#'SurveyApp(des = NULL, n.total = n.sets, alts = alternatives,
+#'           atts = attributes, lvl.names = labels, coding = code, 
+#'           buttons.text = b.text, intro.text = i.text, end.text = e.text, 
+#'           prior.mean = p.mean, prior.covar = p.var, cand.set = cand, 
+#'           lower = low, upper = up, n.draws = 50, algorithm = "MOD")
+#' # If CEA algorithm is desired, cand.set argument is not needed
+#'SurveyApp(des = NULL, n.total = n.sets, alts = alternatives,
+#'          atts = attributes, lvl.names = labels, coding = code, 
+#'          buttons.text = b.text, intro.text = i.text, end.text = e.text, 
+#'          prior.mean = p.mean, prior.covar = p.var, 
+#'          lower = low, upper = up, n.draws = 50, algorithm = "CEA")
+#'          
 #'#### Present choice design with a no choice alternative.
 #'# example design 
 #'data("nochoice_design") # pregenerated design
@@ -188,17 +208,18 @@
 #'b.text <- "Please choose the alternative you prefer"
 #'e.text <- "Thanks for taking the survey"
 #'
-# Display the survey 
-#'SurveyApp (des = xdes, n.total = n.sets, alts = alternatives, 
+#'# Display the survey 
+#'SurveyApp(des = xdes, n.total = n.sets, alts = alternatives, 
 #'           atts = attributes, lvl.names = labels, coding = code, 
 #'           buttons.text = b.text, intro.text = i.text, end.text = e.text,
-#'           no.choice = 3, alt.cte = c(0 , 0, 1))
+#'           no.choice = 3, alt.cte = c(0, 0, 1), algorithm = "MOD")
 #'}
 #'@import shiny
 #'@export
 SurveyApp <- function(des = NULL, n.total, alts, atts, lvl.names, coding,
-                       alt.cte = NULL, no.choice = NULL,
-                       buttons.text, intro.text, end.text, data.dir = NULL,
+                       alt.cte = NULL, no.choice = NULL, algorithm = "MOD", 
+                      n.cs = NULL,
+                      buttons.text, intro.text, end.text, data.dir = NULL,
                        c.lvls = NULL, prior.mean = NULL,
                        prior.covar = NULL, cand.set = NULL, n.draws = NULL, 
                        lower = NULL, upper = NULL, parallel = TRUE, reduce = TRUE) {
@@ -209,6 +230,7 @@ SurveyApp <- function(des = NULL, n.total, alts, atts, lvl.names, coding,
   resp  <- vector("character")
   n.atts <- length(atts)
   n.alts <- length(alts)
+  n.levels <- as.vector(unlist(lapply(lvl.names,length)))
   choice.sets <- matrix(data = NA, nrow = n.total * n.alts, ncol = n.atts)
   buttons <- NULL
   sn <- 0
@@ -216,7 +238,7 @@ SurveyApp <- function(des = NULL, n.total, alts, atts, lvl.names, coding,
     n.init <- 0
   } else {
     n.init <- nrow(des) / n.alts
-    if(!isTRUE(all.equal(n.init, as.integer(n.init)))){
+    if (!isTRUE(all.equal(n.init, as.integer(n.init)))) {
       stop("the number of rows of 'des' are not a multiple of length(alts)")
     }
   }
@@ -229,32 +251,32 @@ SurveyApp <- function(des = NULL, n.total, alts, atts, lvl.names, coding,
     if (length(alt.cte) != n.alts) {
       stop("length(alts) does not match length(alt.cte)")
     }
-    if (!all(alt.cte %in% c(0, 1))){
+    if (!all(alt.cte %in% c(0, 1))) {
       stop("'alt.cte' should only contain 0's or 1's.")
     }
-    if(!any(alt.cte == 0)){
+    if (!any(alt.cte == 0)) {
       stop("'alt.cte' should at least contain 1 zero")
     }
     n.cte <- sum(alt.cte)
-    if(!is.null(des)){
+    if (!is.null(des)) {
       cte.des <- Altspec(alt.cte = alt.cte, n.sets = n.init)
-      if(!isTRUE(all.equal(cte.des, matrix(des[ , 1:n.cte], ncol = n.cte)))){
+      if (!isTRUE(all.equal(cte.des, matrix(des[ , 1:n.cte], ncol = n.cte)))) {
         stop("the first column(s) of 'des' are different from what is expected based on 'alt.cte'")
       }
     }
   }
   # Error handling
-  if(!is.null(no.choice)){
-    if(!is.numeric(no.choice)){
+  if (!is.null(no.choice)) {
+    if (!is.numeric(no.choice)) {
       stop("'no.choice' should be an integer indicating the no choice alternative.")
     }
-      if(!no.choice %% 1 == 0){
+      if (!no.choice %% 1 == 0) {
         stop("'no.choice' should be an integer")
       }
-      if(any(isTRUE(no.choice > (n.alts + 0.2)), isTRUE(no.choice < 0.2))){
+      if (any(isTRUE(no.choice > (n.alts + 0.2)), isTRUE(no.choice < 0.2))) {
         stop("'no.choice' does not indicate one of the alternatives")
       }
-      if(!isTRUE(all.equal(alt.cte[no.choice], 1))){
+      if (!isTRUE(all.equal(alt.cte[no.choice], 1))) {
         stop("the location of the 'no.choice' option in the 'alt.cte' vector should correspond with 1")
       }
   }
@@ -264,22 +286,30 @@ SurveyApp <- function(des = NULL, n.total, alts, atts, lvl.names, coding,
     }
   }
   if (n.total > n.init) {
-    if(is.null(lower)){
+    if (is.null(lower)) {
       lower <- rep(-Inf, length(prior.mean))
     }
-    if(is.null(upper)){
+    if (is.null(upper)) {
       upper <- rep(Inf, length(prior.mean))
     }
-    if(!any(c(isTRUE(all.equal(length(prior.mean), length(lower))), isTRUE(all.equal(length(prior.mean), length(upper)))))){
+    if (!any(c(isTRUE(all.equal(length(prior.mean), length(lower))), isTRUE(all.equal(length(prior.mean), length(upper)))))) {
       stop("length 'prior.mean' should equal 'upper' and 'lower'")
     }
-    if (any(c(is.null(prior.mean), is.null(prior.covar), is.null(cand.set), is.null(n.draws)))) {
+    if (algorithm == "MOD") {
+      if (any(c(is.null(prior.mean), is.null(prior.covar), is.null(cand.set), 
+               is.null(n.draws)))) {
       stop("When n.total is larger than the number of sets in argument des, arguments prior.mean, prior.covar, cand.set and n.draws should be specified.")
+      }
+      if (length(prior.mean) != ncol(cand.set) + sum(alt.cte)) {
+        stop("Number of parameters in prior.mean does not match with cand.set + alt.cte")
+      }
+    } else if (algorithm == "CEA") {
+      if (any(c(is.null(prior.mean), is.null(prior.covar), is.null(n.draws)))) {
+      stop("When n.total is larger than the number of sets in argument des, arguments prior.mean, prior.covar and n.draws should be specified.")
+      }
     }
-    if (length(prior.mean) != ncol(cand.set) + sum(alt.cte)) {
-      stop("Number of parameters in prior.mean does not match with cand.set + alt.cte")
-    }
-    if (!isTRUE(all.equal(length(prior.mean), ncol(prior.covar)))){
+    
+    if (!isTRUE(all.equal(length(prior.mean), ncol(prior.covar)))) {
       stop("length of 'prior.mean' differs from number of columns 'prior.covar'")
     }
   } else {
@@ -289,7 +319,7 @@ SurveyApp <- function(des = NULL, n.total, alts, atts, lvl.names, coding,
     if (!is.null(prior.covar)) {
       warning("'prior.covar' will be ignored, since there are no adaptive sets.")
     }
-    if (!is.null(cand.set)) {
+    if (algorithm == "MOD" & !is.null(cand.set)) {
       warning("'cand.set' will be ignored, since there are no adaptive sets.")
     }
     if (!is.null(lower) || !is.null(upper)) {
@@ -299,26 +329,35 @@ SurveyApp <- function(des = NULL, n.total, alts, atts, lvl.names, coding,
       warning("'n.draws' will be ignored, since there are no adaptive sets.")
     }
   }
-  if(is.null(des)){
-    fulldes <- matrix(data = NA, nrow = (n.alts * n.total), ncol = ncol(cand.set))
+  if (is.null(des)) {
+    if (algorithm == "MOD") {
+      fulldes <- matrix(data = NA, nrow = (n.alts * n.total), ncol = ncol(cand.set))
+    } else {
+      fulldes <- matrix()
+    }
   } else {
     bs <- seq(1, (nrow(des) - n.alts + 1), n.alts)
     es <- c((bs - 1), nrow(des))[-1] 
-    rowcol <- Rcnames(n.sets = n.init, n.alts = n.alts, alt.cte = alt.cte, no.choice = FALSE)
+    rowcol <- Rcnames(n.sets = n.init, n.alts = n.alts, alt.cte = alt.cte, 
+                      no.choice = FALSE)
     rownames(des) <- rowcol[[1]]
-    if (is.null(colnames(des))){
-      colnames(des) <- c(rowcol[[2]], paste("par", 1:(ncol(des) - n.cte), sep = "."))
+    if (is.null(colnames(des))) {
+      colnames(des) <- c(rowcol[[2]], paste("par", 1:(ncol(des) - n.cte), 
+                                            sep = "."))
     }
     fulldes <- des
     # Error handling
     if (length(bs) != n.init) {
       stop("The number of rows in 'des' is not a multiple of length(atts)")
     }
-    if("no.choice.cte" %in% colnames(des)){
-      if(is.null(no.choice)){
+    if ("no.choice.cte" %in% colnames(des)) {
+      if (is.null(no.choice)) {
         warning("no.choice.cte column name detected in 'des' while 'no.choice = NULL'")
       }
     }
+  }
+  if (!(algorithm %in% c("MOD","CEA"))) {
+    stop("algorithm should be 'MOD' or 'CEA'")
   }
   
   shinyApp(
@@ -344,33 +383,49 @@ SurveyApp <- function(des = NULL, n.total, alts, atts, lvl.names, coding,
         sn <<- sn + 1
       })
       # Set selection function
-      Select <- function () {
+      Select <- function() {
         if (sn <= n.total) {
           # for initial sets 
           if (sn <= n.init) {
-            set <- des[bs[sn] : es[sn], ]
+            set <- des[bs[sn]:es[sn], ]
           } else {
             ## sample drawing for adaptive sets
             # if First set
             if (sn == 1) {
               # sample draws from prior
-              s <- tmvtnorm::rtmvnorm(n = n.draws, mean = prior.mean, sigma = prior.covar, lower = lower, upper = upper)
+              s <- tmvtnorm::rtmvnorm(n = n.draws, mean = prior.mean, 
+                                      sigma = prior.covar, lower = lower, 
+                                      upper = upper)
               w <- rep(1, nrow(s)) / nrow(s)
               if (sum(alt.cte) > 0.2) {
-                s <- list(as.matrix(s[ , 1:sum(alt.cte)], ncol = sum(alt.cte)), s[ , -c(1:sum(alt.cte))])
+                s <- list(as.matrix(s[ , 1:sum(alt.cte)], ncol = sum(alt.cte)), 
+                          s[ , -c(1:sum(alt.cte))])
               }
               # From second set
             } else {
               # Sample draws from updated posterior
-              sam <- ImpsampMNL(n.draws = n.draws, prior.mean = prior.mean, prior.covar = prior.covar,
-                                des = fulldes, n.alts = n.alts, y = y.bin, alt.cte = alt.cte, lower = lower, upper = upper)
+              sam <- ImpsampMNL(n.draws = n.draws, prior.mean = prior.mean, 
+                                prior.covar = prior.covar,
+                                des = fulldes, n.alts = n.alts, y = y.bin, 
+                                alt.cte = alt.cte, lower = lower, upper = upper)
               s <- sam$sample
               w <- sam$weights
             }
             ## Selecting set
-            # Select new set based on DB
-            setobj <- SeqMOD(des = des, cand.set = cand.set, n.alts = n.alts, par.draws = s, prior.covar = prior.covar, alt.cte = alt.cte,
-                            weights = w, no.choice = no.choice, parallel = parallel, reduce = reduce)
+            if (algorithm == "MOD") {
+              # Select new set based on Modfed
+              setobj <- SeqMOD(des = des, cand.set = cand.set, n.alts = n.alts, 
+                               par.draws = s, prior.covar = prior.covar, 
+                               alt.cte = alt.cte, weights = w, 
+                               no.choice = no.choice, parallel = parallel, 
+                               reduce = reduce)
+            } else if (algorithm == "CEA") {
+              setobj <- SeqCEA(des = des, lvls = n.levels, coding = coding,
+                               n.alts = n.alts, par.draws = s, 
+                               prior.covar = prior.covar, alt.cte = alt.cte,
+                               weights = w, no.choice = no.choice, 
+                               parallel = parallel, reduce = reduce)
+            }
             set <- setobj$set
             db  <- setobj$db
             
@@ -401,7 +456,7 @@ SurveyApp <- function(des = NULL, n.total, alts, atts, lvl.names, coding,
             choice.sets <<- rbind(choice.sets, choice.set)
           }
           #return design 
-          if(!is.null(no.choice)){
+          if (!is.null(no.choice)) {
             no.choice.set <- choice.set[ ,-no.choice]
             return(no.choice.set)
           } else {
@@ -417,7 +472,7 @@ SurveyApp <- function(des = NULL, n.total, alts, atts, lvl.names, coding,
           output$choice.set <-  renderTable(Select(), rownames = TRUE)
         }
         # Store responses and design
-        if (sn > 1 && sn <= (n.total +1)) {
+        if (sn > 1 && sn <= (n.total + 1)) {
           resp  <<- c(resp, input$survey)
           y.bin <<- Charbin(resp = resp, alts = alts, n.alts = n.alts)
           sdata[["bin.responses"]] <- y.bin
@@ -461,7 +516,7 @@ SurveyApp <- function(des = NULL, n.total, alts, atts, lvl.names, coding,
         # Quit application 
         if (input$OK > (n.total + 1)) {
           # Write data to file
-          if (!is.null(data.dir)){
+          if (!is.null(data.dir)) {
             saveData(data = surveyData, data.dir = data.dir, n.atts = n.atts)
           }
           # Stop application 
