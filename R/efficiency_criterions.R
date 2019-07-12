@@ -205,7 +205,7 @@ Utbal <- function(par, des, n.alts) {
 # KL information
 #
 # Calculates the Kullback-Leibler divergence for all posible choice sets, given
-# @inheritParams SeqDB
+# @inheritParams SeqMOD
 # @param full.comb A matrix in which each row is a possible combination of
 #   profiles.
 # @return Numeric value indicating the Kullback-Leibler divergence.

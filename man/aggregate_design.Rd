@@ -9,9 +9,9 @@
 data(aggregate_design)
 }
 \description{
-The dataset contains fictional data for seven participants, who each
-responded to eight choice sets with two alternatives. Each alternatives
-consists of three attributes who each contain three levels and are dummy
-coded.
+The dataset contains fictional data for seven participants, each
+responding to eight choice sets with two alternatives. Each alternative
+consists of three attributes, and each attribute contains three levels, which
+are dummy coded.
 }
 \keyword{data}

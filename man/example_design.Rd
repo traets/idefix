@@ -11,7 +11,7 @@ data(example_design)
 \description{
 This discrete choice design is generated using the \code{\link{Modfed}}
 function. There are 8 choice sets, each containig 2 alternatives (rows). The
-alternatives consist of 3 attributes (time, price, comfort) with each 3
-levels, all of which are dummy coded (columns).
+alternatives consist of 3 attributes (time, price, comfort) with 3
+levels each, all of which are dummy coded (columns).
 }
 \keyword{data}

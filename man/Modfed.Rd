@@ -10,14 +10,14 @@ Modfed(cand.set, n.sets, n.alts, par.draws, alt.cte = NULL,
 }
 \arguments{
 \item{cand.set}{A numeric matrix in which each row is a possible profile. The
-\code{\link{Profiles}} function can be used to generate this.}
+\code{\link{Profiles}} function can be used to generate this matrix.}
 
 \item{n.sets}{Numeric value indicating the number of choice sets.}
 
 \item{n.alts}{Numeric value indicating the number of alternatives per choice
 set.}
 
-\item{par.draws}{A matrix or a list, dependend on \code{alt.cte}.}
+\item{par.draws}{A matrix or a list, depending on \code{alt.cte}.}
 
 \item{alt.cte}{A binary vector indicating for each alternative whether an
 alternative specific constant is desired. The default is \code{NULL}.}
@@ -25,7 +25,7 @@ alternative specific constant is desired. The default is \code{NULL}.}
 \item{no.choice}{A logical value indicating whether a no choice alternative
 should be added to each choice set. The default is \code{FALSE}.}
 
-\item{start.des}{A list containing one or more matrices. The default is \code{NULL}.}
+\item{start.des}{A list containing one or more matrices corresponding to initial start design(s). The default is \code{NULL}.}
 
 \item{parallel}{Logical value indicating whether computations should be done
 over multiple cores. The default is \code{TRUE}.}
@@ -40,8 +40,9 @@ to use. The default is 12.}
 returned. The default is \code{TRUE}.}
 }
 \value{
-If \code{best = TRUE} the design with the lowest D(B)-error. If \code{best 
-  = FALSE}, the result of all (provided) start designs. \item{design}{A
+If \code{best = TRUE} the design with the lowest D(B)-error is returned.
+If \code{best = FALSE}, the results of all (provided) start designs are
+returned. \item{design}{A
 numeric matrix wich contains an efficient design.} \item{error}{Numeric
 value indicating the D(B)-error of the design.} \item{inf.error}{Numeric
 value indicating the percentage of draws for which the D-error was
@@ -51,7 +52,7 @@ each alternative in each choice set. If a sample matrix was provided in
 }
 \description{
 The algorithm swaps every profile of an initial start design with candidate
-profiles. By doing this it tries to minimize the D(B)-error, based on a
+profiles. By doing this, it tries to minimize the D(B)-error, based on a
 multinomial logit model. This routine is repeated for multiple starting
 designs.
 }
@@ -66,7 +67,7 @@ calculated and the design will be optimised locally. By specifying a matrix,
 in which each row is a draw from a multivariate distribution, the DB-error
 will be calculated, and the design will be optimised globally. Whenever there
 are alternative specific constants, \code{par.draws} should be a list
-containing two matrices. The first matrix containing the parameter draws for
+containing two matrices: The first matrix containing the parameter draws for
 the alternative specific constant parameters. The second matrix containing
 the draws for the rest of the parameters.
 
@@ -79,11 +80,12 @@ Alternative specific constants can be specified in \code{alt.cte}. The length
 of this binary vector should equal \code{n.alts}, were \code{0} indicates the
 absence of an alternative specific constant and \code{1} the opposite.
 
-\code{start.des} is a list with one or several matrices. In each matrix each
+\code{start.des} is a list with one or several matrices  corresponding to
+initial start design(s). In each matrix each
 row is a profile. The number of rows equals \code{n.sets * n.alts}, and the
 number of columns equals the number of columns of \code{cand.set} + the
 number of non-zero elements in \code{alt.cte}. If \code{start.des
-= NULL}, \code{n.start} random start designs will be
+= NULL}, \code{n.start} random initial designs will be
 generated. If start designs are provided, \code{n.start} is ignored.
 
 If \code{no.choice} is \code{TRUE}, in each choice set an alternative with
@@ -98,7 +100,7 @@ decrease significantly when \code{parallel = TRUE}.
 \examples{
 \donttest{
 # DB-efficient designs
-# 3 Attributes, all dummy coded. 1 alternative specific constant. = 7 parameters
+# 3 Attributes, all dummy coded. 1 alternative specific constant = 7 parameters
 cand.set <- Profiles(lvls = c(3, 3, 3), coding = c("D", "D", "D"))
 mu <- c(0.5, 0.8, 0.2, -0.3, -1.2, 1.6, 2.2) # Prior parameter vector
 v <- diag(length(mu)) # Prior variance.

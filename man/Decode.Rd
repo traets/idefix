@@ -41,7 +41,7 @@ in the design is also included in the output.
 }
 \details{
 \code{des} A design matrix, this can also be a single choice set. See for
-example the output of \link[idefix]{Modfed}.
+example the output of \link[idefix]{Modfed} or \link[idefix]{CEA}.
 
 In \code{lvl.names}, the number of character vectors in the list should equal
 the number of attributes in de choice set. The number of elements in each
@@ -65,7 +65,7 @@ to the number of nonzero elements in \code{alt.cte}) will be removed from
 \donttest{
 # Example without continuous attributes.
 design <- example_design 
-c <- c("D", "D", "D") # Coding.
+coded <- c("D", "D", "D") # Coding.
 # Levels as they should appear in survey. 
 al <- list(
   c("$50", "$75", "$100"), # Levels attribute 1.
@@ -73,11 +73,11 @@ al <- list(
   c("bad", "moderate", "good") # Levels attribute 3.
 ) 
 # Decode
-Decode(des = design, lvl.names = al, coding = c) 
+Decode(des = design, n.alts = 2, lvl.names = al, coding = coded) 
 
 # Example with alternative specific constants
 design <- example_design2 
-c <- c("D", "D", "D") # Coding.
+coded <- c("D", "D", "D") # Coding.
 # Levels as they should appear in survey. 
 al <- list(
   c("$50", "$75", "$100"), # Levels attribute 1.
@@ -85,6 +85,6 @@ al <- list(
   c("bad", "moderate", "good") # Levels attribute 3.
 ) 
 # Decode
-Decode(des = design, lvl.names = al, coding = c, alt.cte = c(1, 1, 0)) 
+Decode(des = design, n.alts = 3, lvl.names = al, coding = coded, alt.cte = c(1, 1, 0)) 
 }
 }
