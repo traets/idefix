@@ -8,6 +8,7 @@
 #' @param des A design matrix in which each row is an alternative.
 #' @param n.alts Numeric value indicating the number of alternatives per choice
 #'   set.
+#' @param mean A logical value indicating whether the mean (DB) error should be returned or not. Default = TRUE. 
 #' @param weights A numeric vector containing weights of \code{par.draws}. The
 #'   default is \code{NULL}.
 #' @return Numeric value indicating the DB-error of the design given the
@@ -75,7 +76,7 @@ DBerr <- function(par.draws, des, n.alts, weights = NULL, mean = TRUE) {
   }
   d.errors <- apply(par.draws, 1, Derr_ucpp, des, n.alts)
   # DB-error.
-  if (mean = TRUE){
+  if(isTRUE(mean)){
     error <- mean(d.errors, na.rm = TRUE)
   }
   return("DBerror" = error)
