@@ -26,7 +26,7 @@
 #' DBerr(par.draws = par.draws, des = des, n.alts = n.alts)
 #' @importFrom Rdpack reprompt
 #' @export
-DBerr <- function(par.draws, des, n.alts, weights = NULL) {
+DBerr <- function(par.draws, des, n.alts, weights = NULL, mean = TRUE) {
   if(is.list(par.draws)){
     if (!isTRUE(all.equal(length(par.draws), 2))){
       stop("If 'par.draws' is a list, it should contain two components")
@@ -70,9 +70,14 @@ DBerr <- function(par.draws, des, n.alts, weights = NULL) {
   } else {
     weights <- rep(1, nrow(par.draws))
   }
+  if (!is.logical(mean)){
+    stop("'mean' should be TRUE or FALSE") 
+  }
   d.errors <- apply(par.draws, 1, Derr_ucpp, des, n.alts)
-  # DB-error. 
-  error <- mean(d.errors, na.rm = TRUE)
+  # DB-error.
+  if (mean = TRUE){
+    error <- mean(d.errors, na.rm = TRUE)
+  }
   return("DBerror" = error)
 }
 
