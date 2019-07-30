@@ -3,7 +3,7 @@
 #' Modified Federov algorithm for MNL models.
 #' 
 #' The algorithm swaps every profile of an initial start design with candidate 
-#' profiles. By doing this it tries to minimize the D(B)-error, based on a 
+#' profiles. By doing this, it tries to minimize the D(B)-error, based on a 
 #' multinomial logit model. This routine is repeated for multiple starting 
 #' designs.
 #' 
@@ -17,7 +17,7 @@
 #' in which each row is a draw from a multivariate distribution, the DB-error 
 #' will be calculated, and the design will be optimised globally. Whenever there
 #' are alternative specific constants, \code{par.draws} should be a list 
-#' containing two matrices. The first matrix containing the parameter draws for
+#' containing two matrices: The first matrix containing the parameter draws for
 #' the alternative specific constant parameters. The second matrix containing
 #' the draws for the rest of the parameters.
 #' 
@@ -30,11 +30,12 @@
 #' of this binary vector should equal \code{n.alts}, were \code{0} indicates the
 #' absence of an alternative specific constant and \code{1} the opposite.
 #' 
-#' \code{start.des} is a list with one or several matrices. In each matrix each
+#' \code{start.des} is a list with one or several matrices  corresponding to 
+#' initial start design(s). In each matrix each
 #' row is a profile. The number of rows equals \code{n.sets * n.alts}, and the
 #' number of columns equals the number of columns of \code{cand.set} + the
 #' number of non-zero elements in \code{alt.cte}. If \code{start.des
-#' = NULL}, \code{n.start} random start designs will be
+#' = NULL}, \code{n.start} random initial designs will be
 #' generated. If start designs are provided, \code{n.start} is ignored.
 #' 
 #' If \code{no.choice} is \code{TRUE}, in each choice set an alternative with
@@ -47,16 +48,16 @@
 #' decrease significantly when \code{parallel = TRUE}.
 #' 
 #' @param cand.set A numeric matrix in which each row is a possible profile. The
-#'   \code{\link{Profiles}} function can be used to generate this.
+#'   \code{\link{Profiles}} function can be used to generate this matrix.
 #' @param n.sets Numeric value indicating the number of choice sets.
 #' @param n.alts Numeric value indicating the number of alternatives per choice 
 #'   set.
 #' @param alt.cte A binary vector indicating for each alternative whether an 
 #'   alternative specific constant is desired. The default is \code{NULL}.
-#' @param par.draws A matrix or a list, dependend on \code{alt.cte}.
+#' @param par.draws A matrix or a list, depending on \code{alt.cte}.
 #' @param no.choice A logical value indicating whether a no choice alternative 
 #'   should be added to each choice set. The default is \code{FALSE}.
-#' @param start.des A list containing one or more matrices. The default is \code{NULL}.
+#' @param start.des A list containing one or more matrices corresponding to initial start design(s). The default is \code{NULL}.
 #' @param parallel Logical value indicating whether computations should be done 
 #'   over multiple cores. The default is \code{TRUE}.
 #' @param max.iter A numeric value indicating the maximum number allowed 
@@ -66,8 +67,9 @@
 #' @param best A logical value indicating whether only the best design should be
 #'   returned. The default is \code{TRUE}.
 #' @return 
-#'   If \code{best = TRUE} the design with the lowest D(B)-error. If \code{best 
-#'   = FALSE}, the result of all (provided) start designs. \item{design}{A
+#'  If \code{best = TRUE} the design with the lowest D(B)-error is returned. 
+#'   If \code{best = FALSE}, the results of all (provided) start designs are
+#'   returned. \item{design}{A
 #'   numeric matrix wich contains an efficient design.} \item{error}{Numeric
 #'   value indicating the D(B)-error of the design.} \item{inf.error}{Numeric
 #'   value indicating the percentage of draws for which the D-error was
@@ -77,7 +79,7 @@
 #' @examples
 #' \donttest{
 #' # DB-efficient designs
-#' # 3 Attributes, all dummy coded. 1 alternative specific constant. = 7 parameters
+#' # 3 Attributes, all dummy coded. 1 alternative specific constant = 7 parameters
 #' cand.set <- Profiles(lvls = c(3, 3, 3), coding = c("D", "D", "D"))
 #' mu <- c(0.5, 0.8, 0.2, -0.3, -1.2, 1.6, 2.2) # Prior parameter vector
 #' v <- diag(length(mu)) # Prior variance.
@@ -376,8 +378,8 @@ Modfedje_ucpp <- function(desje, par.draws, cand.set, n.alts, n.sets, n.cte, alt
 #' draws for the rest of the parameters.
 #' 
 #' The list of potential choice sets are created using 
-#' \code{\link[gtools]{combinations}}. If \code{reduce} is \code{TRUE}, 
-#' \code{repeats.allowed = FALSE} and vice versa. Furthermore, the list of 
+#' \code{\link[utils]{combn}}. If \code{reduce} is \code{TRUE}, 
+#' \code{allow.rep = FALSE} and vice versa. Furthermore, the list of 
 #' potential choice sets will be screaned in order to select only those choice 
 #' sets with a unique information matrix. If no alternative specific constants are used, 
 #' \code{reduce} should always be \code{TRUE}. When alternative specific 
@@ -394,11 +396,17 @@ Modfedje_ucpp <- function(desje, par.draws, cand.set, n.alts, n.sets, n.cte, alt
 #' cores will be used to search for the optimal choice set. For small problems 
 #' (6 parameters), \code{parallel = TRUE} can be slower. For larger problems the
 #' computation time will decrease significantly.
+#' 
+#' *Note:* this function is more stable than \code{\link[idefix]{SeqCEA}}, but 
+#' it takes more time to get the output. This happens because this function 
+#' makes an exhaustive search to get the choice set, whereas 
+#' \code{\link[idefix]{SeqCEA}} makes a random search.
+#' 
 #' @inheritParams Modfed
-#' @param par.draws A matrix or a list, dependend on \code{alt.cte}. 
+#' @param par.draws A matrix or a list, depending on \code{alt.cte}. 
 #' @param des A design matrix in which each row is a profile. If alternative 
 #'   specific constants are present, those should be included as the first 
-#'   column(s) of the design. Can be generated with \code{\link{Modfed}}
+#'   column(s) of the design. Can be generated with \code{\link{Modfed}} or \code{\link{CEA}}.
 #' @param prior.covar Covariance matrix of the prior distribution.
 #' @param weights A vector containing the weights of the draws. Default is 
 #'   \code{NULL}, See also \code{\link{ImpsampMNL}}.
@@ -418,7 +426,7 @@ Modfedje_ucpp <- function(desje, par.draws, cand.set, n.alts, n.sets, n.cte, alt
 #' @examples 
 #' # DB efficient choice set, given a design and parameter draws. 
 #' # Candidate profiles 
-#' cs <- Profiles(lvls = c(3, 3, 3), coding = c("E", "E", "E"))
+#' cs <- Profiles(lvls = c(3, 3, 3), coding = c("D", "D", "D"))
 #' m <- c(0.3, 0.2, -0.3, -0.2, 1.1, 2.4) # mean (total = 6 parameters).
 #' pc <- diag(length(m)) # covariance matrix
 #' set.seed(123)
@@ -426,23 +434,23 @@ Modfedje_ucpp <- function(desje, par.draws, cand.set, n.alts, n.sets, n.cte, alt
 #' # Initial design.
 #' des <- example_design 
 #' # Efficient choice set to add. 
-#' SeqDB(des = des, cand.set = cs, n.alts = 2, par.draws = sample, 
+#' SeqMOD(des = des, cand.set = cs, n.alts = 2, par.draws = sample, 
 #'            prior.covar = pc, parallel = FALSE)
 #' 
 #' # DB efficient choice set, given parameter draws. 
 #' # with alternative specific constants 
 #' des <- example_design2 
-#' cs <- Profiles(lvls = c(3, 3, 3), coding = c("E", "E", "E"))
+#' cs <- Profiles(lvls = c(3, 3, 3), coding = c("D", "D", "D"))
 #' ac <- c(1, 1, 0) # Alternative specific constants. 
 #' m <- c(0.3, 0.2, -0.3, -0.2, 1.1, 2.4, 1.8, 1.2) # mean 
 #' pc <- diag(length(m)) # covariance matrix
 #' pos <- MASS::mvrnorm(n = 10, mu = m, Sigma = pc)
 #' sample <- list(pos[ , 1:2], pos[ , 3:8])
 #' # Efficient choice set. 
-#' SeqDB(des = des, cand.set = cs, n.alts = 3, par.draws = sample, alt.cte = ac, 
+#' SeqMOD(des = des, cand.set = cs, n.alts = 3, par.draws = sample, alt.cte = ac, 
 #'            prior.covar = pc, parallel = FALSE)
 #' @export
-SeqDB <- function(des = NULL, cand.set, n.alts, par.draws, prior.covar, 
+SeqMOD <- function(des = NULL, cand.set, n.alts, par.draws, prior.covar, 
                   alt.cte = NULL, no.choice = NULL, weights = NULL, 
                   parallel = TRUE, reduce = TRUE, 
                   allow.rep = FALSE) {
@@ -473,6 +481,8 @@ SeqDB <- function(des = NULL, cand.set, n.alts, par.draws, prior.covar,
       alt.cte <- NULL
       cte.des <- NULL
     }
+  } else {
+    n.cte <- 0
   }
   #if no.choice
   if (!is.null(no.choice)) {
@@ -569,9 +579,12 @@ SeqDB <- function(des = NULL, cand.set, n.alts, par.draws, prior.covar,
     }
     # Starting and initializing values.
     i.cov <- solve(prior.covar)
-    d.start <- apply(par.draws, 1, DerrC_ucpp, des = des,  n.alts = n.alts, i.cov = i.cov)
+    d.start <- apply(par.draws, 1, DerrC_ucpp, des = des,  n.alts = n.alts, 
+                     i.cov = i.cov)
     db.start <- mean(d.start, na.rm = TRUE)
-    full.comb <- Fullsets_ucpp(cand.set = cand.set, n.alts = n.alts, no.choice = no.choice, reduce = reduce, allow.rep = allow.rep, des = des)
+    full.comb <- Fullsets_ucpp(cand.set = cand.set, n.alts = n.alts, 
+                               no.choice = no.choice, reduce = reduce, 
+                               allow.rep = allow.rep, des = des, n.cte = n.cte)
     #if alt.cte
     if (!is.null(cte.des)) {
       full.comb <- lapply(full.comb, function(x) cbind(cte.set, x))
@@ -650,13 +663,29 @@ SeqDB <- function(des = NULL, cand.set, n.alts, par.draws, prior.covar,
 #' Sequential Kullback-Leibler based algorithm for the MNL model.
 #' 
 #' Selects the choice set that maximizes the Kullback-Leibler divergence between
-#' prior parameter values and the expected posterior, assuming an MNL model.
+#' the prior parameter values and the expected posterior, assuming a MNL model.
 #' 
-#' The algorithm selects the choice set that maximizes the Kullback-Leibler 
+#' This algorithm is ideally used in an adaptive context. The algorithm selects 
+#' the choice set that maximizes the Kullback-Leibler 
 #' divergence between prior and expected posterior. Otherwisely framed the 
 #' algorithm selects the choice set that maximizes the expected information 
 #' gain.
-#' @inheritParams SeqDB
+#' 
+#' If \code{alt.cte = NULL}, \code{par.draws} should be a matrix in which each 
+#' row is a sample from the multivariate parameter distribution. In case that 
+#' \code{alt.cte} is not \code{NULL}, a list containing two matrices should be 
+#' provided to \code{par.draws}. The first matrix containing the parameter draws
+#' for the alternative specific parameters. The second matrix containing the
+#' draws for the rest of the parameters.
+#'
+#' The list of potential choice sets are created using 
+#' \code{\link[utils]{combn}}. The \code{weights} argument can be used when the
+#'  \code{par.draws} have 
+#' weights. This is for example the case when parameter values are updated using
+#' \code{\link{ImpsampMNL}}.
+#' 
+#' 
+#' @inheritParams SeqMOD
 #' @param alt.cte A binary vector indicating for each alternative if an
 #'   alternative specific constant is desired.
 #' @return \item{set}{Numeric matrix containing the choice set that maximizes the expected KL divergence.}
@@ -672,9 +701,8 @@ SeqDB <- function(des = NULL, cand.set, n.alts, par.draws, prior.covar,
 #' pc <- diag(length(m)) # Prior variance
 #' set.seed(123)
 #' ps <- MASS::mvrnorm(n = 10, mu = m, Sigma = pc) # 10 draws.
-#' ac <- c(0, 0) # No alternative specific constants. 
 #' # Efficient choice set to add. 
-#' SeqKL(cand.set = cs, n.alts = 2, alt.cte = ac, par.draws = ps, weights = NULL)
+#' SeqKL(cand.set = cs, n.alts = 2, alt.cte = NULL, par.draws = ps, weights = NULL)
 #' 
 #' # KL efficient choice set, given parameter draws. 
 #' # Candidate profiles 
@@ -683,12 +711,13 @@ SeqDB <- function(des = NULL, cand.set, n.alts, par.draws, prior.covar,
 #' pc <- diag(length(m)) # Prior variance
 #' set.seed(123)
 #' ps <- MASS::mvrnorm(n = 10, mu = m, Sigma = pc) # 10 draws.
+#' sample <- list(ps[ , 1], ps[ , 2:4])
 #' ac <- c(1, 0) # Alternative specific constant. 
 #' # Efficient choice set to add. 
-#' SeqKL(cand.set = cs, n.alts = 2, alt.cte = ac, par.draws = ps, weights = NULL)
+#' SeqKL(cand.set = cs, n.alts = 2, alt.cte = ac, par.draws = sample, weights = NULL)
 #' @export
-SeqKL <- function(des = NULL, cand.set, n.alts, alt.cte = NULL, par.draws, 
-                  weights = NULL, allow.rep = FALSE) {
+SeqKL <- function(des = NULL, cand.set, n.alts, par.draws, alt.cte = NULL, 
+                  no.choice = NULL, weights = NULL, allow.rep = FALSE) {
   # Handling error initial design
   if (is.null(des)) {
     n.sets <- 1L
@@ -703,10 +732,23 @@ SeqKL <- function(des = NULL, cand.set, n.alts, alt.cte = NULL, par.draws,
     n.sets <- nrow(des) / n.alts
   }
   
-  # Handling par.draws.
-  if (!(is.matrix(par.draws))) {
-    par.draws <- matrix(par.draws, nrow = 1)
+  ### Error handling for design specifications
+  # No choice errors
+  if (!is.null(no.choice)) {
+    if (!is.wholenumber(no.choice)) {
+      stop("'no.choice' should be an integer or NULL")
+    }
+    if (any(isTRUE(no.choice > (n.alts + 0.2)), isTRUE(no.choice < 0.2))) {
+      stop("'no.choice' does not indicate one of the alternatives")
+    }
+    if (is.null(alt.cte)) {
+      stop("if there is a no choice alternative, 'alt.cte' should be specified")
+    }
+    if (!isTRUE(all.equal(alt.cte[no.choice], 1))) {
+      stop("the no choice alternative should correspond with a 1 in 'alt.cte'")
+    }
   }
+  
   # Error alternative specific constants.
   if (!is.null(alt.cte)) {
     if (length(alt.cte) != n.alts) {
@@ -721,13 +763,45 @@ SeqKL <- function(des = NULL, cand.set, n.alts, alt.cte = NULL, par.draws,
       alt.cte <- NULL
       cte.des <- NULL
     }
+    
+    # Handling errors when there are alternative constants
+    if (n.cte > 0.2) {
+      if (!is.list(par.draws)) {
+        stop("'par.draws' should be a list when 'alt.cte' is not NULL")
+      }
+      if (!isTRUE(all.equal(length(par.draws), 2))) {
+        stop("'par.draws' should contain two components")
+      }
+      # If there is only one specific constant and is a vector, then it is
+      # transformed to a matrix
+      if (isTRUE(all.equal(n.cte, 1))) {
+        if (is.vector(par.draws[[1]])) {
+          par.draws[[1]] <- matrix(par.draws[[1]], ncol = 1)
+        }
+      }
+      if (!(all(unlist(lapply(par.draws, is.matrix))))) {
+        stop("'par.draws' should contain two matrices")
+      }
+      if (!isTRUE(all.equal(ncol(par.draws[[1]]), n.cte))) {
+        stop("the first component of 'par.draws' should contain the same number 
+             of columns as there are non zero elements in 'alt.cte'")
+      }
+      dims <-  as.data.frame(lapply(par.draws, dim))
+      if (!isTRUE(all.equal(dims[1, 1], dims[1, 2]))) { 
+        stop("the number of rows in the components of 'par.draws' should be equal")
+      }
+      par.draws  <- do.call("cbind", par.draws) # Transform par.draws to a matrix
+    }
+    
     # Create alternative specific design.
     cte.des <- Altspec(alt.cte = alt.cte, n.sets = 1)  
+    cte.set <- matrix(cte.des[1:n.alts, ], ncol = n.cte, byrow = FALSE)
     # Error handling cte.des
     if (ncol(cand.set) + ncol(cte.des) != ncol(par.draws)) {
       stop("dimension of par.draws does not match the dimension of alt.cte + cand.set.")
     }
   } else {
+    n.cte <- 0
     cte.des <- NULL
     # Error handling cte.des
     if (ncol(cand.set) != ncol(par.draws)) {
@@ -735,16 +809,27 @@ SeqKL <- function(des = NULL, cand.set, n.alts, alt.cte = NULL, par.draws,
     }
   }
   
+  # Check number of columns in par.draws and weights
+  n.par <- ncol(par.draws)
+  if (!is.null(weights)) {
+    if (!isTRUE(all.equal(length(weights), nrow(par.draws)))) {
+      stop("length of 'weights' does not match number total number of rows in 'par.draws'")
+    }
+  }
   # All choice sets.
   # full.comb <- gtools::combinations(n = nrow(cand.set), r = n.alts, 
   #                                   repeats.allowed = !reduce)
   full.comb <- Fullsets_ucpp(cand.set = cand.set, n.alts = n.alts, 
-                                 no.choice = NULL, reduce = FALSE, 
-                                 allow.rep = allow.rep, des = des)
+                                 no.choice = no.choice, reduce = FALSE, 
+                                 allow.rep = allow.rep, des = des, n.cte = n.cte)
   
   # If no weights, equal weights.
   if (is.null(weights)) {
     weights <- rep(1, nrow(par.draws))
+  }
+  # Add alternative specific constants if necessary
+  if (!is.null(cte.des)) {
+    full.comb <- lapply(full.comb, function(x) cbind(cte.set, x))
   }
   # Calculate KL for each set.
   #kl.infos <- apply(full.comb, 1, KLs, par.draws, cte.des, cand.set, weights)
@@ -755,9 +840,9 @@ SeqKL <- function(des = NULL, cand.set, n.alts, alt.cte = NULL, par.draws,
   #set <- cand.set[comb.nr, ]
   set <- full.comb[[which.max(kl.infos)]]
   # Add alternative specific constants if necessary
-  if (!is.null(cte.des)) {
-    set <- cbind(cte.des, set)
-  }
+  #if (!is.null(cte.des)) {
+  #  set <- cbind(cte.des, set)
+  #}
   row.names(set) <- NULL
   # return.
   return(list(set = set, kl = max(unlist(kl.infos))))

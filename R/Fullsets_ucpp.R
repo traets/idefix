@@ -1,6 +1,6 @@
 # Fullsets using Infodes_cpp
 Fullsets_ucpp <- function(cand.set, n.alts, no.choice, reduce = TRUE, allow.rep,
-                           des){
+                           des, n.cte){
   if (!is.null(no.choice)) {
     n.alts <- n.alts - 1
   }
@@ -24,8 +24,19 @@ Fullsets_ucpp <- function(cand.set, n.alts, no.choice, reduce = TRUE, allow.rep,
         cset_comb[[k]] <- cset[as.numeric(per[k,]),] # Permutations
       } # End for
       # in repe: True where the choice set is located
-      repe[, j] <- unlist(lapply(full.comb, function(x){ 
+      if (n.cte == 0) {
+        repe[, j] <- unlist(lapply(full.comb, function(x){ 
         any(unlist(lapply(cset_comb, function(y) all(x == y))))})) 
+      } else {
+        repe[, j] <- unlist(lapply(full.comb, function(x){ 
+          any(unlist(lapply(cset_comb, function(y) {
+            y <- y[, -c(1:n.cte)] # Remove alternative constants from des
+            all(x == y)
+            } # End function(y)
+            )))
+          } # End function(x)
+          )) 
+      }
       i <- i + n.alts
       j <- j + 1
     } # End while

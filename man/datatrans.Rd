@@ -15,7 +15,7 @@ Datatrans(pkg, des, y, n.alts, n.sets, n.resp, bin, alt.names = NULL)
 
 \item{des}{A design matrix in which each row is a profile.}
 
-\item{y}{A numeric vector containing binary or discrete responses. See \code{bin}.}
+\item{y}{A numeric vector containing binary or discrete responses. See \code{bin} argument.}
 
 \item{n.alts}{Numeric value indicating the number of alternatives per choice
 set.}
@@ -25,7 +25,7 @@ set.}
 \item{n.resp}{Numeric value indicating the number of respondents.}
 
 \item{bin}{Logical value indicating whether the reponse vector contains
-binary data (\code{TRUE}) or discrete data (\code{FALSE}). See \code{y}.}
+binary data (\code{TRUE}) or discrete data (\code{FALSE}). See \code{y} argument.}
 
 \item{alt.names}{A character vector containing the names of the alternatives.
 The default = \code{NULL}}
@@ -38,8 +38,8 @@ Transforms the data into the desired data format required by different
 estimation packages.
 }
 \details{
-The \code{des} specified should be the full aggregate design. Thus if all
-participants responded to the same design, \code{des} will be a repetition of
+The design (\code{des}) specified should be the full aggregated design.
+Thus, if all participants responded to the same design, \code{des} will be a repetition of
 that design matrix.
 
 The responses in \code{y} should be succesive when there are multiple

@@ -13,12 +13,13 @@ LoadData(data.dir, type)
 }
 \value{
 A data frame containg the full design and all the responses of the
-combined data files that where found. Different files are indicated by an
+combined data files that were found. Different files are indicated by an
 ID variable.
 }
 \description{
-Reads all individual choice data files from a directory and concatenates
+Reads all individual choice data files, created by \code{\link{SurveyApp}}
+function, from a directory and concatenates
 those files into a single data file. Files containing either "num" or "char"
 will be read, with num indicating numeric data and char indicating character
-data. for more information see output of \code{\link{SurveyApp}}.
+data. For more information, see output of \code{\link{SurveyApp}}.
 }

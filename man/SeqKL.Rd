@@ -4,24 +4,27 @@
 \alias{SeqKL}
 \title{Sequential Kullback-Leibler based algorithm for the MNL model.}
 \usage{
-SeqKL(des = NULL, cand.set, n.alts, alt.cte = NULL, par.draws,
-  weights = NULL, allow.rep = FALSE)
+SeqKL(des = NULL, cand.set, n.alts, par.draws, alt.cte = NULL,
+  no.choice = NULL, weights = NULL, allow.rep = FALSE)
 }
 \arguments{
 \item{des}{A design matrix in which each row is a profile. If alternative
 specific constants are present, those should be included as the first
-column(s) of the design. Can be generated with \code{\link{Modfed}}}
+column(s) of the design. Can be generated with \code{\link{Modfed}} or \code{\link{CEA}}.}
 
 \item{cand.set}{A numeric matrix in which each row is a possible profile. The
-\code{\link{Profiles}} function can be used to generate this.}
+\code{\link{Profiles}} function can be used to generate this matrix.}
 
 \item{n.alts}{Numeric value indicating the number of alternatives per choice
 set.}
 
+\item{par.draws}{A matrix or a list, depending on \code{alt.cte}.}
+
 \item{alt.cte}{A binary vector indicating for each alternative if an
 alternative specific constant is desired.}
 
-\item{par.draws}{A matrix or a list, dependend on \code{alt.cte}.}
+\item{no.choice}{An integer indicating the no choice alternative. The default
+is \code{NULL}.}
 
 \item{weights}{A vector containing the weights of the draws. Default is
 \code{NULL}, See also \code{\link{ImpsampMNL}}.}
@@ -35,13 +38,27 @@ allowed in the design.}
 }
 \description{
 Selects the choice set that maximizes the Kullback-Leibler divergence between
-prior parameter values and the expected posterior, assuming an MNL model.
+the prior parameter values and the expected posterior, assuming a MNL model.
 }
 \details{
-The algorithm selects the choice set that maximizes the Kullback-Leibler
+This algorithm is ideally used in an adaptive context. The algorithm selects
+the choice set that maximizes the Kullback-Leibler
 divergence between prior and expected posterior. Otherwisely framed the
 algorithm selects the choice set that maximizes the expected information
 gain.
+
+If \code{alt.cte = NULL}, \code{par.draws} should be a matrix in which each
+row is a sample from the multivariate parameter distribution. In case that
+\code{alt.cte} is not \code{NULL}, a list containing two matrices should be
+provided to \code{par.draws}. The first matrix containing the parameter draws
+for the alternative specific parameters. The second matrix containing the
+draws for the rest of the parameters.
+
+The list of potential choice sets are created using
+\code{\link[utils]{combn}}. The \code{weights} argument can be used when the
+\code{par.draws} have
+weights. This is for example the case when parameter values are updated using
+\code{\link{ImpsampMNL}}.
 }
 \examples{
 # KL efficient choice set, given parameter draws. 
@@ -51,9 +68,8 @@ m <- c(0.3, 0.2, -0.3, -0.2) # Prior mean (4 parameters).
 pc <- diag(length(m)) # Prior variance
 set.seed(123)
 ps <- MASS::mvrnorm(n = 10, mu = m, Sigma = pc) # 10 draws.
-ac <- c(0, 0) # No alternative specific constants. 
 # Efficient choice set to add. 
-SeqKL(cand.set = cs, n.alts = 2, alt.cte = ac, par.draws = ps, weights = NULL)
+SeqKL(cand.set = cs, n.alts = 2, alt.cte = NULL, par.draws = ps, weights = NULL)
 
 # KL efficient choice set, given parameter draws. 
 # Candidate profiles 
@@ -62,9 +78,10 @@ m <- c(0.7, 0.3, -0.3, -0.2) # Prior mean (4 parameters).
 pc <- diag(length(m)) # Prior variance
 set.seed(123)
 ps <- MASS::mvrnorm(n = 10, mu = m, Sigma = pc) # 10 draws.
+sample <- list(ps[ , 1], ps[ , 2:4])
 ac <- c(1, 0) # Alternative specific constant. 
 # Efficient choice set to add. 
-SeqKL(cand.set = cs, n.alts = 2, alt.cte = ac, par.draws = ps, weights = NULL)
+SeqKL(cand.set = cs, n.alts = 2, alt.cte = ac, par.draws = sample, weights = NULL)
 }
 \references{
 \insertRef{crabbe}{idefix}

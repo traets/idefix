@@ -5,10 +5,11 @@
 \title{Shiny application to generate a discrete choice survey.}
 \usage{
 SurveyApp(des = NULL, n.total, alts, atts, lvl.names, coding,
-  alt.cte = NULL, no.choice = NULL, buttons.text, intro.text, end.text,
-  data.dir = NULL, c.lvls = NULL, prior.mean = NULL,
-  prior.covar = NULL, cand.set = NULL, n.draws = NULL,
-  lower = NULL, upper = NULL, parallel = TRUE, reduce = TRUE)
+  alt.cte = NULL, no.choice = NULL, algorithm = "MOD", n.cs = NULL,
+  buttons.text, intro.text, end.text, data.dir = NULL, c.lvls = NULL,
+  prior.mean = NULL, prior.covar = NULL, cand.set = NULL,
+  n.draws = NULL, lower = NULL, upper = NULL, parallel = TRUE,
+  reduce = TRUE)
 }
 \arguments{
 \item{des}{A numeric matrix which represents the design matrix. Each row is a
@@ -32,6 +33,12 @@ alternative specific constant is present. The default is \code{NULL}.}
 \item{no.choice}{An integer indicating which alternative should be a no choice
 alternative. The default is \code{NULL}.}
 
+\item{algorithm}{Can be either "MOD" or "CEA" to use the Modified Fedorov or the Coordinate Exchange algorithm, respectively. The default is "MOD".}
+
+\item{n.cs}{An integer indicating the number of possible random choice sets to
+consider in the search for the next best choice set possible. The default is
+\code{NULL}.}
+
 \item{buttons.text}{A string containing the text presented together with the
 option buttons.}
 
@@ -53,9 +60,9 @@ normal distribution (prior).}
 \item{prior.covar}{Covariance matrix of the prior distribution.}
 
 \item{cand.set}{A numeric matrix in which each row is a possible profile. The
-\code{\link{Profiles}} function can be used to generate this.}
+\code{\link{Profiles}} function can be used to generate this matrix.}
 
-\item{n.draws}{numeric value indicating the number of draws.}
+\item{n.draws}{Numeric value indicating the number of draws.}
 
 \item{lower}{Numeric vector of lower truncation points, the default
 is \code{NULL}.}
@@ -86,20 +93,20 @@ can be generated sequentially adaptively, or can be a combination of both.
 }
 \details{
 A pregenerated design can be specified in \code{des}. This should be a matrix
-in which each row is a profile. This can be generated with \code{\link{Modfed}}, but
-is not necesarry.
+in which each row is a profile. This can be generated with \code{\link{Modfed}}
+or  \code{\link{CEA}}, but it is not necessary.
 
 If \code{n.total} = \code{nrow(des)} / \code{length(alts)}, the specified
 design will be put on screen, one set after the other, and the responses will
 be saved. If \code{n.total} > (\code{nrow(des)} / \code{length(alts)}), first
 the specified design will be shown and afterwards the remaining sets will be
 generated adaptively. If \code{des} = \code{NULL}, \code{n.total} sets will be
-generated adaptively. See \code{\link{SeqDB}} for more information on adaptive
+generated adaptively. See \code{\link{SeqMOD}} for more information on adaptive
 choice sets.
 
 Whenever adaptive sets will be generated, \code{prior.mean},
 \code{prior.covar}, \code{cand.set} and \code{n.draws}, should be specified.
-These arguments are necesarry for the underlying importance sampling algorithm
+These arguments are necessary for the underlying importance sampling algorithm
 to update the prior preference distribution. \code{lower} and \code{upper} can
 be used to specify lower and upper truncation points. See
 \code{\link{ImpsampMNL}} for more details.
@@ -125,8 +132,8 @@ is present in \code{des}, or is desired when generating adaptive choice sets,
 indicating which alternative is the no choice option. This alternative will
 not be presented on screen, but the option to select "no choice" will be. The
 \code{alt.cte} argument should be specified accordingly, namely with a
-\code{1} on the location of the \code{no.choice} option. See examples for an
-example.
+\code{1} on the location of the \code{no.choice} option. See examples for
+illustration.
 
 When \code{parallel} is \code{TRUE}, \code{\link[parallel]{detectCores}} will
 be used to decide upon the number of available cores. That number minus 1
@@ -140,6 +147,10 @@ alternative specific constants are used, \code{reduce} should always be
 \code{TRUE}. When alternative specific constants are used \code{reduce} can be
 \code{TRUE} so that the algorithm will be faster, but the combinations of
 constants and profiles will not be evaluated exhaustively.
+
+When \code{algorithm = "MOD"}, the \code{\link[idefix]{SeqMOD}} function is
+used to select the choice set that minimizes the DB-error. Otherwise,
+\code{algorithm = "CEA"} uses the \code{\link[idefix]{SeqCEA}} function.
 }
 \examples{
 \donttest{
@@ -164,7 +175,8 @@ dataDir <- getwd()
 # Display the survey 
 SurveyApp (des = xdes, n.total = n.sets, alts = alternatives, 
           atts = attributes, lvl.names = labels, coding = code, 
-          buttons.text = b.text, intro.text = i.text, end.text = e.text)
+          buttons.text = b.text, intro.text = i.text, end.text = e.text, 
+          algorithm = "MOD")
 
 #### Present choice design with partly adaptive sets (n.total > sets in des)
 # example design 
@@ -190,11 +202,18 @@ p.mean <- c(0.3, 0.7, 0.3, 0.7, 0.3, 0.7)
 p.var <- diag(length(p.mean))
 dataDir <- getwd()
 # Display the survey 
-SurveyApp(des = xdes, n.total = n.sets, alts = alternatives, atts = 
-attributes, lvl.names = labels, coding = code, buttons.text = b.text, 
-intro.text = i.text, end.text = e.text, crit= "DB", prior.mean = p.mean,
-prior.covar = p.var, cand.set = cand, n = 50)
-
+SurveyApp(des = xdes, n.total = n.sets, alts = alternatives, 
+          atts = attributes, lvl.names = labels, coding = code, 
+          buttons.text = b.text, intro.text = i.text, end.text = e.text, 
+          prior.mean = p.mean, prior.covar = p.var, cand.set = cand, 
+          n.draws = 50, algorithm = "MOD")
+# If CEA algorithm is desired, cand.set argument is not needed
+SurveyApp(des = xdes, n.total = n.sets, alts = alternatives, 
+          atts = attributes, lvl.names = labels, coding = code, 
+          buttons.text = b.text, intro.text = i.text, end.text = e.text, 
+          prior.mean = p.mean, prior.covar = p.var, n.draws = 50, 
+          algorithm = "CEA")
+          
 #### Choice design with only adaptive sets (des=NULL)
 # setting for adaptive sets 
 levels <- c(3, 3, 3)
@@ -217,12 +236,18 @@ b.text <- "Please choose the alternative you prefer"
 e.text <- "Thanks for taking the survey"
 dataDir <- getwd()
 # Display the survey 
-SurveyApp (des = NULL, n.total = n.sets, alts = alternatives, atts =
-attributes, lvl.names = labels, coding = code, buttons.text = b.text,
-intro.text = i.text, end.text = e.text, crit= "KL", prior.mean = p.mean,
-prior.covar = p.var, cand.set = cand, lower = low, upper = up, n = 50) 
-
-
+SurveyApp(des = NULL, n.total = n.sets, alts = alternatives,
+          atts = attributes, lvl.names = labels, coding = code, 
+          buttons.text = b.text, intro.text = i.text, end.text = e.text, 
+          prior.mean = p.mean, prior.covar = p.var, cand.set = cand, 
+          lower = low, upper = up, n.draws = 50, algorithm = "MOD")
+# If CEA algorithm is desired, cand.set argument is not needed
+SurveyApp(des = NULL, n.total = n.sets, alts = alternatives,
+         atts = attributes, lvl.names = labels, coding = code, 
+         buttons.text = b.text, intro.text = i.text, end.text = e.text, 
+         prior.mean = p.mean, prior.covar = p.var, 
+         lower = low, upper = up, n.draws = 50, algorithm = "CEA")
+         
 #### Present choice design with a no choice alternative.
 # example design 
 data("nochoice_design") # pregenerated design
@@ -241,10 +266,11 @@ i.text <- "Welcome, here are some instructions ... good luck!"
 b.text <- "Please choose the alternative you prefer"
 e.text <- "Thanks for taking the survey"
 
-SurveyApp (des = xdes, n.total = n.sets, alts = alternatives, 
+# Display the survey 
+SurveyApp(des = xdes, n.total = n.sets, alts = alternatives, 
           atts = attributes, lvl.names = labels, coding = code, 
           buttons.text = b.text, intro.text = i.text, end.text = e.text,
-          no.choice = 3, alt.cte = c(0 , 0, 1))
+          no.choice = 3, alt.cte = c(0, 0, 1), algorithm = "MOD")
 }
 }
 \references{

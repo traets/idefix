@@ -12,8 +12,8 @@ data(nochoice_design)
 This discrete choice design is generated using the \code{\link{Modfed}}
 function. There are 8 choice sets, each containig 3 alternatives (rows), of
 which one is a no choice option. The no choice option consist of an
-alternative specific constant and zero's for all other attributelevels. There
-are three attributes (time, price, comfort) with each 3 levels, all of which
+alternative specific constant and zero's for all other attribute levels. There
+are three attributes (time, price, comfort) with 3 levels each, all of which
 are dummy coded (columns).
 }
 \keyword{data}
