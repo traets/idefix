@@ -60,10 +60,6 @@
 #'\code{TRUE} so that the algorithm will be faster, but the combinations of
 #'constants and profiles will not be evaluated exhaustively.
 #'
-#'When \code{algorithm = "MOD"}, the \code{\link[idefix]{SeqMOD}} function is 
-#'used to select the choice set that minimizes the DB-error. Otherwise, 
-#'\code{algorithm = "CEA"} uses the \code{\link[idefix]{SeqCEA}} function. 
-#'
 #'@param alts A character vector containing the names of the alternatives.
 #'@param atts A character vector containing the names of the attributes.
 #'@param n.total A numeric value indicating the total number of choice sets.
@@ -77,12 +73,10 @@
 #'  survey.
 #'@param data.dir A character string with the directory denoting where the data
 #'  needs to be written. The default is NULL
-#'@param algorithm Can be either "MOD" or "CEA" to use the Modified Fedorov or the Coordinate Exchange algorithm, respectively. The default is "MOD".
 #'@inheritParams Decode
 #'@inheritParams Modfed
 #'@inheritParams Profiles
 #'@inheritParams SeqMOD
-#'@inheritParams SeqCEA
 #'@inheritParams ImpsampMNL
 #'@importFrom Rdpack reprompt
 #'@references \insertRef{ju}{idefix}
@@ -217,13 +211,14 @@
 #'@import shiny
 #'@export
 SurveyApp <- function(des = NULL, n.total, alts, atts, lvl.names, coding,
-                       alt.cte = NULL, no.choice = NULL, algorithm = "MOD", 
+                       alt.cte = NULL, no.choice = NULL, 
                       n.cs = NULL,
                       buttons.text, intro.text, end.text, data.dir = NULL,
                        c.lvls = NULL, prior.mean = NULL,
                        prior.covar = NULL, cand.set = NULL, n.draws = NULL, 
                        lower = NULL, upper = NULL, parallel = TRUE, reduce = TRUE) {
-  # Initialize 
+  # Initialize
+  algorithm = "MOD"
   sdata <- vector(mode = "list")
   surveyData <- vector(mode = "list")
   y.bin <- vector("numeric")
