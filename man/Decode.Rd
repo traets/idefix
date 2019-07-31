@@ -18,7 +18,7 @@ set.}
 level of each attribute.}
 
 \item{coding}{A character vector denoting the type of coding used for each
-attribute. See also \code{\link{Profiles}}.}
+attribute. See also \code{\link[idefix]{Profiles}}.}
 
 \item{alt.cte}{A binary vector indicating for each alternative if an
 alternative specific constant is present. The default is \code{NULL}.}
