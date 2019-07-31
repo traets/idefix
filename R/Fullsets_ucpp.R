@@ -41,8 +41,14 @@ Fullsets_ucpp <- function(cand.set, n.alts, no.choice, reduce = TRUE, allow.rep,
       j <- j + 1
     } # End while
     # delete: index of repeated choice sets
-    delete <- apply(repe, 2, function(x) which(x == T)) 
+    delete <- apply(repe, 2, function(x) which(x == TRUE)) 
+  
+    if(is.list(delete)){
+      delete <- unlist(delete)
+    }
+
     full.comb <- full.comb[-delete]
+    
   }
   
   #reduce: Remove choice sets with same information matrix
