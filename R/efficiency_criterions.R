@@ -78,6 +78,8 @@ DBerr <- function(par.draws, des, n.alts, weights = NULL, mean = TRUE) {
   # DB-error.
   if(isTRUE(mean)){
     error <- mean(d.errors, na.rm = TRUE)
+  } else {
+    error <- d.errors
   }
   return("DBerror" = error)
 }
