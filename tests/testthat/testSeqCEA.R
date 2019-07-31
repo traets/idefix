@@ -98,7 +98,7 @@ test_that("Errors for creating initial design in CEA function", {
                       prior.covar = pc, 
                       alt.cte = c(1, 0), parallel = FALSE), 
                "the first component of 'par.draws' should contain the same number 
-             of columns as there are non zero elements in 'alt.cte'")
+               of columns as there are non zero elements in 'alt.cte'")
   
   # When there is only one alternative constant, the number of samples from the
   # distribution of beta should be equal in both components of par.draws. Here
