@@ -561,7 +561,7 @@ SurveyApp <- function(des = NULL, n.total, alts, atts, lvl.names, coding,
 #' @param lvl.names A list containing character vectors with the values of each 
 #'   level of each attribute.
 #' @param coding A character vector denoting the type of coding used for each 
-#'   attribute. See also \code{\link{Profiles}}.
+#'   attribute. See also \code{\link[idefix]{Profiles}}.
 #' @param alt.cte A binary vector indicating for each alternative if an 
 #'   alternative specific constant is present. The default is \code{NULL}.
 #' @param no.choice An integer indicating the no choice alternative. The default
