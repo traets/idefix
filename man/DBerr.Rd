@@ -4,7 +4,7 @@
 \alias{DBerr}
 \title{DB error}
 \usage{
-DBerr(par.draws, des, n.alts, weights = NULL)
+DBerr(par.draws, des, n.alts, weights = NULL, mean = TRUE)
 }
 \arguments{
 \item{par.draws}{Numeric matrix in which each row is a draw from a multivariate parameter distribution.}
@@ -16,6 +16,8 @@ set.}
 
 \item{weights}{A numeric vector containing weights of \code{par.draws}. The
 default is \code{NULL}.}
+
+\item{mean}{A logical value indicating whether the mean (DB) error should be returned or not. Default = TRUE.}
 }
 \value{
 Numeric value indicating the DB-error of the design given the
