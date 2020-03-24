@@ -1,7 +1,7 @@
 Package: idefix
 Type: Package
 Title: Efficient Designs for Discrete Choice Experiments
-Version: 0.4.0
+Version: 0.4.1
 Roxygen: list(markdown = TRUE)
 Authors@R: c(
     person("Frits", "Traets", email = "frits.traets@kuleuven.be", role = c("aut", "cre")),
