@@ -101,7 +101,7 @@
 #' set.seed(123) 
 #' pd <- MASS::mvrnorm(n = 3, mu = mu, Sigma = v) # 10 draws.
 #' CEA(lvls = c(4, 2, 3), coding = c("E", "E", "C"), par.draws = pd,
-#' c.lvls = list(c(2, 4, 6)), n.alts = 2, n.sets = 6, parallel = F)
+#' c.lvls = list(c(2, 4, 6)), n.alts = 2, n.sets = 6, parallel = FALSE)
 #' 
 #' # DB-efficient design with start design provided.  
 #' # 3 Attributes with 3 levels, all dummy coded (= 6 parameters).
@@ -111,11 +111,9 @@
 #' set.seed(123)
 #' ps <- MASS::mvrnorm(n = 10, mu = mu, Sigma = v) # 10 draws.
 #' CEA(lvls = c(3, 3, 3), coding = c("D", "D", "D"), par.draws = ps,
-#' n.alts = 2, n.sets = 8, parallel = F, start.des = sd)
+#' n.alts = 2, n.sets = 8, parallel = FALSE, start.des = sd)
 #'}
 #' @importFrom Rdpack reprompt
-#' @references \insertRef{cea}{idefix}
-#' @references \insertRef{cea_discrete}{idefix}
 #' @export
 CEA <- function(lvls, coding, c.lvls = NULL, n.sets, n.alts, par.draws, 
                 alt.cte = NULL, no.choice = FALSE, start.des = NULL, 
@@ -453,13 +451,13 @@ CEAcore_ucpp <- function(des, par.draws, levels.list, n.alts, n.sets, n.cte,
   } 
   # Utility balance.
   # ub <- apply(par.draws, 1, Utbal, des = des,  n.alts = n.alts)
-  # ub2 <- apply(par.draws, 1, InfoDes2, des = des,  n.alts = n.alts, utbal = T)
+  # ub2 <- apply(par.draws, 1, InfoDes2, des = des,  n.alts = n.alts, utbal = TRUE)
   # ub_ucpp <- apply(par.draws, 1, InfoDes_cpp, des = des,  n_alts = n.alts, 
-  #                  utbal = T)
+  #                  utbal = TRUE)
   
   # Utility balance using c++ function
   ub <- apply(par.draws, 1, InfoDes_cpp, des = des,  n_alts = n.alts, 
-                   utbal = T)
+                   utbal = TRUE)
   pmat <- matrix(rowMeans(ub), ncol = n.alts, byrow = TRUE)
   rownames(pmat) <- paste("set", 1:n.sets, sep = "")
   colnames(pmat) <- paste(paste("Pr(", paste("alt", 1:n.alts, sep = ""), 

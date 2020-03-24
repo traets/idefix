@@ -122,6 +122,3 @@ Modfed(cand.set = cand.set, n.sets = 8, n.alts = 2,
        alt.cte = c(0, 0), parallel = FALSE, par.draws = ps, start.des = sd)
 }
 }
-\references{
-\insertRef{federov}{idefix}
-}

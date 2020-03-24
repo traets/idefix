@@ -100,8 +100,8 @@
 #' Modfed(cand.set = cand.set, n.sets = 8, n.alts = 2, 
 #'        alt.cte = c(0, 0), parallel = FALSE, par.draws = ps, start.des = sd)
 #'}
-#' @importFrom Rdpack reprompt
-#' @references \insertRef{federov}{idefix}
+#' @importFrom Rdpack reprompt 
+#' @importFrom MASS mvrnorm
 #' @export
 Modfed <- function(cand.set, n.sets, n.alts, par.draws, alt.cte = NULL, no.choice = FALSE, 
                    start.des = NULL, parallel = TRUE, max.iter = Inf, n.start = 12,
@@ -329,11 +329,11 @@ Modfedje_ucpp <- function(desje, par.draws, cand.set, n.alts, n.sets, n.cte, alt
   # Utility balance.
   # ub <- apply(par.draws, 1, Utbal, des = desje,  n.alts = n.alts)
   # ubcpp <- apply(par.draws, 1, InfoDes_cpp, des = desje,  n_alts = n.alts, 
-  #                utbal = T)
+  #                utbal = TRUE)
   
   # Utility balance using c++ function
   ub <- apply(par.draws, 1, InfoDes_cpp, des = desje,  n_alts = n.alts, 
-              utbal = T)
+              utbal = TRUE)
   pmat <- matrix(rowMeans(ub), ncol = n.alts, byrow = TRUE)
   rownames(pmat) <- paste("set", 1:n.sets, sep = "")
   colnames(pmat) <- paste(paste("Pr(", paste("alt", 1:n.alts, sep = ""), 
@@ -457,7 +457,7 @@ SeqMOD <- function(des = NULL, cand.set, n.alts, par.draws, prior.covar,
   #init
   if (is.null(des)) {
     n.sets <- 1L
-    allow.rep <- T
+    allow.rep <- TRUE
   } else { 
     if (!is.matrix(des)) {
       stop("'des' should be a matrix or NULL")
@@ -721,7 +721,7 @@ SeqKL <- function(des = NULL, cand.set, n.alts, par.draws, alt.cte = NULL,
   # Handling error initial design
   if (is.null(des)) {
     n.sets <- 1L
-    allow.rep <- T
+    allow.rep <- TRUE
   } else { 
     if (!is.matrix(des)) {
       stop("'des' should be a matrix or NULL")

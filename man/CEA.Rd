@@ -138,8 +138,3 @@ CEA(lvls = c(3, 3, 3), coding = c("D", "D", "D"), par.draws = ps,
 n.alts = 2, n.sets = 8, parallel = F, start.des = sd)
 }
 }
-\references{
-\insertRef{cea}{idefix}
-
-\insertRef{cea_discrete}{idefix}
-}
