@@ -125,7 +125,7 @@ v <- diag(length(mu)) # Prior variance.
 set.seed(123) 
 pd <- MASS::mvrnorm(n = 3, mu = mu, Sigma = v) # 10 draws.
 CEA(lvls = c(4, 2, 3), coding = c("E", "E", "C"), par.draws = pd,
-c.lvls = list(c(2, 4, 6)), n.alts = 2, n.sets = 6, parallel = F)
+c.lvls = list(c(2, 4, 6)), n.alts = 2, n.sets = 6, parallel = FALSE)
 
 # DB-efficient design with start design provided.  
 # 3 Attributes with 3 levels, all dummy coded (= 6 parameters).
@@ -135,6 +135,6 @@ sd <- list(example_design)
 set.seed(123)
 ps <- MASS::mvrnorm(n = 10, mu = mu, Sigma = v) # 10 draws.
 CEA(lvls = c(3, 3, 3), coding = c("D", "D", "D"), par.draws = ps,
-n.alts = 2, n.sets = 8, parallel = F, start.des = sd)
+n.alts = 2, n.sets = 8, parallel = FALSE, start.des = sd)
 }
 }
