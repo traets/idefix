@@ -23,7 +23,7 @@
 #'   \code{bayesm = \link[bayesm]{rhierMnlRwMixture}}, \code{ChoiceModelR = 
 #'   \link[ChoiceModelR]{choicemodelr}}, \code{RSGHB = \link[RSGHB]{doHB}}, 
 #'   \code{Mixed.Probit = \link[bayesm]{rbprobitGibbs}}, \code{mlogit = 
-#'   \link[mlogit]{mlogit}}, and \code{Rchoice = \link[Rchoice]{Rchoice}}).
+#'   \link[mlogit]{mlogit}}).
 #' @param des A design matrix in which each row is a profile.
 #' @inheritParams Modfed
 #' @param y A numeric vector containing binary or discrete responses. See \code{bin} argument.
@@ -197,7 +197,7 @@ Datatrans <- function(pkg, des, y, n.alts, n.sets, n.resp, bin, alt.names = NULL
     alt.ctes <- dplyr::select(mdes, dplyr::ends_with(".cte"))
     cte.names <- colnames(alt.ctes)
     logitdata <- mlogit::mlogit.data(mdes, choice = "Choice", shape = "long", 
-                             varying = "cte.names", alt.var = "alt.names",
+                             alt.var = "alt.names",
                              id.var = "id.var")
     print("The dataset is ready to be used for mlogit package")
     return(logitdata) 
