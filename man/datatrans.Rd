@@ -11,7 +11,7 @@ Datatrans(pkg, des, y, n.alts, n.sets, n.resp, bin, alt.names = NULL)
 \code{bayesm = \link[bayesm]{rhierMnlRwMixture}}, \code{ChoiceModelR = 
   \link[ChoiceModelR]{choicemodelr}}, \code{RSGHB = \link[RSGHB]{doHB}},
 \code{Mixed.Probit = \link[bayesm]{rbprobitGibbs}}, \code{mlogit = 
-  \link[mlogit]{mlogit}}, and \code{Rchoice = \link[Rchoice]{Rchoice}}).}
+  \link[mlogit]{mlogit}}).}
 
 \item{des}{A design matrix in which each row is a profile.}
 
