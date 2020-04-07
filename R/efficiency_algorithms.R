@@ -77,7 +77,7 @@
 #'   each alternative in each choice set. If a sample matrix was provided in
 #'   \code{par.draws}, this is the average over all draws.}
 #' @examples
-#' \donttest{
+#' \dontrun{
 #' # DB-efficient designs
 #' # 3 Attributes, all dummy coded. 1 alternative specific constant = 7 parameters
 #' cand.set <- Profiles(lvls = c(3, 3, 3), coding = c("D", "D", "D"))
