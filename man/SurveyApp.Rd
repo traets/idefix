@@ -142,7 +142,7 @@ alternative specific constants are used, \code{reduce} should always be
 constants and profiles will not be evaluated exhaustively.
 }
 \examples{
-\donttest{
+\dontrun{
 #### Present choice design without adaptive sets (n.total = sets in des)
 # example design 
 data("example_design") # pregenerated design
