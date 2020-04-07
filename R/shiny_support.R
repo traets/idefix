@@ -89,7 +89,7 @@
 #'  presented during the survey, together with the observed responses ("resp") 
 #'  can be found here. See \code{\link{LoadData}} to load the data.
 #' @examples 
-#' \donttest{
+#' \dontrun{
 #'#### Present choice design without adaptive sets (n.total = sets in des)
 #'# example design 
 #'data("example_design") # pregenerated design
@@ -560,7 +560,7 @@ SurveyApp <- function(des = NULL, n.total, alts, atts, lvl.names, coding,
 #'   \item{lvl.balance}{A list containing the frequency of appearance of each 
 #'   attribute level in the design.}
 #' @examples 
-#' \donttest{
+#' \dontrun{
 #' # Example without continuous attributes.
 #' design <- example_design 
 #' coded <- c("D", "D", "D") # Coding.
@@ -691,7 +691,7 @@ Decode <- function(des, n.alts, lvl.names, coding, alt.cte = NULL, c.lvls = NULL
 # @return A binary response vector with length equal to \code{length(resp) *
 #   length(n.alts)}.
 # @examples 
-# \donttest{
+# \dontrun{
 # # Observed Responses 
 # resp <- c("alt1", "alt3", "alt2", "no.choice", "alt1") 
 # # All possible alternatives 
