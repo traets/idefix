@@ -62,7 +62,7 @@ to the number of nonzero elements in \code{alt.cte}) will be removed from
 \code{des} before decoding the alternatives.
 }
 \examples{
-\donttest{
+\dontrun{
 # Example without continuous attributes.
 design <- example_design 
 coded <- c("D", "D", "D") # Coding.
