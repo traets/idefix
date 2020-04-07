@@ -98,7 +98,7 @@ cores will be used to search for efficient designs. The computation time will
 decrease significantly when \code{parallel = TRUE}.
 }
 \examples{
-\donttest{
+\dontrun{
 # DB-efficient designs
 # 3 Attributes, all dummy coded. 1 alternative specific constant = 7 parameters
 cand.set <- Profiles(lvls = c(3, 3, 3), coding = c("D", "D", "D"))
