@@ -1,0 +1,20 @@
+bibentry(bibtype = "Article",
+  title        = "Generating Optimal Designs for Discrete Choice Experiments in {R}: The {idefix} Package",
+  author       = c(person(given = "Frits",
+                          family = "Traets",
+                          email = "frits.traets@gmail.com"),
+                   person(given = c("Daniel", "Gil"),
+                          family = "Sanchez"),
+                   person(given = "Martina",
+                          family = "Vandebroek",
+                          email = "Martina.Vandebroek@kuleuven.be")),
+  journal      = "Journal of Statistical Software",
+  year         = "2020",
+  volume       = "96",
+  number       = "3",
+  pages        = "1--41",
+  doi          = "10.18637/jss.v096.i03",
+
+  header       = "To cite idefix in publications use:"
+)
+
