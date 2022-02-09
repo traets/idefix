@@ -102,7 +102,10 @@
 #'}
 #' @importFrom Rdpack reprompt 
 #' @importFrom MASS mvrnorm
+<<<<<<< HEAD
 #' @references \insertRef{idefix}{idefix}
+=======
+>>>>>>> 91cbb145f29e22f857c81c2e3e0e2cbaed646bf0
 #' @export
 Modfed <- function(cand.set, n.sets, n.alts, par.draws, alt.cte = NULL, no.choice = FALSE, 
                    start.des = NULL, parallel = TRUE, max.iter = Inf, n.start = 12,

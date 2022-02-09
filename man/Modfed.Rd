@@ -122,6 +122,9 @@ Modfed(cand.set = cand.set, n.sets = 8, n.alts = 2,
        alt.cte = c(0, 0), parallel = FALSE, par.draws = ps, start.des = sd)
 }
 }
+<<<<<<< HEAD
 \references{
 \insertRef{idefix}{idefix}
 }
+=======
+>>>>>>> 91cbb145f29e22f857c81c2e3e0e2cbaed646bf0
