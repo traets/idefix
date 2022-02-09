@@ -5,11 +5,10 @@
 \title{Shiny application to generate a discrete choice survey.}
 \usage{
 SurveyApp(des = NULL, n.total, alts, atts, lvl.names, coding,
-  alt.cte = NULL, no.choice = NULL, algorithm = "MOD", n.cs = NULL,
-  buttons.text, intro.text, end.text, data.dir = NULL, c.lvls = NULL,
-  prior.mean = NULL, prior.covar = NULL, cand.set = NULL,
-  n.draws = NULL, lower = NULL, upper = NULL, parallel = TRUE,
-  reduce = TRUE)
+  alt.cte = NULL, no.choice = NULL, buttons.text, intro.text, end.text,
+  data.dir = NULL, c.lvls = NULL, prior.mean = NULL,
+  prior.covar = NULL, cand.set = NULL, n.draws = NULL,
+  lower = NULL, upper = NULL, parallel = TRUE, reduce = TRUE)
 }
 \arguments{
 \item{des}{A numeric matrix which represents the design matrix. Each row is a
@@ -32,12 +31,6 @@ alternative specific constant is present. The default is \code{NULL}.}
 
 \item{no.choice}{An integer indicating which alternative should be a no choice
 alternative. The default is \code{NULL}.}
-
-\item{algorithm}{Can be either "MOD" or "CEA" to use the Modified Fedorov or the Coordinate Exchange algorithm, respectively. The default is "MOD".}
-
-\item{n.cs}{An integer indicating the number of possible random choice sets to
-consider in the search for the next best choice set possible. The default is
-\code{NULL}.}
 
 \item{buttons.text}{A string containing the text presented together with the
 option buttons.}
@@ -147,13 +140,9 @@ alternative specific constants are used, \code{reduce} should always be
 \code{TRUE}. When alternative specific constants are used \code{reduce} can be
 \code{TRUE} so that the algorithm will be faster, but the combinations of
 constants and profiles will not be evaluated exhaustively.
-
-When \code{algorithm = "MOD"}, the \code{\link[idefix]{SeqMOD}} function is
-used to select the choice set that minimizes the DB-error. Otherwise,
-\code{algorithm = "CEA"} uses the \code{\link[idefix]{SeqCEA}} function.
 }
 \examples{
-\donttest{
+\dontrun{
 #### Present choice design without adaptive sets (n.total = sets in des)
 # example design 
 data("example_design") # pregenerated design
@@ -175,8 +164,7 @@ dataDir <- getwd()
 # Display the survey 
 SurveyApp (des = xdes, n.total = n.sets, alts = alternatives, 
           atts = attributes, lvl.names = labels, coding = code, 
-          buttons.text = b.text, intro.text = i.text, end.text = e.text, 
-          algorithm = "MOD")
+          buttons.text = b.text, intro.text = i.text, end.text = e.text)
 
 #### Present choice design with partly adaptive sets (n.total > sets in des)
 # example design 
@@ -206,13 +194,7 @@ SurveyApp(des = xdes, n.total = n.sets, alts = alternatives,
           atts = attributes, lvl.names = labels, coding = code, 
           buttons.text = b.text, intro.text = i.text, end.text = e.text, 
           prior.mean = p.mean, prior.covar = p.var, cand.set = cand, 
-          n.draws = 50, algorithm = "MOD")
-# If CEA algorithm is desired, cand.set argument is not needed
-SurveyApp(des = xdes, n.total = n.sets, alts = alternatives, 
-          atts = attributes, lvl.names = labels, coding = code, 
-          buttons.text = b.text, intro.text = i.text, end.text = e.text, 
-          prior.mean = p.mean, prior.covar = p.var, n.draws = 50, 
-          algorithm = "CEA")
+          n.draws = 50)
           
 #### Choice design with only adaptive sets (des=NULL)
 # setting for adaptive sets 
@@ -240,13 +222,13 @@ SurveyApp(des = NULL, n.total = n.sets, alts = alternatives,
           atts = attributes, lvl.names = labels, coding = code, 
           buttons.text = b.text, intro.text = i.text, end.text = e.text, 
           prior.mean = p.mean, prior.covar = p.var, cand.set = cand, 
-          lower = low, upper = up, n.draws = 50, algorithm = "MOD")
+          lower = low, upper = up, n.draws = 50)
 # If CEA algorithm is desired, cand.set argument is not needed
 SurveyApp(des = NULL, n.total = n.sets, alts = alternatives,
          atts = attributes, lvl.names = labels, coding = code, 
          buttons.text = b.text, intro.text = i.text, end.text = e.text, 
          prior.mean = p.mean, prior.covar = p.var, 
-         lower = low, upper = up, n.draws = 50, algorithm = "CEA")
+         lower = low, upper = up, n.draws = 50)
          
 #### Present choice design with a no choice alternative.
 # example design 
@@ -270,7 +252,7 @@ e.text <- "Thanks for taking the survey"
 SurveyApp(des = xdes, n.total = n.sets, alts = alternatives, 
           atts = attributes, lvl.names = labels, coding = code, 
           buttons.text = b.text, intro.text = i.text, end.text = e.text,
-          no.choice = 3, alt.cte = c(0, 0, 1), algorithm = "MOD")
+          no.choice = 3, alt.cte = c(0, 0, 1))
 }
 }
 \references{

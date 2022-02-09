@@ -89,7 +89,7 @@
 #'  presented during the survey, together with the observed responses ("resp") 
 #'  can be found here. See \code{\link{LoadData}} to load the data.
 #' @examples 
-#' \donttest{
+#' \dontrun{
 #'#### Present choice design without adaptive sets (n.total = sets in des)
 #'# example design 
 #'data("example_design") # pregenerated design
@@ -111,8 +111,7 @@
 #'# Display the survey 
 #'SurveyApp (des = xdes, n.total = n.sets, alts = alternatives, 
 #'           atts = attributes, lvl.names = labels, coding = code, 
-#'           buttons.text = b.text, intro.text = i.text, end.text = e.text, 
-#'           algorithm = "MOD")
+#'           buttons.text = b.text, intro.text = i.text, end.text = e.text)
 #'
 #' #### Present choice design with partly adaptive sets (n.total > sets in des)
 #' # example design 
@@ -142,13 +141,8 @@
 #'           atts = attributes, lvl.names = labels, coding = code, 
 #'           buttons.text = b.text, intro.text = i.text, end.text = e.text, 
 #'           prior.mean = p.mean, prior.covar = p.var, cand.set = cand, 
-#'           n.draws = 50, algorithm = "MOD")
-#' # If CEA algorithm is desired, cand.set argument is not needed
-#' SurveyApp(des = xdes, n.total = n.sets, alts = alternatives, 
-#'           atts = attributes, lvl.names = labels, coding = code, 
-#'           buttons.text = b.text, intro.text = i.text, end.text = e.text, 
-#'           prior.mean = p.mean, prior.covar = p.var, n.draws = 50, 
-#'           algorithm = "CEA")
+#'           n.draws = 50)
+
 #'           
 #'#### Choice design with only adaptive sets (des=NULL)
 #'# setting for adaptive sets 
@@ -176,13 +170,13 @@
 #'           atts = attributes, lvl.names = labels, coding = code, 
 #'           buttons.text = b.text, intro.text = i.text, end.text = e.text, 
 #'           prior.mean = p.mean, prior.covar = p.var, cand.set = cand, 
-#'           lower = low, upper = up, n.draws = 50, algorithm = "MOD")
+#'           lower = low, upper = up, n.draws = 50)
 #' # If CEA algorithm is desired, cand.set argument is not needed
 #'SurveyApp(des = NULL, n.total = n.sets, alts = alternatives,
 #'          atts = attributes, lvl.names = labels, coding = code, 
 #'          buttons.text = b.text, intro.text = i.text, end.text = e.text, 
 #'          prior.mean = p.mean, prior.covar = p.var, 
-#'          lower = low, upper = up, n.draws = 50, algorithm = "CEA")
+#'          lower = low, upper = up, n.draws = 50)
 #'          
 #'#### Present choice design with a no choice alternative.
 #'# example design 
@@ -206,14 +200,13 @@
 #'SurveyApp(des = xdes, n.total = n.sets, alts = alternatives, 
 #'           atts = attributes, lvl.names = labels, coding = code, 
 #'           buttons.text = b.text, intro.text = i.text, end.text = e.text,
-#'           no.choice = 3, alt.cte = c(0, 0, 1), algorithm = "MOD")
+#'           no.choice = 3, alt.cte = c(0, 0, 1))
 #'}
 #'@import shiny
 #'@export
 SurveyApp <- function(des = NULL, n.total, alts, atts, lvl.names, coding,
-                       alt.cte = NULL, no.choice = NULL, 
-                      n.cs = NULL,
-                      buttons.text, intro.text, end.text, data.dir = NULL,
+                       alt.cte = NULL, no.choice = NULL,
+                       buttons.text, intro.text, end.text, data.dir = NULL,
                        c.lvls = NULL, prior.mean = NULL,
                        prior.covar = NULL, cand.set = NULL, n.draws = NULL, 
                        lower = NULL, upper = NULL, parallel = TRUE, reduce = TRUE) {
@@ -487,7 +480,7 @@ SurveyApp <- function(des = NULL, n.total, alts, atts, lvl.names, coding,
         # radiobuttons
         if (input$OK > 0 && input$OK <= n.total) {
           return(list(radioButtons("survey", buttons.text,
-                                   alts , inline = T, selected = "None")))
+                                   alts , inline = TRUE, selected = "None")))
         }
       })
       # set nr
@@ -567,7 +560,7 @@ SurveyApp <- function(des = NULL, n.total, alts, atts, lvl.names, coding,
 #'   \item{lvl.balance}{A list containing the frequency of appearance of each 
 #'   attribute level in the design.}
 #' @examples 
-#' \donttest{
+#' \dontrun{
 #' # Example without continuous attributes.
 #' design <- example_design 
 #' coded <- c("D", "D", "D") # Coding.
@@ -698,7 +691,7 @@ Decode <- function(des, n.alts, lvl.names, coding, alt.cte = NULL, c.lvls = NULL
 # @return A binary response vector with length equal to \code{length(resp) *
 #   length(n.alts)}.
 # @examples 
-# \donttest{
+# \dontrun{
 # # Observed Responses 
 # resp <- c("alt1", "alt3", "alt2", "no.choice", "alt1") 
 # # All possible alternatives 
@@ -781,7 +774,7 @@ LoadData <- function(data.dir, type) {
   } 
   # Read all files into list
   files <- list.files(data.dir, full.names = TRUE, pattern = type)
-  data <- lapply(files, utils::read.table, stringsAsFactors = FALSE, sep = '\t', header = T) 
+  data <- lapply(files, utils::read.table, stringsAsFactors = FALSE, sep = '\t', header = TRUE) 
   # check same col 
   ncols <- unlist(lapply(data, function(x) return(ncol(x))))
   if(!isTRUE(all.equal(min(ncols), max(ncols)))){

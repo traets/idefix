@@ -121,5 +121,7 @@ SeqMOD(des = des, cand.set = cs, n.alts = 3, par.draws = sample, alt.cte = ac,
            prior.covar = pc, parallel = FALSE)
 }
 \references{
+\insertRef{idefix}{idefix}
+
 \insertRef{ju}{idefix}
 }

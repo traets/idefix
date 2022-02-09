@@ -5,7 +5,7 @@
 #' Multinomial Logit (MNL) model, and individually adapted designs for the Mixed
 #' Multinomial Logit model. The (adaptive) designs can be presented on screen and
 #' choice data can be gathered using a shiny application.
-#'
+#' @references \insertRef{idefix}{idefix}
 #'
 #' \itemize{
 #' \item To generate efficient designs using the Modified Federov algorithm, please consult the \link[idefix]{Modfed} documentation.

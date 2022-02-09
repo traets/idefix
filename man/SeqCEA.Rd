@@ -123,6 +123,8 @@ SeqCEA(des = des, lvls = c(3, 3, 3), coding = c("D", "D", "D"), n.alts = 3,
       par.draws = sample, alt.cte = ac, prior.covar = pc, parallel = FALSE)
 }
 \references{
+\insertRef{idefix}{idefix}
+
 \insertRef{ju}{idefix}
 
 \insertRef{cea}{idefix}
