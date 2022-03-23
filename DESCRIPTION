@@ -23,7 +23,7 @@ Imports:
     scales,
     tmvtnorm,
     utils 
-RoxygenNote: 6.1.1
+RoxygenNote: 7.1.2
 Encoding: UTF-8
 LinkingTo: Rcpp, RcppArmadillo
 RdMacros: Rdpack
