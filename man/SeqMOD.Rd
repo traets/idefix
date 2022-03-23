@@ -4,9 +4,19 @@
 \alias{SeqMOD}
 \title{Sequential modified federov algorithm for MNL model.}
 \usage{
-SeqMOD(des = NULL, cand.set, n.alts, par.draws, prior.covar,
-  alt.cte = NULL, no.choice = NULL, weights = NULL,
-  parallel = TRUE, reduce = TRUE, allow.rep = FALSE)
+SeqMOD(
+  des = NULL,
+  cand.set,
+  n.alts,
+  par.draws,
+  prior.covar,
+  alt.cte = NULL,
+  no.choice = NULL,
+  weights = NULL,
+  parallel = TRUE,
+  reduce = TRUE,
+  allow.rep = FALSE
+)
 }
 \arguments{
 \item{des}{A design matrix in which each row is a profile. If alternative
