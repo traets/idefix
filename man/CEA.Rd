@@ -4,9 +4,21 @@
 \alias{CEA}
 \title{Coordinate Exchange algorithm for MNL models.}
 \usage{
-CEA(lvls, coding, c.lvls = NULL, n.sets, n.alts, par.draws,
-  alt.cte = NULL, no.choice = FALSE, start.des = NULL,
-  parallel = TRUE, max.iter = Inf, n.start = 12, best = TRUE)
+CEA(
+  lvls,
+  coding,
+  c.lvls = NULL,
+  n.sets,
+  n.alts,
+  par.draws,
+  alt.cte = NULL,
+  no.choice = FALSE,
+  start.des = NULL,
+  parallel = TRUE,
+  max.iter = Inf,
+  n.start = 12,
+  best = TRUE
+)
 }
 \arguments{
 \item{lvls}{A numeric vector which contains for each attribute the number
