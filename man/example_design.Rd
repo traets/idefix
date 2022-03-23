@@ -4,7 +4,9 @@
 \name{example_design}
 \alias{example_design}
 \title{Discrete choice design.}
-\format{A matrix with 16 rows and 6 columns.}
+\format{
+A matrix with 16 rows and 6 columns.
+}
 \usage{
 data(example_design)
 }
