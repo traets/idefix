@@ -4,11 +4,29 @@
 \alias{SurveyApp}
 \title{Shiny application to generate a discrete choice survey.}
 \usage{
-SurveyApp(des = NULL, n.total, alts, atts, lvl.names, coding,
-  alt.cte = NULL, no.choice = NULL, buttons.text, intro.text, end.text,
-  data.dir = NULL, c.lvls = NULL, prior.mean = NULL,
-  prior.covar = NULL, cand.set = NULL, n.draws = NULL,
-  lower = NULL, upper = NULL, parallel = TRUE, reduce = TRUE)
+SurveyApp(
+  des = NULL,
+  n.total,
+  alts,
+  atts,
+  lvl.names,
+  coding,
+  alt.cte = NULL,
+  no.choice = NULL,
+  buttons.text,
+  intro.text,
+  end.text,
+  data.dir = NULL,
+  c.lvls = NULL,
+  prior.mean = NULL,
+  prior.covar = NULL,
+  cand.set = NULL,
+  n.draws = NULL,
+  lower = NULL,
+  upper = NULL,
+  parallel = TRUE,
+  reduce = TRUE
+)
 }
 \arguments{
 \item{des}{A numeric matrix which represents the design matrix. Each row is a
