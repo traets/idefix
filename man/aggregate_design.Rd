@@ -4,7 +4,9 @@
 \name{aggregate_design}
 \alias{aggregate_design}
 \title{Discrete choice aggregate design.}
-\format{A matrix with 112 rows and 9 variables}
+\format{
+A matrix with 112 rows and 9 variables
+}
 \usage{
 data(aggregate_design)
 }
