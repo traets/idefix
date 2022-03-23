@@ -4,8 +4,16 @@
 \alias{SeqKL}
 \title{Sequential Kullback-Leibler based algorithm for the MNL model.}
 \usage{
-SeqKL(des = NULL, cand.set, n.alts, par.draws, alt.cte = NULL,
-  no.choice = NULL, weights = NULL, allow.rep = FALSE)
+SeqKL(
+  des = NULL,
+  cand.set,
+  n.alts,
+  par.draws,
+  alt.cte = NULL,
+  no.choice = NULL,
+  weights = NULL,
+  allow.rep = FALSE
+)
 }
 \arguments{
 \item{des}{A design matrix in which each row is a profile. If alternative
