@@ -4,8 +4,15 @@
 \alias{Decode}
 \title{Coded design to readable design.}
 \usage{
-Decode(des, n.alts, lvl.names, coding, alt.cte = NULL, c.lvls = NULL,
-  no.choice = NULL)
+Decode(
+  des,
+  n.alts,
+  lvl.names,
+  coding,
+  alt.cte = NULL,
+  c.lvls = NULL,
+  no.choice = NULL
+)
 }
 \arguments{
 \item{des}{A numeric matrix which represents the design matrix. Each row is a
