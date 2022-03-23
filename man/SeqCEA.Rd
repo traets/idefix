@@ -4,9 +4,21 @@
 \alias{SeqCEA}
 \title{Sequential Coordinate Exchange algorithm for MNL model.}
 \usage{
-SeqCEA(des = NULL, lvls, coding, c.lvls = NULL, n.alts, par.draws,
-  prior.covar, alt.cte = NULL, no.choice = NULL, weights = NULL,
-  parallel = TRUE, reduce = TRUE, n.cs = NULL)
+SeqCEA(
+  des = NULL,
+  lvls,
+  coding,
+  c.lvls = NULL,
+  n.alts,
+  par.draws,
+  prior.covar,
+  alt.cte = NULL,
+  no.choice = NULL,
+  weights = NULL,
+  parallel = TRUE,
+  reduce = TRUE,
+  n.cs = NULL
+)
 }
 \arguments{
 \item{des}{A design matrix in which each row is a profile. If alternative
