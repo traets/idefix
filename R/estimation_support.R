@@ -9,21 +9,21 @@
 #' Thus, if all participants responded to the same design, \code{des} will be a repetition of
 #' that design matrix.
 #' 
-#' The responses in \code{y} should be succesive when there are multiple
+#' The responses in \code{y} should be successive when there are multiple
 #' respondents. There can be \code{n.sets} elements for each respondent with
 #' discrete values indicating the chosen alternative for each set. Or there can
 #' be \code{n.sets * n.alts} elements for each respondent with binary values
 #' indicating for each alternative whether it was chosen or not. In the latter
 #' case the \code{bin} argument should be \code{TRUE}.
 #' 
-#' \code{n.sets} indicates the number of sets each repondent responded to. It is
+#' \code{n.sets} indicates the number of sets each respondent responded to. It is
 #' assumed that every responded responded to the same number of choice sets.
 #' 
 #' @param pkg Indicates the desired estimation package. Options are 
 #'   \code{bayesm = \link[bayesm]{rhierMnlRwMixture}}, \code{ChoiceModelR = 
 #'   \link[ChoiceModelR]{choicemodelr}}, \code{RSGHB = \link[RSGHB]{doHB}}, 
 #'   \code{Mixed.Probit = \link[bayesm]{rbprobitGibbs}}, \code{mlogit = 
-#'   \link[mlogit]{mlogit}}).
+#'   \link[mlogit]{mlogit}}, \code{logitr = \link[logitr]{logitr}}).
 #' @param des A design matrix in which each row is a profile.
 #' @inheritParams Modfed
 #' @param y A numeric vector containing binary or discrete responses. See \code{bin} argument.
@@ -68,7 +68,7 @@ Datatrans <- function(pkg, des, y, n.alts, n.sets, n.resp, bin, alt.names = NULL
   }
   #pkg
   if(!pkg %in% c("bayesm", "ChoiceModelR", "RSGHB", "Mixed.Probit",
-                 "mlogit", "Rchoice")){
+                 "mlogit", "Rchoice", "logitr")){
     stop("'pkg' argument is not recognized")
   }
   #alt.names
@@ -215,6 +215,16 @@ Datatrans <- function(pkg, des, y, n.alts, n.sets, n.resp, bin, alt.names = NULL
     Rdes <- as.data.frame(cbind(id.var, alt.names, des, y.id))
     print("The dataset is ready to be used for Rchoice package")
     return(Rdes) 
+  }
+  if (pkg == "logitr") {
+    choice <- as.vector(DisBin(y = y, n.alts = n.alts))
+    obsID <- rep(1: (n.resp * n.sets), each = n.alts)
+    id <- rep(1:n.resp, each = n.sets * n.alts)
+    alt <- rep(c(1:n.alts), n.sets * n.resp)
+    mat <- cbind(id, obsID, alt, choice, des)
+    logitrdata <- as.data.frame(mat) 
+    print("The dataset is ready to be used for logitr package")
+    return(logitrdata)
   }
 }
 
