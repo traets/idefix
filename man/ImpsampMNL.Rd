@@ -4,8 +4,17 @@
 \alias{ImpsampMNL}
 \title{Importance sampling MNL}
 \usage{
-ImpsampMNL(n.draws, prior.mean, prior.covar, des, n.alts, y,
-  alt.cte = NULL, lower = NULL, upper = NULL)
+ImpsampMNL(
+  n.draws,
+  prior.mean,
+  prior.covar,
+  des,
+  n.alts,
+  y,
+  alt.cte = NULL,
+  lower = NULL,
+  upper = NULL
+)
 }
 \arguments{
 \item{n.draws}{Numeric value indicating the number of draws.}
