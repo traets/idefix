@@ -4,7 +4,9 @@
 \name{nochoice_design}
 \alias{nochoice_design}
 \title{Discrete choice design with no choice option.}
-\format{A matrix with 24 rows and 7 variables}
+\format{
+A matrix with 24 rows and 7 variables
+}
 \usage{
 data(nochoice_design)
 }
