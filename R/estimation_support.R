@@ -20,8 +20,7 @@
 #' assumed that every responded responded to the same number of choice sets.
 #' 
 #' @param pkg Indicates the desired estimation package. Options are 
-#'   \code{bayesm = \link[bayesm]{rhierMnlRwMixture}}, \code{ChoiceModelR = 
-#'   \link[ChoiceModelR]{choicemodelr}}, \code{RSGHB = \link[RSGHB]{doHB}}, 
+#'   \code{bayesm = \link[bayesm]{rhierMnlRwMixture}}, \code{RSGHB = \link[RSGHB]{doHB}}, 
 #'   \code{Mixed.Probit = \link[bayesm]{rbprobitGibbs}}, \code{mlogit = 
 #'   \link[mlogit]{mlogit}}, \code{logitr = \link[logitr]{logitr}}).
 #' @param des A design matrix in which each row is a profile.
@@ -108,27 +107,6 @@ Datatrans <- function(pkg, des, y, n.alts, n.sets, n.resp, bin, alt.names = NULL
     print("The dataset is ready to be used for bayesm package")
     return(bayesmdata)
   }
-  # ChoiceModelR
-  if(pkg == "ChoiceModelR") {
-    # matrix y to 1 dim 
-    y <- as.vector(y)
-    y <- matrix(y, length(y))
-    set <- rep(1:n.sets, each = n.alts, times = n.resp)
-    id <- rep(1:n.resp, each = n.sets * n.alts)
-    alt <- rep(c(1:n.alts), n.sets * n.resp)
-    initialmat <- t(rbind(id, set, alt))
-    xmat <- cbind(initialmat, des)
-    # Create choice columns.
-    newchoice <- y
-    zeromat <- matrix(0, n.sets * n.resp, n.alts - 1)
-    choicemat <- cbind(newchoice, zeromat)
-    # This is the final y column representing choice.
-    choicecol <- matrix(c(t(choicemat)))
-    c.data <- cbind(xmat, choicecol)
-    colnames(c.data)[ncol(c.data)] <- "Choice" 
-    print("The dataset is ready to be used for ChoiceModelR package")
-    return(c.data)
-  }
   # RSGHB
   if (pkg == "RSGHB") {
     # matrix y to 1 dim 
@@ -190,15 +168,12 @@ Datatrans <- function(pkg, des, y, n.alts, n.sets, n.resp, bin, alt.names = NULL
     }
     y.bin <- DisBin(y = y, n.alts = n.alts)
     Choice <- as.logical(y.bin)
-    id.var <- rep(1:n.resp, each = n.alts * n.sets)
-    mdes <- as.data.frame(cbind(id.var, alt.names, des, Choice))
+    id <- rep(1:n.resp, each = n.alts * n.sets)
+    set.id <- rep(1:n.sets, each = n.alts)
+    mdes <- as.data.frame(cbind(id, set.id, alt.names, des, Choice))
     mdes$Choice <- as.logical(Choice)
     rownames(mdes) <- NULL
-    alt.ctes <- dplyr::select(mdes, dplyr::ends_with(".cte"))
-    cte.names <- colnames(alt.ctes)
-    logitdata <- mlogit::mlogit.data(mdes, choice = "Choice", shape = "long", 
-                             alt.var = "alt.names",
-                             id.var = "id.var")
+    logitdata <- dfidx::dfidx(mdes, idx = list(c(NA, "id"), "alt.names"))
     print("The dataset is ready to be used for mlogit package")
     return(logitdata) 
   }
@@ -334,4 +309,3 @@ DisBin <- function(y, n.alts){
   }
   return(y.bin)
 }
-
