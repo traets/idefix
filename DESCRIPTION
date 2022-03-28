@@ -1,7 +1,7 @@
 Package: idefix
 Type: Package
 Title: Efficient Designs for Discrete Choice Experiments
-Version: 1.0.1
+Version: 1.0.3
 Roxygen: list(markdown = TRUE)
 Authors@R: c(
     person("Frits", "Traets", email = "frits.traets@kuleuven.be", role = c("aut", "cre")),
@@ -15,17 +15,20 @@ ByteCompile: TRUE
 Imports:
     dplyr,
     MASS,
-    mlogit,
     parallel,
     Rcpp (>= 0.12.18),
     Rdpack,
     stats,
     scales,
     tmvtnorm,
-    utils 
+    utils,
+    dfidx
 RoxygenNote: 7.1.2
 Encoding: UTF-8
 LinkingTo: Rcpp, RcppArmadillo
 RdMacros: Rdpack
 URL: https://github.com/traets/idefix
-Suggests: testthat
+Suggests: 
+    RSGHB,
+    bayesm,
+    testthat
