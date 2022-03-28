@@ -8,8 +8,7 @@ Datatrans(pkg, des, y, n.alts, n.sets, n.resp, bin, alt.names = NULL)
 }
 \arguments{
 \item{pkg}{Indicates the desired estimation package. Options are
-\code{bayesm = \link[bayesm]{rhierMnlRwMixture}}, \code{ChoiceModelR = 
-  \link[ChoiceModelR]{choicemodelr}}, \code{RSGHB = \link[RSGHB]{doHB}},
+\code{bayesm = \link[bayesm]{rhierMnlRwMixture}}, \code{RSGHB = \link[RSGHB]{doHB}},
 \code{Mixed.Probit = \link[bayesm]{rbprobitGibbs}}, \code{mlogit = 
   \link[mlogit]{mlogit}}, \code{logitr = \link[logitr]{logitr}}).}
 
